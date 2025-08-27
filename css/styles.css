@@ -1,0 +1,442 @@
+/* 1. CSS Reset and Base Styles */
+/* A modern, gentle CSS reset */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #ffffff;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding-top: 105px; /* Space for fixed navbar */
+    overflow-x: hidden; /* Contains the sidebar "bleed" effect */
+}
+
+img, picture, video, canvas, svg {
+    display: block;
+    max-width: 100%;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+h1, h2, h3, h4, h5, h6, p {
+    margin: 0;
+    padding: 0;
+}
+
+/* 2. Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.25;
+    margin-bottom: 1rem;
+}
+
+h1 { font-size: 3rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1.125rem; }
+
+p {
+    margin-bottom: 1rem;
+}
+
+/* 3. Navigation Bar */
+.navbar {
+    background-color: #E1EBDD;
+    height: 105px;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem; /* Space between nav items */
+    padding: 0 2rem; /* Side padding for the navbar */
+}
+
+.nav-link {
+    color: #222222;
+    font-size: 16px;
+    font-weight: 400;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: -0.02em;
+    padding: 0.5rem 0.5rem;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    border-radius: 4px;
+}
+
+.nav-link:hover {
+    color: #ffffff;
+    background-color: #008800;
+}
+
+.nav-link.active {
+    font-weight: 500;
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.nav-divider {
+    width: 2px;
+    height: 24px;
+    background-color: #FF6B6B;
+    opacity: 0.8;
+}
+
+/* 4. Main Content Layout */
+.main-content {
+    width: 100%;
+}
+
+.three-column-layout {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    gap: 0;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    min-height: 100vh;
+    position: relative;
+}
+
+.sidebar-left {
+    margin-left: -14vw;
+    width: calc(100% + 14vw);
+}
+
+.sidebar-right {
+    margin-right: -14vw;
+    width: calc(100% + 14vw);
+}
+
+.sidebar-image {
+    max-height: 1600px;
+    width: auto;
+    margin: 0 auto;
+}
+
+/* Main Content Area */
+.main-content-area {
+    padding: 0 1rem;
+}
+
+/* Top Section */
+.top-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.top-column {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Custom styles for the text content */
+.custom-header {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 48px;
+    line-height: 60px;
+    color: #466480;
+    letter-spacing: 0;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.custom-text {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 180%;
+    color: #000000;
+    letter-spacing: 0;
+    margin-bottom: 1rem;
+}
+
+
+
+
+.content-grid {
+    display: grid;
+    grid-template-columns: 3fr 1fr; /* Creates two columns of equal width */
+    align-items: center;            /* Vertically centers the content in both columns */
+    margin-top: 2rem;               /* Adds some space above the grid */
+}
+
+.text-and-button-content {
+    display: flex;
+    flex-direction: column;         /* Stacks the h1, p, and button vertically */
+    gap: 1.5rem;                    /* Adds space between the text and the button */
+}
+
+/* Ensure the button doesn't stretch and aligns left */
+.text-and-button-content .btn {
+    align-self: flex-start;
+}
+
+.image-content img {
+    width: 100%; /* Makes the image fill its column */
+    height: auto;
+    max-height: 500px; /* Prevents the image from being excessively tall */
+    object-fit: contain; /* Ensures the whole image is visible without distortion */
+}
+
+
+
+/* Image Spacers & Content */
+.image-spacer { height: 20rem; }
+.image-spacer1 { height: 6rem; }
+.content-image { height: auto; }
+
+/* AI Definitions List */
+.ai-definitions {
+    margin-top: 1rem;
+}
+
+.list-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    margin-top: 1.5rem;
+}
+
+.list-bullet {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 15px;
+    flex-shrink: 0;
+    margin-top: 5px;
+}
+
+.bullet-red { background-color: #F08080; }
+.bullet-green { background-color: #90EE90; }
+.bullet-orange { background-color: #FFA500; }
+
+.list-content h3 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    margin: 0 0 5px 0;
+}
+
+.list-content p {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Section Divider */
+.section-divider {
+    border: none;
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 2rem 0;
+}
+
+/* Scenarios Section & Cards */
+.scenarios-section h2, .oecd-section h2, .publications-section h2 {
+    margin-bottom: 1rem;
+}
+
+.scenario-section-title {
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 24px;
+    padding: 0.5rem 1.5rem;
+    margin: 4rem 0 1.5rem 0;
+    background-color: rgba(225, 235, 221, 0.8);
+}
+
+.cards-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.card {
+    background-color: #ffffff;
+    border: 5px solid #ED7C6F;
+    border-radius: 10px;
+    padding: 2rem;
+    height: 100%;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    display: flex;
+    flex-direction: column
+}
+
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 12px rgba(0,0,0,0.1);
+}
+
+
+.card .btn {
+    margin-top: 1.5rem;
+    align-self: flex-start; /* Prevents button from stretching full-width */
+}
+
+
+.card h4 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    color: #466480;
+    margin-bottom: 0.75rem;
+}
+
+.card p {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #828282;
+}
+
+
+/* OECD Section */
+.oecd-section-title {
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 24px;
+    padding: 0.5rem 1.5rem;
+    margin: 4rem 0 1.5rem 0;
+    background-color: rgba(225, 235, 221, 0.8);
+}
+
+.oecd-items {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.oecd-item {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.oecd-item img {
+    max-width: 150px;
+    margin: 0 auto 1rem auto;
+}
+
+.oecd-item h3 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    margin-bottom: 0.5rem;
+}
+
+.oecd-item p {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Publications Section */
+.publications-title {
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 24px;
+    padding: 0.5rem 1.5rem;
+    margin: 4rem 0 1.5rem 0;
+    background-color: rgba(225, 235, 221, 0.8);
+}
+
+.publications-list {
+    margin-bottom: 2rem;
+}
+
+.publication-item {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+}
+
+.publication-item strong {
+    font-weight: 800;
+}
+
+/* 5. Responsive Design */
+@media (max-width: 1200px) {
+    .three-column-layout {
+        grid-template-columns: 1fr 4fr 1fr;
+    }
+}
+
+@media (max-width: 992px) {
+    .three-column-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        display: none;
+    }
+
+    .top-section,
+    .cards-container {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        flex-wrap: wrap; /* Allow items to wrap on small screens */
+        height: auto; /* Allow height to grow */
+        padding: 1rem;
+        justify-content: center;
+    }
+
+    body {
+        padding-top: 150px; /* Adjust for potentially taller navbar */
+    }
+
+    .nav-link {
+        font-size: 14px;
+    }
+
+    .nav-divider {
+        display: none; /* Hide dividers on small screens */
+    }
+
+    .custom-header {
+        font-size: 32px;
+        line-height: 40px;
+    }
+
+    .card {
+        padding: 1.5rem;
+    }
+}
