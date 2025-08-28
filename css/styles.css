@@ -63,12 +63,17 @@ p {
     width: 100%;
     top: 0;
     left: 0;
-    z-index: 10;
+    z-index: 0;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+    justify-content: space-between;
     padding: 0 2rem;
+}
+
+.nav-links-right {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
 }
 
 .nav-link {
@@ -102,7 +107,7 @@ p {
 
 /* 4. Main Content Layout */
 .main-content {
-    padding-top: 100px;
+    padding-top: 60px;
     width: 100%;
 }
 
@@ -133,9 +138,9 @@ p {
 }
 
 .sidebar-image {
-    max-height: 1600px;
-    width: auto;
-    margin: 0 auto;
+    max-height: 1800px;
+    width: 100%;
+    display: block;
 }
 
 /* Main Content Area */
