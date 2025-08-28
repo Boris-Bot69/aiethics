@@ -21,7 +21,7 @@
     function setupNavigation() {
         const navLinks = document.querySelectorAll('.nav-link');
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-        
+
         navLinks.forEach(link => {
             const href = link.getAttribute('href');
             if (href === currentPage) {
@@ -35,29 +35,29 @@
     // Smooth Scrolling for Anchor Links
     function setupSmoothScrolling() {
         const anchorLinks = document.querySelectorAll('a[href^="#"]');
-        
+
         anchorLinks.forEach(link => {
             link.addEventListener('click', function(event) {
                 const href = this.getAttribute('href');
-                
+
                 if (href === '#') return;
-                
+
                 const targetElement = document.querySelector(href);
-                
+
                 if (targetElement) {
                     event.preventDefault();
-                    
+
                     const headerHeight = document.querySelector('.navbar').offsetHeight;
                     const targetPosition = targetElement.offsetTop - headerHeight - 20;
-                    
+
                     window.scrollTo({
                         top: targetPosition,
                         behavior: 'smooth'
                     });
-                    
+
                     // Update URL without page jump
                     history.pushState(null, null, href);
-                    
+
                     // Focus on target element for accessibility
                     targetElement.focus();
                 }
@@ -69,23 +69,23 @@
     function setupAccessibility() {
         // Skip to main content link
         createSkipLink();
-        
+
         // Keyboard navigation
         setupKeyboardNavigation();
-        
+
         // Focus management
         setupFocusManagement();
     }
 
     // Create skip to main content link
-    
+
     // Focus management
     function setupFocusManagement() {
         // Ensure proper focus order
         const focusableElements = document.querySelectorAll(
             'a[href], button, input, textarea, select, [tabindex]:not([tabindex="-1"])'
         );
-        
+
         // Handle tab navigation
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Tab') {
@@ -112,7 +112,7 @@
         window.addEventListener('resize', function() {
             handleResize();
         });
-        
+
         // Initial call
         handleResize();
     }
@@ -122,7 +122,7 @@
         const width = window.innerWidth;
         const navbar = document.querySelector('.navbar');
         const navLinks = document.querySelector('.nav-links');
-        
+
         if (width <= 768) {
             // Mobile behavior
             if (navbar && navLinks) {
@@ -183,7 +183,7 @@
         scrollToElement: function(element, offset = 0) {
             const headerHeight = document.querySelector('.navbar')?.offsetHeight || 0;
             const targetPosition = element.offsetTop - headerHeight - offset;
-            
+
             window.scrollTo({
                 top: targetPosition,
                 behavior: 'smooth'
@@ -218,4 +218,22 @@
         });
     }
 
-})(); 
+})();
+
+let lastScrollTop = 0;
+const navbar = document.querySelector('.navbar');
+
+window.addEventListener('scroll', function() {
+    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+    // Check if scrolling down and past the navbar height
+    if (scrollTop > lastScrollTop && scrollTop > navbar.offsetHeight) {
+        // Scrolling Down
+        navbar.classList.add('navbar--hidden');
+    } else {
+        // Scrolling Up
+        navbar.classList.remove('navbar--hidden');
+    }
+
+    lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // For Mobile or negative scrolling
+});

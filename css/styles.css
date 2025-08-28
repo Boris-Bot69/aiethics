@@ -72,6 +72,8 @@ p {
     background-image: url("/images/navbar.svg");
     background-size: cover;
     background-position: center bottom;
+    transition: transform 0.3s ease-in-out;
+
     background-repeat: no-repeat;
     height: 105px;
     position: fixed;
@@ -83,6 +85,10 @@ p {
     align-items: center;
     justify-content: space-between;
     padding: 0 2rem;
+}
+
+.navbar--hidden {
+    transform: translateY(-100%);
 }
 
 .nav-links-right {
