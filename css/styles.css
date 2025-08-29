@@ -269,8 +269,6 @@ p {
 }
 
 
-
-
 /* Image Spacers & Content */
 .image-spacer1 { height: 6rem; }
 .content-image { height: auto; }
@@ -335,63 +333,51 @@ p {
     padding: 0.5rem 1.5rem;
     margin: 4rem 0 1.5rem 0;
     background-color: rgba(225, 235, 221, 0.8);
-}
-.cards-container {
-    display: grid;
-    /* FIX: Made the grid responsive. It will automatically adjust the number of columns
-       based on the available width. Each column will be at least 350px wide. */
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 2rem;
-    margin-bottom: 2rem;
-}
+}.cards-container {
+     display: grid;
+     /* Creates a responsive grid that shows as many columns as will fit */
+     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+     gap: 2rem;
+     padding: 1rem 0; /* Adds some vertical spacing */
+ }
 
+/* --- Main Card Styling --- */
 .card {
-
-    width: 477px;
-    height: 508px;
+    /* Responsive Sizing: The card will shrink on small screens */
+    width: 100%;
+    max-width: 477px; /* It will not grow larger than this */
+    min-height: 508px;
     box-sizing: border-box;
 
+    /* Visual Styling & Custom Border */
     background-color: #ffffff;
     border-style: solid;
-    border-width: 5px;
-    border-image-slice: 10;
+    border-width: 15px; /* Adjust to match the visual thickness of your SVG */
+    border-image-slice: 30;
     border-image-repeat: stretch;
     padding: 1.5rem;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.5rem; /* Space between placeholder and content area */
 }
 
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 12px rgba(0,0,0,0.1);
-}
 
-/* --- Card Variations (Coloring) --- */
+
+/* --- Card Color Variations --- */
 .card.card-red {
-    border-image-source: url('/images/border_1.svg');
-}
-
-.card.card-red .btn-primary {
-    border-color: #ED7C6F;
-    color: #ED7C6F;
+    border-image-source: url('/images/border_1.svg'); /* Path to your red border SVG */
 }
 
 .card.card-orange {
-    border-image-source: url('/images/border_2.svg');
-}
-
-.card.card-orange .btn-primary {
-    border-color: #FFA500;
-    color: #FFA500;
+    border-image-source: url('/images/border_2.svg'); /* Path to your orange border SVG */
 }
 
 /* --- Card Internals --- */
 .card-image-placeholder {
     height: 240px;
-    width: 424px;
+    width: 100%; /* Ensures placeholder is responsive */
     background-color: #FFF7F5;
     border-radius: 12px;
 }
@@ -399,31 +385,28 @@ p {
 .card-content {
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
-
-    gap: 0.75rem;
+    flex-grow: 1; /* Makes this area fill the available space */
 }
 
-.card h4 {
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-size: 20px;
-    color: #333;
-    margin: 0; /* REMOVED margin-bottom and set all margins to 0 */
-}
-
-/* You would also add styling for your paragraph and button */
 .card p {
-    font-family: 'Inter', serif;
+    font-family: 'Inter', sans-serif;
     font-size: 14px;
-    line-height: 150%;
-    vertical-align: middle;
-    color: #828282;
-
+    line-height: 1.6;
+    color: #555;
+    margin: 0;
+    flex-grow: 1; /* Pushes the button down by taking up all extra space */
 }
 
+/* --- Image Button Styling --- */
 .card .btn {
-    margin-top: auto; /* Pushes the button to the bottom of the flex container */
+    display: block; /* Makes the link a block element */
+    margin-top: auto; /* Pushes the button to the very bottom */
+    align-self: flex-start; /* Aligns the button to the left */
+}
+
+.card .btn img {
+    max-width: 100%; /* Ensures the button image is responsive */
+    height: auto; /* Maintains the image's aspect ratio */
 }
 
 
