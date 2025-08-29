@@ -12,7 +12,7 @@ html {
 }
 
 body {
-    background-image: url('/images/scissor.svg');
+    background-image: url('../images/scissor.svg');
     background-repeat: no-repeat;
     background-position: center top; /* Aligns the image to the top */
     font-family: 'Inter', sans-serif;
@@ -367,11 +367,11 @@ p {
 
 /* --- Card Color Variations --- */
 .card.card-red {
-    border-image-source: url('/images/border_1.svg'); /* Path to your red border SVG */
+    border-image-source: url('../images/border_1.svg'); /* Path to your red border SVG */
 }
 
 .card.card-orange {
-    border-image-source: url('/images/border_2.svg'); /* Path to your orange border SVG */
+    border-image-source: url('../images/border_2.svg'); /* Path to your orange border SVG */
 }
 
 /* --- Card Internals --- */
@@ -480,7 +480,7 @@ p {
 
 .bottom-bar {
     height: 500px;
-    background-image: url("/images/bottom.svg");
+    background-image: url('../images/bottom.svg');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
