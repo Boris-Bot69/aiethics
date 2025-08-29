@@ -261,6 +261,15 @@ p {
 }
 
 
+.btn.btn-primary {
+
+    background-repeat: no-repeat;
+    background-size: contain; /
+
+}
+
+
+
 
 /* Image Spacers & Content */
 .image-spacer1 { height: 6rem; }
@@ -416,6 +425,8 @@ p {
 .card .btn {
     margin-top: auto; /* Pushes the button to the bottom of the flex container */
 }
+
+
 
 /* OECD Section */
 .oecd-section-title {

@@ -13,6 +13,7 @@
     function initializeApp() {
         setupNavigation();
         setupSmoothScrolling();
+        setupButtonHoverEffect();
         setupAccessibility();
         setupResponsiveBehavior();
     }
@@ -240,3 +241,30 @@ window.addEventListener('scroll', function() {
 
     lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
 }, false);
+
+
+function setupButtonHoverEffect() {
+    // Find all buttons that contain an image with a data-hover-src attribute
+    const imageButtons = document.querySelectorAll('.btn img[data-hover-src]');
+
+    imageButtons.forEach(img => {
+        const originalSrc = img.src;
+        const hoverSrc = img.dataset.hoverSrc;
+        const parentLink = img.parentElement;
+
+        // Preload the hover image to prevent flickering on first hover
+        const hoverImage = new Image();
+        hoverImage.src = hoverSrc;
+
+        // Event listener for when the mouse enters the link area
+        parentLink.addEventListener('mouseenter', () => {
+            img.src = hoverSrc;
+        });
+
+        // Event listener for when the mouse leaves the link area
+        parentLink.addEventListener('mouseleave', () => {
+            img.src = originalSrc;
+        });
+    });
+}
+
