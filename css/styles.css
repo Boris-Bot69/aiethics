@@ -104,14 +104,42 @@ p {
     font-family: 'Inter', sans-serif;
     letter-spacing: -0.02em;
     padding: 0.5rem 0.5rem;
-    transition: all 0.3s ease;
+    transition: all 1s ease;
     white-space: nowrap;
     border-radius: 4px;
+
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background-color: #008800; /* The green background color */
+
+    /* Starts hidden to the left */
+    transform: translateX(-100%);
+
+    /* Animation settings */
+    transition: transform 0.4s ease-in-out;
+
+    /* Places the slider behind the text */
+    z-index: -1;
 }
 
 .nav-link:hover {
     color: #ffffff;
     background-color: #008800;
+}
+
+.nav-link:hover::before {
+    transform: translateX(0);
 }
 
 .nav-link.active {
@@ -484,8 +512,21 @@ p {
 
 /* 3. Control the size of the logos themselves */
 .logo-container img {
-    height: 40px; /* Adjust the height of your logos */
+    height: 100px; /* Adjust the height of your logos */
     width: auto;  /* Allows width to scale proportionally */
+}
+
+.funding-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.funded-by-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
 }
 
 
