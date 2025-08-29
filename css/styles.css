@@ -456,6 +456,40 @@ p {
     font-weight: 800;
 }
 
+.bottom-bar {
+    height: 500px;
+    background-image: url("/images/bottom.svg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    display: flex;
+    align-items: center; /* Vertically centers the logos */
+    padding: 0 2rem;
+}
+
+.bottom-bar-image {
+    width: 100%;
+
+    height: auto;
+
+    display: block;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 2rem; /* Creates space BETWEEN each logo */
+}
+
+/* 3. Control the size of the logos themselves */
+.logo-container img {
+    height: 40px; /* Adjust the height of your logos */
+    width: auto;  /* Allows width to scale proportionally */
+}
+
+
+
 /* 5. Responsive Design */
 @media (max-width: 1200px) {
     .three-column-layout {

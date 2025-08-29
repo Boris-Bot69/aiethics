@@ -226,14 +226,17 @@ const navbar = document.querySelector('.navbar');
 window.addEventListener('scroll', function() {
     let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-    // Check if scrolling down and past the navbar height
-    if (scrollTop > lastScrollTop && scrollTop > navbar.offsetHeight) {
-        // Scrolling Down
-        navbar.classList.add('navbar--hidden');
-    } else {
-        // Scrolling Up
+    // NEW LOGIC: Check if the user has scrolled to the very top of the page.
+    if (scrollTop === 0) {
+        // If at the top, always show the navbar.
         navbar.classList.remove('navbar--hidden');
     }
+    // Only hide the navbar if scrolling down AND past the navbar's height.
+    else if (scrollTop > lastScrollTop && scrollTop > navbar.offsetHeight) {
+        // Scrolling Down
+        navbar.classList.add('navbar--hidden');
+    }
+    // If scrolling up but not at the top, do nothing. The bar remains hidden.
 
-    lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // For Mobile or negative scrolling
-});
+    lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+}, false);
