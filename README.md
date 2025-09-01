@@ -6,5 +6,6 @@ This website was funded and created through the "Co-designing a Risk-Assessment 
 
 ## License
 
-This application is provided as-is for educational and commercial use. Feel free to modify and use in your projects.
+Creative Commons Attribution 4.0 International (CC BY 4.0)
 
+Copyright (c) 2025 Boris Liu
