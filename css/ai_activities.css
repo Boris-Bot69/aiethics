@@ -157,19 +157,19 @@ h1 {
 }
 
 .breadcrumb-item.active {
-    color: #008800;
+    color: #78A564;
     font-weight: 600;
 }
 
 
 
-
 .three-column-layout {
     display: grid;
-    grid-template-columns: 1fr 3fr 1fr;
+    grid-template-columns: 1fr 5fr 1fr;
     gap: 0;
 }
 
+/* Sidebar Styles */
 .sidebar {
     display: flex;
     flex-direction: column;
@@ -180,13 +180,13 @@ h1 {
 }
 
 .sidebar-left {
-    margin-left: -14vw;
-    width: calc(100% + 14vw);
+    margin-left: -8vw;
+    width: calc(100% + 8vw);
 }
 
 .sidebar-right {
-    margin-right: -14vw;
-    width: calc(100% + 14vw);
+    margin-right: -8vw;
+    width: calc(100% + 8vw);
 }
 
 .sidebar-image {
@@ -222,10 +222,9 @@ h1 {
     color: #828282;
     text-align: center;
     max-width: 800px;
-    margin: 0 auto 3rem auto; /* Centers the block and adds bottom margin */
+    margin: 0 auto 3rem auto;
 }
-
-/* --- Activities Grid --- */
+/* This is the main grid container */
 .cards-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -233,20 +232,10 @@ h1 {
 }
 
 .activity-item {
-    text-align: center;
-}
-
-.activity-image-box {
-    border: 1px solid #A0C3A0;
-    border-radius: 10px;
-    margin-bottom: 1rem;
-    transition: box-shadow 0.2s ease-in-out;
-    background-color: #ffffff;
-    overflow: hidden;
-    aspect-ratio: 4 / 3;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
 }
 
 .activity-image-box:hover {
@@ -256,20 +245,22 @@ h1 {
 .activity-image-box img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    display: block;
+    margin: auto;
+    gap: 2rem;
 }
 
-.activity-info h4 {
+/* Styles for the title and description */
+.activity-item h4 {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
     font-size: 1rem;
     color: #333;
-    margin-bottom: 0.5rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
-.activity-info p {
+.activity-item p {
     font-family: 'Inter', sans-serif;
     font-size: 0.875rem;
     line-height: 1.5;
