@@ -140,7 +140,7 @@ p {
 
 .three-column-layout {
     display: grid;
-    grid-template-columns: 1fr 3fr 1fr;
+    grid-template-columns: 1fr 5fr 1fr;
     gap: 0;
 }
 
@@ -155,13 +155,13 @@ p {
 }
 
 .sidebar-left {
-    margin-left: -14vw;
-    width: calc(100% + 14vw);
+    margin-left: -8vw;
+    width: calc(100% + 8vw);
 }
 
 .sidebar-right {
-    margin-right: -14vw;
-    width: calc(100% + 14vw);
+    margin-right: -8vw;
+    width: calc(100% + 8vw);
 }
 
 .sidebar-image {
@@ -172,21 +172,24 @@ p {
 
 /* Main Content Area */
 .main-content-area {
-    padding: 0 1rem;
 }
 
-/* Top Section */
-.top-section {
+/* This single, reusable class styles both of your two-column sections */
+.grid-container-2col {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
-    margin-bottom: 2rem;
+    align-items: start;
+    margin-bottom: 3rem;
 }
 
-.top-column {
-    display: flex;
-    flex-direction: column;
+/* Make it responsive: on smaller screens, stack the columns */
+@media (max-width: 992px) {
+    .grid-container-2col {
+        grid-template-columns: 1fr; /* Switch to a single column */
+    }
 }
+
 
 /* Custom styles for the text content */
 .custom-header {
@@ -197,7 +200,6 @@ p {
     color: #466480;
     letter-spacing: 0;
     border-radius: 8px;
-    margin-bottom: 1rem;
 }
 
 .custom-text {
@@ -364,7 +366,8 @@ p {
     font-family: 'Inter', sans-serif;
     font-size: 14px;
     line-height: 1.6;
-    color: #555;
+    color: #828282;
+;
     margin: 0;
     flex-grow: 1; /* Pushes the button down by taking up all extra space */
 }
