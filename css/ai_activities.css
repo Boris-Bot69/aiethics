@@ -46,19 +46,6 @@ h1 {
 /* 2. LAYOUT & SITE-WIDE COMPONENTS              */
 /* ============================================= */
 
-.navbar::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #E1EBDD; /* This is the solid green color */
-    z-index: -1; /* This places the green backing behind your navbar's links */
-    background-image: url("/images/navbar.svg");
-
-}
-
 .navbar {
     background-color: transparent;
     background-image: url("/images/navbar.svg");
@@ -88,23 +75,19 @@ h1 {
     align-items: center;
     gap: 3rem;
 }
-
 .nav-link {
-    color: #222222;
-    font-size: 16px;
-    font-weight: 400;
-    font-family: 'Inter', sans-serif;
-    letter-spacing: -0.02em;
-    padding: 0.5rem 0.5rem;
-    transition: all 1s ease;
-    white-space: nowrap;
-    border-radius: 4px;
-
     position: relative;
     overflow: hidden;
     z-index: 1;
+
+    color: #222222;
+    padding: 0.5rem;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: color 0.4s ease-out;
 }
 
+/* 2. Create the hidden slider element */
 .nav-link::before {
     content: '';
     position: absolute;
@@ -113,30 +96,24 @@ h1 {
     width: 100%;
     height: 100%;
 
-    background-color: #008800; /* The green background color */
+    background-color: #78A564;
 
-    /* Starts hidden to the left */
     transform: translateX(-100%);
 
-    /* Animation settings */
     transition: transform 0.4s ease-in-out;
 
-    /* Places the slider behind the text */
     z-index: -1;
 }
 
-.nav-link:hover {
-    color: #ffffff;
-    background-color: #008800;
-}
-
-.nav-link:hover::before {
+.nav-link:hover::before,
+.nav-link.active::before {
     transform: translateX(0);
 }
 
+
+.nav-link:hover,
 .nav-link.active {
-    font-weight: 500;
-    background-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
 }
 
 .nav-divider {
@@ -145,7 +122,6 @@ h1 {
     background-color: #FF6B6B;
     opacity: 0.8;
 }
-
 /* 4. Main Content Layout */
 .main-content {
     padding-top: 60px;
