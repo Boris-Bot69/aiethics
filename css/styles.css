@@ -7,14 +7,14 @@
 }
 
 html {
-    font-size: 16px;
+    font-size: 1rem;
     scroll-behavior: smooth;
 }
 
 body {
     background-image: url('../images/scissor.svg');
     background-repeat: no-repeat;
-    background-position: center top; /* Aligns the image to the top */
+    background-position: center top;
     font-family: 'Inter', sans-serif;
     margin: 0;
     padding: 0;
@@ -24,6 +24,7 @@ body {
 img, picture, video, canvas, svg {
     display: block;
     max-width: 100%;
+    height: auto;
 }
 
 a {
@@ -63,7 +64,7 @@ p {
     transition: transform 0.3s ease-in-out;
 
     background-repeat: no-repeat;
-    height: 105px;
+    height: 6.563rem;
     position: fixed;
     width: 100%;
     top: 0;
@@ -91,7 +92,7 @@ p {
 
     color: #222222;
     padding: 0.5rem;
-    border-radius: 4px;
+    border-radius: 0.25rem;
     text-decoration: none;
     transition: color 0.4s ease-out;
 }
@@ -126,15 +127,15 @@ p {
 }
 
 .nav-divider {
-    width: 2px;
-    height: 24px;
+    width: 0.125rem;
+    height: 1.5rem;
     background-color: #FF6B6B;
     opacity: 0.8;
 }
 
 /* 4. Main Content Layout */
 .main-content {
-    padding-top: 60px;
+    padding-top: 6.563rem;
     width: 100%;
 }
 
@@ -195,17 +196,17 @@ p {
 .custom-header {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    font-size: 48px;
-    line-height: 60px;
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.2;
     color: #466480;
     letter-spacing: 0;
-    border-radius: 8px;
+    border-radius: 0.5rem;
 }
 
 .custom-text {
     font-family: 'Inter', sans-serif;
     font-weight: 400;
-    font-size: 16px;
+    font-size: 1rem;
     line-height: 180%;
     color: #000000;
     letter-spacing: 0;
@@ -236,7 +237,7 @@ p {
 .image-content img {
     width: 100%;
     height: auto;
-    max-height: 500px;
+    max-height: 31.25rem;
     object-fit: contain;
 }
 
@@ -265,23 +266,23 @@ p {
     margin-top: 1.5rem;
 }
 .list-icon {
-    width: 20px;
-    height: 20px;
-    margin-right: 15px;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.938rem;
     flex-shrink: 0;
-    margin-top: 5px;
+    margin-top: 0.313rem;
 }
 
 .list-content h3 {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    font-size: 18px;
-    margin: 0 0 5px 0;
+    font-size: 1.125rem;
+    margin: 0 0 0.313rem 0;
 }
 
 .list-content p {
     font-family: 'Inter', sans-serif;
-    font-size: 16px;
+    font-size: 1rem;
     line-height: 1.6;
     margin: 0;
 }
@@ -289,7 +290,7 @@ p {
 /* Section Divider */
 .section-divider {
     border: none;
-    height: 1px;
+    height: 0.063rem;
     background-color: #e0e0e0;
     margin: 2rem 0;
 }
@@ -303,14 +304,14 @@ p {
     display: inline-block;
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    font-size: 24px;
+    font-size: 1.5rem;
     padding: 0.5rem 1.5rem;
     margin: 4rem 0 1.5rem 0;
     background-color: rgba(225, 235, 221, 0.8);
 }.cards-container {
      display: grid;
      /* Creates a responsive grid that shows as many columns as will fit */
-     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+     grid-template-columns: repeat(auto-fit, minmax(21.875rem, 1fr));
      gap: 2rem;
      padding: 1rem 0; /* Adds some vertical spacing */
  }
@@ -319,14 +320,14 @@ p {
 .card {
     /* Responsive Sizing: The card will shrink on small screens */
     width: 100%;
-    max-width: 477px; /* It will not grow larger than this */
-    min-height: 508px;
+    max-width: 29.813rem; /* It will not grow larger than this */
+    min-height: 31.75rem;
     box-sizing: border-box;
 
     /* Visual Styling & Custom Border */
     background-color: #ffffff;
     border-style: solid;
-    border-width: 15px; /* Adjust to match the visual thickness of your SVG */
+    border-width: 0.938rem; /* Adjust to match the visual thickness of your SVG */
     border-image-slice: 30;
     border-image-repeat: stretch;
     padding: 1.5rem;
@@ -350,10 +351,10 @@ p {
 
 /* --- Card Internals --- */
 .card-image-placeholder {
-    height: 240px;
+    height: 15rem;
     width: 100%; /* Ensures placeholder is responsive */
     background-color: #FFF7F5;
-    border-radius: 12px;
+    border-radius: 0.75rem;
 }
 
 .card-content {
@@ -364,7 +365,7 @@ p {
 
 .card p {
     font-family: 'Inter', sans-serif;
-    font-size: 14px;
+    font-size: 0.875rem;
     line-height: 1.6;
     color: #828282;
 ;
@@ -391,7 +392,7 @@ p {
     display: inline-block;
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    font-size: 24px;
+    font-size: 1.5rem;
     padding: 0.5rem 1.5rem;
     margin: 4rem 0 1.5rem 0;
     background-color: rgba(225, 235, 221, 0.8);
@@ -409,21 +410,21 @@ p {
 }
 
 .oecd-item img {
-    max-width: 150px;
+    max-width: 9.375rem;
     margin: 0 auto 1rem auto;
 }
 
 .oecd-item h3 {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    font-size: 20px;
+    font-size: 1.25rem;
     margin-bottom: 0.5rem;
 }
 
 .oecd-item p {
     font-family: 'Inter', sans-serif;
-    font-size: 16px;
-    max-width: 600px;
+    font-size: 1rem;
+    max-width: 37.5rem;
     margin: 0 auto;
 }
 
@@ -432,7 +433,7 @@ p {
     display: inline-block;
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    font-size: 24px;
+    font-size: 1.5rem;
     padding: 0.5rem 1.5rem;
     margin: 4rem 0 1.5rem 0;
     background-color: rgba(225, 235, 221, 0.8);
@@ -444,7 +445,7 @@ p {
 
 .publication-item {
     font-family: 'Inter', sans-serif;
-    font-size: 15px;
+    font-size: 0.938rem;
     line-height: 1.7;
     margin-bottom: 1.5rem;
 }
@@ -454,7 +455,7 @@ p {
 }
 
 .bottom-bar {
-    height: 500px;
+    height: 25rem;
     background-image: url('../images/bottom.svg');
     background-size: cover;
     background-repeat: no-repeat;
@@ -481,7 +482,7 @@ p {
 
 /* 3. Control the size of the logos themselves */
 .logo-container img {
-    height: 100px; /* Adjust the height of your logos */
+    height: 6.25rem; /* Adjust the height of your logos */
     width: auto;  /* Allows width to scale proportionally */
 }
 
@@ -493,7 +494,7 @@ p {
 
 .funded-by-text {
     font-family: 'Inter', sans-serif;
-    font-size: 15px;
+    font-size: 0.938rem;
     line-height: 1.7;
     margin-bottom: 1.5rem;
 }
@@ -532,11 +533,11 @@ p {
     }
 
     body {
-        padding-top: 150px; /* Adjust for potentially taller navbar */
+        padding-top: 6.563rem; /* Adjust for potentially taller navbar */
     }
 
     .nav-link {
-        font-size: 14px;
+        font-size: 0.875rem;
     }
 
     .nav-divider {
@@ -544,8 +545,8 @@ p {
     }
 
     .custom-header {
-        font-size: 32px;
-        line-height: 40px;
+        font-size: clamp(1.5rem, 4vw, 2rem);
+        line-height: 2.5rem;
     }
 
     .card {
