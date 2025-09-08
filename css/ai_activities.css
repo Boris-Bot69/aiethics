@@ -214,6 +214,13 @@ h1 {
     margin-bottom: 2rem;
 }
 
+.text-with-button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
 .custom-text {
     font-family: 'Inter', sans-serif;
     font-weight: 400;
@@ -221,10 +228,21 @@ h1 {
     line-height: 150%;
     color: #828282;
     text-align: center;
-    max-width: 800px;
-    margin: 0 auto 3rem auto;
+    max-width: 87.5rem;
 }
-/* This is the main grid container */
+
+
+.custom-button {
+
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
+.image-spacer1 { height: 4rem; }
+
+
+
+    /* This is the main grid container */
 .cards-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);

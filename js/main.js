@@ -245,7 +245,7 @@ window.addEventListener('scroll', function() {
 
 function setupButtonHoverEffect() {
     // Find all buttons that contain an image with a data-hover-src attribute
-    const imageButtons = document.querySelectorAll('.btn img[data-hover-src]');
+    const imageButtons = document.querySelectorAll('.btn img[data-hover-src], .custom-button img[data-hover-src]');
 
     imageButtons.forEach(img => {
         const originalSrc = img.src;
