@@ -4,6 +4,11 @@
     box-sizing: border-box;
 }
 
+:root {
+    --border-color: #e0e0e0;
+    --accent-color: #F08080;
+}
+
 html {
     font-size: 16px;
     scroll-behavior: smooth;
@@ -125,6 +130,7 @@ h1 {
 /* 4. Main Content Layout */
 .main-content {
     width: 100%;
+    padding-top: 60px;
 }
 /* --- Main Layout & Sidebars --- */
 
@@ -194,145 +200,146 @@ h1 {
     margin: 0 auto;
 }
 
-.main-content-area {
-    padding: 2rem 1rem;
+.green-pic {
+    width: 100%;
+    padding-top: 2rem;
 }
 
-/* ============================================= */
-/* 3. PAGE-SPECIFIC STYLES (AI ACTIVITIES)       */
-/* ============================================= */
+.image-spacer { height: 4rem; }
 
-/* --- Page Header --- */
+
+
 .custom-header {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    font-size: 48px;
+    font-size: 36px;
     line-height: 60px;
     color: black;
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.text-with-button-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-.custom-text {
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 150%;
-    color: #828282;
-    text-align: center;
-    max-width: 87.5rem;
 }
 
 
-.custom-button {
-
-    background-repeat: no-repeat;
-    background-size: contain;
-}
-
-.image-spacer1 { height: 4rem; }
-
-
-
-    /* This is the main grid container */
-.cards-container {
+.activity-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 3rem;
+    /* Defines the two columns: left is 1 part, right is 3 parts */
+    grid-template-columns: 1fr 3fr;
+    width: 90%;
+    max-width: 1400px;
+    height: 90vh;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    overflow: hidden;
 }
 
-.activity-card-link {
-    text-decoration: none;
-    color: inherit;
-}
-
-.activity-item {
+/* --- Left Instructions Panel --- */
+.instructions-panel {
+    border-right: 1px dashed var(--border-color);
+    padding: 2rem;
     display: flex;
     flex-direction: column;
-    text-align: center;
-    gap: 1rem;
+    justify-content: space-between;
+}
+.instructions-panel h3 {
+    color: var(--accent-color);
+    font-size: 1.25rem;
+}
+.instructions-panel p {
+    color: #555;
+    line-height: 1.6;
+}
+.step-counter {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #777;
+    font-weight: 500;
+}
+.step-counter button {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 0.5rem 0.8rem;
 }
 
-.activity-image-box:hover {
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+/* --- Right Chat Panel --- */
+.chat-panel {
+    display: flex;
+    flex-direction: column;
+}
+.chat-messages {
+    flex-grow: 1;
+    padding: 2rem;
+    overflow-y: auto;
+}
+.message {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    max-width: 70%;
+}
+.message .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+.message .text {
+    background-color: #f1f1f1;
+    padding: 1rem;
+    border-radius: 10px;
+    line-height: 1.6;
 }
 
-.activity-image-box img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    margin: auto;
-    gap: 2rem;
+/* --- Message Input Bar --- */
+.chat-input-bar {
+    display: flex;
+    padding: 1rem;
+    background-color: var(--accent-color);
+    align-items: center;
 }
-
-/* Styles for the title and description */
-.activity-item h4 {
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
+.chat-input-bar input {
+    flex-grow: 1;
+    border: none;
+    background: none;
+    color: white;
     font-size: 1rem;
-    color: #333;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    padding: 0 1rem;
+    outline: none;
+}
+.chat-input-bar input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+.chat-input-bar button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+.upload-btn {
+    border: 2px solid white;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
 }
 
-.activity-item p {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.875rem;
-    line-height: 1.5;
-    color: #828282;
+.message.user-align {
+    justify-content: flex-end;
 }
 
-/* ============================================= */
-/* 4. RESPONSIVE DESIGN                          */
-/* ============================================= */
-
-@media (max-width: 1200px) {
-    .three-column-layout {
-        grid-template-columns: 1fr 4fr 1fr;
-    }
+.message.user-align .text {
+    background-color: #e1f5fe;
 }
 
-@media (max-width: 992px) {
-    .three-column-layout {
-        grid-template-columns: 1fr;
-    }
-
-    .sidebar {
-        display: none;
-    }
-
-    .cards-container {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 768px) {
-    .navbar {
-        flex-wrap: wrap;
-        height: auto;
-        padding: 1rem;
-    }
-
-    body {
-        padding-top: 150px;
-    }
-
-    .nav-divider {
-        display: none;
-    }
-
-    .custom-header {
-        font-size: 40px;
-    }
-
-    .cards-container {
-        grid-template-columns: 1fr;
-    }
+.message.user-align .avatar {
+    order: 2;
+    margin-right: 0;
+    margin-left: 1rem;
 }
