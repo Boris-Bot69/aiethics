@@ -60,7 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                const text = await response.text().catch(() => '');
+                throw new Error(`Request failed: ${response.status} ${response.statusText} ${text}`);
             }
 
             const data = await response.json();
@@ -74,10 +75,10 @@ document.addEventListener('DOMContentLoaded', () => {
             appendMessage(aiText, 'ai-message');
 
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Chat request error:', error);
             const thinkingMessage = chatMessages.querySelector('.is-thinking');
             if (thinkingMessage) {
-                thinkingMessage.querySelector('.text').textContent = 'Sorry, I ran into an error.';
+                thinkingMessage.querySelector('.text').textContent = 'Sorry, I ran into an error. Open console for details.';
                 thinkingMessage.classList.remove('is-thinking');
             }
         } finally {

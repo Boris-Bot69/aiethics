@@ -3,13 +3,18 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
 
 const app = express();
-const port = 63342;
+const port = process.env.PORT || 5000;
 
 app.use(express.json());
-app.use(express.static(__dirname + '/..'));
+// This correctly serves files from your project's root folder
+app.use(express.static(__dirname));
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+if (!process.env.GEMINI_API_KEY) {
+    console.warn("GEMINI_API_KEY is not set. The AI will not work until you provide it in a .env file.");
+}
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 app.post('/ask-gemini', async (req, res) => {
     try {
@@ -18,20 +23,19 @@ app.post('/ask-gemini', async (req, res) => {
             return res.status(400).json({ error: 'Message is required.' });
         }
 
-        // Send the user's message to the Gemini API
         const result = await model.generateContent(userMessage);
         const response = await result.response;
         const text = response.text();
 
-        // Send the AI's response back to the frontend
         res.json({ aiMessage: text });
 
     } catch (error) {
-        console.error(error);
+        console.error('Gemini API error:', error);
         res.status(500).json({ error: 'Failed to get response from AI.' });
     }
 });
 
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}/aiethics/homage.html`);
+    console.log(`Server running at http://localhost:${port}`);
+    console.log(`Try visiting http://localhost:${port}/homage.html`);
 });
