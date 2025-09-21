@@ -144,20 +144,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to update the display based on the current step
     function updateStepDisplay() {
         // Update the "STEP X OF 7" text
+        const progressBarFill = document.getElementById('progressBarFill');
+
         stepDisplay.textContent = `STEP ${currentStep} OF ${totalSteps}`;
-
-        // Show the correct content
         allSteps.forEach(step => {
-            if (parseInt(step.dataset.step) === currentStep) {
-                step.classList.add('is-active');
-            } else {
-                step.classList.remove('is-active');
-            }
+            step.classList.toggle('is-active', parseInt(step.dataset.step) === currentStep);
         });
-
-        // Disable/enable buttons at the start and end
         prevButton.disabled = (currentStep === 1);
         nextButton.disabled = (currentStep === totalSteps);
+
+
+        const progressPercent = ((currentStep) / (totalSteps)) * 100;
+
+        progressBarFill.style.width = `${progressPercent}%`;
     }
 
     // Event listeners for the buttons
