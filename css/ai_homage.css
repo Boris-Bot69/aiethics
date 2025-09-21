@@ -7,6 +7,7 @@
 :root {
     --border-color: #e0e0e0;
     --accent-color: #F08080;
+    --accent-color-learner: #FFA500;
 }
 
 html {
@@ -24,6 +25,10 @@ body {
     margin: 0;
     padding-top: 105px; /* Space for fixed navbar */
     overflow-x: hidden; /* Contains the sidebar "bleed" effect */
+}
+
+body.learner-mode {
+    --accent-color: var(--accent-color-learner);
 }
 
 img, picture, video, canvas, svg {
@@ -240,7 +245,7 @@ h1 {
     padding: 2rem;
     display: flex;
     flex-direction: column;
-    border: 2px dotted #F08080;
+    border: 2px dotted var(--accent-color);
 
 }
 
@@ -274,7 +279,7 @@ h1 {
     flex-direction: column;
     overflow: hidden;
     height: 100%;
-    border: 2px dotted #F08080;
+    border: 2px dotted var(--accent-color);
 
 }
 
@@ -466,9 +471,21 @@ h1 {
     margin-bottom: 1rem;
     background-color: #fff0e6;
     color: #d9534f;
+    opacity: 0.7; /* Make inactive buttons slightly faded */
+    border: 2px solid transparent;
 }
+
+.material-button.active-mode {
+    opacity: 1;
+    border: 2px solid #333; /* Adds a border to highlight it */
+    font-weight: 600;
+}
+
 .teacher-guide {
     background-color: #ffe6e6;
+}
+.learner-worksheet {
+    background-color: #fff0e6;
 }
 
 /* --- Right Column: Guiding Questions --- */
@@ -482,7 +499,7 @@ h1 {
     margin-bottom: 1.5rem;
 }
 .accordion-item {
-    border-top: 2px dotted #F08080;
+    border-top: 2px dotted var(--accent-color);
     padding: 1rem 0;
 }
 .accordion-item summary {

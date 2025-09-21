@@ -176,6 +176,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize the first step on page load
     updateStepDisplay();
+    setupModeSwitcher();
+
 
 
 });
+
+
+function setupModeSwitcher() {
+    const teacherBtn = document.getElementById('teacher-mode-btn');
+    const learnerBtn = document.getElementById('learner-mode-btn');
+    const body = document.body;
+
+    if (teacherBtn && learnerBtn) {
+        // Set the initial active state
+        teacherBtn.classList.add('active-mode');
+
+        teacherBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            body.classList.remove('learner-mode');
+
+            // Add/remove active classes
+            teacherBtn.classList.add('active-mode');
+            learnerBtn.classList.remove('active-mode');
+        });
+
+        learnerBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            body.classList.add('learner-mode');
+
+            // Add/remove active classes
+            learnerBtn.classList.add('active-mode');
+            teacherBtn.classList.remove('active-mode');
+        });
+    }
+}
