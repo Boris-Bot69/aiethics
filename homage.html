@@ -37,6 +37,8 @@
     <div class="three-column-layout">
         <aside class="sidebar sidebar-left">
             <img src="images/leftsidebar.svg" alt="Left sidebar ai activities" class="sidebar-image">
+            <img src="images/leftsidebar_down.svg" alt="Left sidebar down ai activities" class="sidebar-image">
+
         </aside>
 
         <section class="main-content-area">
@@ -47,15 +49,41 @@
 
             <h2>Activity Instructions</h2>
             <div class="activity-container">
+
                 <aside class="instructions-panel">
                     <div class="instructions-content">
-                        <h3>Look at artwork</h3>
-                        <p>Get familiar with the original artwork by an artist, Tania Sívertsen.</p>
+
+                        <div class="step-content is-active" data-step="1">
+                            <h3>1. Look at artwork</h3>
+                            <p>Get familiar with the original artwork by an artist, Tania Sívertsen.</p>
+                        </div>
+
+                        <div class="step-content" data-step="2">
+                            <h3>2. Describe the artwork to AI: </h3>
+                            <p>Try to replicate her artwork using text-to-image AI generative software, focusing on what descriptions most accurately represent the style.</p>
+                        </div>
+
+                        <div class="step-content" data-step="3">
+                            <h3>3. Print: Compare and contrast</h3>
+                        </div>
+                        <div class="step-content" data-step="4">
+                            <h3>4. Repeat Step 1 through 3 until you have three homages printed out.</h3>
+                        </div>
+                        <div class="step-content" data-step="5">
+                            <h3>5. Exhibit and share:</h3>
+                            <p>Display the original and your artworks side by side, then share them with the rest of the group, and explain how you achieved the result.</p>
+                        </div>
+                        <div class="step-content" data-step="6">
+                            <h3>6. Reflect:</h3>
+                            <p>Use the discussion prompts to guide the conversation about ethics focusing on the ethical principles of Human-centered values and fairness and Transparency and explainability.</p>
+                        </div>
+
                     </div>
+
                     <div class="step-counter">
-                        <button>&lt;</button>
-                        <span>STEP 1 OF 7</span>
-                        <button>&gt;</button>
+                        <button id="prev-step-btn">&lt;</button>
+                        <span id="step-display">STEP 1 OF 6</span>
+                        <button id="next-step-btn">&gt;</button>
                     </div>
                 </aside>
 
@@ -63,22 +91,26 @@
                     <div class="chat-messages">
                         <div class="message ai-message">
                             <div class="avatar"></div>
-                            <div class="text">Hello! Is there anything you want to share with me?</div>
+                            <div class="text">Please upload a image by clicking + button, and text to fusion it.</div>
                         </div>
                     </div>
-
                     <div class="chat-input-bar">
-                        <button class="upload-btn" aria-label="Upload image">+</button>
-                        <input type="text" placeholder="Send a message">
+                        <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                        <button class="upload-btn" aria-label="Upload image" onclick="document.getElementById('imageUpload').click()">+</button>
+                        <input type="text" id="chatInput" placeholder="Send a message">
                         <button class="send-btn" aria-label="Send message">&#9658;</button>
                     </div>
                 </main>
+
             </div>
+
 
 
         </section>
         <aside class="sidebar sidebar-right">
             <img src="images/rightsidebar.svg" alt="right sidebar ai activities" class="sidebar-image">
+            <img src="images/rightsidebar_down.svg" alt="right sidebar down ai activities" class="sidebar-image">
+
         </aside>
     </div>
 </main>
