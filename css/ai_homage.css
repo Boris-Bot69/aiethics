@@ -593,3 +593,57 @@ h1 {
     line-height: 1.5;
     color: #828282;
 }
+
+
+
+@media (max-width: 960px) {
+    .three-column-layout,
+    .grid-container-2col {
+        grid-template-columns: 1fr;
+    }
+
+    .navbar {
+        flex-wrap: wrap;
+        height: 4.563rem;
+
+        justify-content: center;
+    }
+
+    body {
+        padding-top: 3rem;
+        background-image: none;
+    }
+
+    .main-content {
+        padding-top: 0;
+    }
+    .content-image {
+        display: none;
+    }
+    .sidebar {
+        display: none;
+    }
+    .grid-container-2col .custom-header,
+    .grid-container-2col .custom-text {
+        text-align: center;
+    }
+    .nav-link {
+        font-size: 0.475rem;
+    }
+
+    .nav-divider {
+        display: none;
+    }
+
+    .card {
+        padding: 1.5rem;
+    }
+
+    .bottom-bar-image {
+        width: 100%;
+
+        height: auto;
+
+        display: block;
+    }
+}

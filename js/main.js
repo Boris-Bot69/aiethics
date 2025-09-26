@@ -12,6 +12,7 @@
     // Initialize the application
     function initializeApp() {
         setupNavigation();
+        setupMobileMenu();
         setupSmoothScrolling();
         setupButtonHoverEffect();
         setupAccessibility();
@@ -30,6 +31,24 @@
             } else {
                 link.classList.remove('active');
             }
+        });
+    }
+
+    function setupMobileMenu() {
+        const menuButton = document.querySelector('.menu-toggle');
+        const mobileMenu = document.querySelector('.mobile-nav-menu');
+
+        // If the button or menu doesn't exist, do nothing.
+        if (!menuButton || !mobileMenu) {
+            return;
+        }
+
+        menuButton.addEventListener('click', function() {
+            // Toggle the 'is-open' class on the menu to slide it in/out
+            mobileMenu.classList.toggle('is-open');
+
+            // Toggle a class on the body to prevent scrolling when the menu is open
+            document.body.classList.toggle('no-scroll');
         });
     }
 
@@ -68,8 +87,6 @@
 
     // Accessibility Enhancements
     function setupAccessibility() {
-        // Skip to main content link
-        createSkipLink();
 
         // Keyboard navigation
         setupKeyboardNavigation();
@@ -78,7 +95,6 @@
         setupFocusManagement();
     }
 
-    // Create skip to main content link
 
     // Focus management
     function setupFocusManagement() {
@@ -121,18 +137,12 @@
     // Handle resize events
     function handleResize() {
         const width = window.innerWidth;
-        const navbar = document.querySelector('.navbar');
-        const navLinks = document.querySelector('.nav-links');
+        const mobileMenu = document.querySelector('.mobile-nav-menu');
 
-        if (width <= 768) {
-            // Mobile behavior
-            if (navbar && navLinks) {
-                // Adjust navigation for mobile if needed
-                console.log('Mobile view activated');
-            }
-        } else {
-            // Desktop behavior
-            console.log('Desktop view activated');
+        // If we are on a desktop view AND the mobile menu is open, close it.
+        if (width > 960 && mobileMenu.classList.contains('is-open')) {
+            mobileMenu.classList.remove('is-open');
+            document.body.classList.remove('no-scroll');
         }
     }
 

@@ -336,3 +336,156 @@ h1 {
         grid-template-columns: 1fr;
     }
 }
+
+
+.hamburger-icon {
+    display: block;
+    position: relative;
+    width: 20px;
+    height: 14px;
+}
+.hamburger-icon::before,
+.hamburger-icon::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #FFFFFF;
+}
+.hamburger-icon::before {
+    top: 0;
+}
+.hamburger-icon::after {
+    bottom: 0;
+}
+
+.menu-toggle {
+    display: none; /* This correctly hides the button on desktop */
+    background-color: transparent;
+    border: 1px solid #FFFFFF;
+    border-radius: 4px;
+    color: #FFFFFF;
+    cursor: pointer;
+    font-family: sans-serif;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+.mobile-nav-menu {
+    position: fixed;
+    top: 4.5rem;
+    right: 0;
+    width: 80%;
+    max-width: 300px;
+
+    background-color: #78A564;
+
+    z-index: 999;
+
+    transform: translateX(100%);
+
+    transition: transform 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+    gap: 1.5rem;
+
+    border-bottom-left-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.mobile-nav-menu.is-open {
+    transform: translateX(0);
+}
+
+.mobile-nav-link {
+    color: #FFFFFF;
+    font-size: 1.125rem;
+    text-decoration: none;
+}
+
+body.no-scroll {
+    overflow: hidden;
+}
+
+
+
+@media (max-width: 960px) {
+    .navbar {
+        background-image: none;
+        background-color: #78A564;
+        justify-content: space-between;
+        padding: 0 1rem;
+        height: 4.5rem;
+        flex-wrap: nowrap;
+    }
+    .navbar .nav-link {
+        color: #ffffff;
+    }
+
+
+    .nav-links-right {
+        display: none;
+    }
+
+    .menu-toggle {
+        display: flex; /* This makes the button visible */
+    }
+
+    body {
+        padding-top: 4.5rem; /* Match the navbar height */
+        background-image: none;
+    }
+
+    .main-content {
+        padding-top: 0;
+    }
+
+    .sidebar {
+        display: none;
+    }
+
+    .three-column-layout,
+    .grid-container-2col {
+        grid-template-columns: 1fr;
+    }
+
+    .grid-container-2col .custom-header,
+    .grid-container-2col .custom-text {
+        text-align: center;
+    }
+
+    .content-image {
+        display: none;
+    }
+
+    /* Remove original styles that are no longer needed for mobile nav */
+    .nav-link {
+        font-size: initial; /* Reset font size change */
+    }
+
+    .nav-divider {
+        display: none;
+    }
+
+    .breadcrumb {
+        display: flex;
+        flex-wrap: wrap;
+        list-style: none;
+        margin: 0;
+        font-size: 1rem;
+        padding: 0 1 1 0rem;
+    }
+
+
+
+    .card {
+        padding: 1.5rem;
+    }
+
+
+}
