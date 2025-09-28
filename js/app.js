@@ -211,3 +211,37 @@ function setupModeSwitcher() {
         });
     }
 }
+
+const swiper = new Swiper('.swiper', {
+    // How many slides to show at once
+    slidesPerView: 1,
+
+    // Space between slides
+    spaceBetween: 30,
+
+    // Responsive breakpoints
+    breakpoints: {
+        // when window width is >= 640px
+        640: {
+            slidesPerView: 2,
+            spaceBetween: 20
+        },
+        // when window width is >= 960px (your mobile breakpoint)
+        960: {
+            slidesPerView: 3,
+            spaceBetween: 30
+        }
+    },
+
+    // Optional: Enable navigation arrows
+    navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+    },
+
+    // Optional: Enable pagination dots
+    pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+    },
+});

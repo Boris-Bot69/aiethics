@@ -595,7 +595,6 @@ h1 {
 }
 
 .menu-toggle {
-    display: none;
     background-color: transparent;
     border: 1px solid #FFFFFF;
     border-radius: 4px;
@@ -604,7 +603,7 @@ h1 {
     font-family: sans-serif;
     font-size: 1rem;
     padding: 0.5rem 1rem;
-    display: flex;
+    display: none;
     align-items: center;
     gap: 0.5rem;
     margin-left: auto;
@@ -661,6 +660,9 @@ h1 {
 body.no-scroll {
     overflow: hidden;
 }
+
+
+
 
 
 
