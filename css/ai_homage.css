@@ -546,11 +546,29 @@ h1 {
 
 
 /*Copied from ai activities*/
+* {
+    box-sizing: border-box;
+}
 
-.cards-container {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 3rem;
+.slider-wrapper {
+    position: relative;
+    width: 90%;
+    max-width: 1200px;
+    margin: 2rem auto;
+}
+
+.slider-container {
+    overflow: hidden;
+}
+
+.slider-track {
+    display: flex;
+    transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.slide-item {
+    flex: 0 0 calc(100% / 3);
+    padding: 0 1rem;
 }
 
 .activity-card-link {
@@ -563,6 +581,7 @@ h1 {
     flex-direction: column;
     text-align: center;
     gap: 1rem;
+    height: 100%; /* Ensures cards in a row are same height */
 }
 
 .activity-image-box:hover {
@@ -571,13 +590,10 @@ h1 {
 
 .activity-image-box img {
     width: 100%;
-    height: 100%;
+    height: auto;
     display: block;
-    margin: auto;
-    gap: 2rem;
 }
 
-/* Styles for the title and description */
 .activity-item h4 {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
@@ -585,6 +601,7 @@ h1 {
     color: #333;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    margin: 0;
 }
 
 .activity-item p {
@@ -592,6 +609,44 @@ h1 {
     font-size: 0.875rem;
     line-height: 1.5;
     color: #828282;
+    margin: 0;
+}
+
+/* Next & previous buttons */
+.prev, .next {
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: auto;
+    padding: 16px;
+    color: #333;
+    font-weight: bold;
+    font-size: 18px;
+    transition: 0.3s ease;
+    border-radius: 50%;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    z-index: 10;
+}
+
+.prev {
+    left: -20px;
+}
+
+.next {
+    right: -20px;
+}
+
+.prev:hover, .next:hover {
+    background-color: white;
+}
+
+/* Style for disabled buttons at the start/end */
+.prev:disabled, .next:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
 }
 
 .menu-toggle {
