@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Ethics Activities - TUM</title>
+    <link rel="stylesheet" href="../css/ai_homage.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar">
+    <a href="../index.html" class="nav-link active">Co-Creating AI Ethics</a>
+
+    <div class="nav-links-right">
+        <a href="../ai_ethics_activities.html" class="nav-link">AI Ethics Activities</a>
+        <span class="nav-divider"></span>
+        <a href="../ai_ethics_scenarios.html" class="nav-link">AI Ethics Scenarios</a>
+        <span class="nav-divider"></span>
+        <a href="../oecd_principles.html" class="nav-link">Recognizing AI Ethics</a>
+        <span class="nav-divider"></span>
+        <a href="../research.html" class="nav-link">Research</a>
+        <img src="../images/tum.svg" alt="tum logo">
+
+    </div>
+    <button class="menu-toggle" aria-label="Open main menu">
+        <span class="hamburger-icon"></span>
+        Menu
+    </button>
+</nav>
+<div class="mobile-nav-menu">
+    <a href="../ai_ethics_activities.html" class="mobile-nav-link">AI Ethics Activities</a>
+    <a href="../ai_ethics_scenarios.html" class="mobile-nav-link">AI Ethics Scenarios</a>
+    <a href="../oecd_principles.html" class="mobile-nav-link">Recognizing AI Ethics</a>
+    <a href="../research.html" class="mobile-nav-link">Research</a>
+</div>
+
+<nav class="breadcrumb-nav" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="../index.html">Co-Creating AI ethics</a></li>
+        <li class="breadcrumb-item"><a href="../ai_ethics_activities.html">AI Ethics Activities</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Prototyping and pitching AI</li>
+    </ol>
+</nav>
+
+<main class="main-content">
+
+    <div class="three-column-layout">
+        <aside class="sidebar sidebar-left">
+            <img src="../images/leftsidebar.svg" alt="Left sidebar ai activities" class="sidebar-image">
+            <img src="../images/leftsidebar_down.svg" alt="Left sidebar down ai activities" class="sidebar-image">
+
+        </aside>
+
+        <section class="main-content-area">
+            <h1 class="custom-header">Prototyping and pitching AI</h1>
+            <img src="../images/activities/green_pic_homage.svg" alt="green pic activity" class="green-pic">
+            <div class="mini-image-spacer"></div>
+            <p>In this activity, learners will design an AI product to aid their school reach Sustainable Development Goals, and use text-generative AI to create a pitch, and image-genertive AI to illustrate it’s usecase. The product creators will take turns sharing their work to their peers, who will roleplay as stakeholders to evaluate the ethical principles in play with the products.
+            </p>
+            <div class="image-spacer"></div>
+
+            <h2>Activity Instructions</h2>
+            <div class="mini-image-spacer"></div>
+
+            <a href="#" id="teacher-mode-btn" class="material-button teacher-guide">Teacher</a>
+            <a href="#" id="learner-mode-btn" class="material-button learner-worksheet">Learner</a>
+
+            <div class="mini-image-spacer"></div>
+
+            <div class="activity-container">
+
+
+                <aside class="instructions-panel">
+
+                    <div class="instructions-content">
+
+                        <div class="step-content is-active" data-step="1">
+                            <h3>1. Design:</h3>
+                            <p>Design an AI product that will help your school reach Sustainable Development Goals. Consider what ethical features are important in your AI product, based on the OECD principles.</p>
+                        </div>
+
+                        <div class="step-content" data-step="2">
+                            <h3>2. Illustrate and pitch:</h3>
+                            <p>Use image-generative AI to illustrate your AI product, and text-generative AI to create a pitch that you will present to the rest of the groups.</p>
+                        </div>
+
+                        <div class="step-content" data-step="3">
+                            <h3>3. Share:</h3>
+                            <p>Depending on number of groups, either two groups share to each other or groups share one by one to the whole group.</p>
+                        </div>
+                        <div class="step-content" data-step="4">
+                            <h3>4. Feedback:</h3>
+                            <p>Swap designs with another group and comment on their product from four selected perspectives: learners, teachers, parents, principal, school staff, investor (pick 4) and in relation to OECD AI principles. What ethical issues are at stake?</p>
+                        </div>
+                        <div class="step-content" data-step="5">
+                            <h3>5. Iterate:</h3>
+                            <p>Redesign based on comments with a focus on AI Ethics.</p>
+                        </div>
+                        <div class="step-content" data-step="6">
+                            <h3>6. Share:</h3>
+                            <p>Small groups share with the whole group with a focus: (1) What did you design with AI ethics features in mind (say it again), (2) what changed based on the feedback from your peers (focus on AI Ethics), (3) what would you do next with your AI product?, and (4), what did you learn?</p>
+                        </div>
+                        <div class="step-content" data-step="7">
+                            <h3>7. Reflect:</h3>
+                            <p>Use the discussion prompts to guide the conversation about ethics, focusing on the ethical principles of ____ and _____.</p>
+                        </div>
+                    </div>
+                    <div class="step-counter">
+                        <div class="progress-bar-container">
+                            <div id="progressBarFill" class="progress-bar-fill"></div>
+                        </div>
+                        <div class="step-controls">
+                            <button id="prev-step-btn">&lt;</button>
+                            <span id="step-display">STEP 1 OF 7</span>
+                            <button id="next-step-btn">&gt;</button>
+                        </div>
+                    </div>
+                </aside>
+
+                <main class="chat-panel">
+                    <div class="chat-messages">
+                        <div class="message ai-message">
+                            <div class="avatar"></div>
+                            <div class="text">Please upload a image by clicking + button, and text to fusion it.</div>
+                        </div>
+                    </div>
+                    <div class="chat-input-bar">
+                        <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                        <button class="upload-btn" aria-label="Upload image" onclick="document.getElementById('imageUpload').click()">+</button>
+                        <input type="text" id="chatInput" placeholder="Send a message">
+                        <button class="send-btn" aria-label="Send message">&#9658;</button>
+                    </div>
+                </main>
+
+            </div>
+
+            <section class="post-activity-section">
+
+                <div class="materials-list">
+                    <h3>Materials</h3>
+                    <ul>
+                        <li>Comic/Mange panel examples</li>
+                        <li>Image-generative AI</li>
+                        <li>Text-generative AI</li>
+                        <li>A4 frame (1 per group)</li>
+                        <li>Printer</li>
+                    </ul>
+                </div>
+
+                <div class="guiding-questions">
+                    <h3>Guiding Questions for AI Ethics Literacy</h3>
+                    <p>Based on OECD AI principles.</p>
+
+
+                </div>
+
+            </section>
+
+            <h2>Explorer other activities</h2>
+            <div class="image-spacer"></div>
+
+            <div class="slider-wrapper">
+                <div class="slider-container">
+                    <div class="slider-track">
+                        <div class="slide-item">
+                            <a href="homage.html" class="activity-card-link">
+                                <div class="activity-item">
+                                    <h4>HOMAGE TO A LOCAL ARTIST</h4>
+                                    <div class="activity-image-box">
+                                        <img src="../images/activities/activity_1.svg" alt="AI-Generative Arts App to Create an Homage to an Artist">
+                                    </div>
+                                    <p>Replicate a local artist’s drawing through several rounds of text-to-image AI prompting.</p>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="slide-item">
+                            <div class="activity-item">
+                                <h4>MAGAZINE CUT-OUTS</h4>
+                                <div class="activity-image-box">
+                                    <img src="../images/activities/activity_2.svg" alt="Co-creating Art with AI through Expanding Frames">
+                                </div>
+                                <div class="activity-info">
+                                    <p>Draw a picture. Scan and copy it. Change the scan with AI. Change the copy with magazine cut-outs. Repeat several times.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slide-item">
+                            <div class="activity-item">
+                                <h4>DRAWING PLUS TEXTURES</h4>
+                                <div class="activity-image-box">
+                                    <img src="../images/activities/activity_3.svg" alt="Personal Drawing Mixed with Materials">
+                                </div>
+                                <div class="activity-info">
+                                    <p>Draw a picture and lay a tangible texture. Merge both using AI. Create another texture. Merge it with your AI-generated art.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slide-item">
+                            <div class="activity-item">
+                                <h4>EXPANDED FRAMES</h4>
+                                <div class="activity-image-box">
+                                    <img src="../images/activities/activity_4.svg" alt="AI-Generative Arts App to Create an Homage to an Artist">
+                                </div>
+                                <div class="activity-info">
+                                    <p>Replicate a local artist’s drawing through several rounds of text-to-image AI prompting. Print the designs and prompts.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slide-item">
+                            <div class="activity-item">
+                                <h4>AI SUPER HERO</h4>
+                                <div class="activity-image-box">
+                                    <img src="../images/activities/activity_5.svg" alt="Co-creating Art with AI through Expanding Frames">
+                                </div>
+                                <div class="activity-info">
+                                    <p>Develop an AI super hero and create stories by using image-generative AI and art materials. Print it in a comic book style.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slide-item">
+                            <div class="activity-item">
+                                <h4>PROTOTYPING AND PITCHING AI</h4>
+                                <div class="activity-image-box">
+                                    <img src="../images/activities/activity_6.svg" alt="Personal Drawing Mixed with Materials">
+                                </div>
+                                <div class="activity-info">
+                                    <p>Design an AI product to aid their school reach Sustainable Development Goals, and use AI to create a pitch and illustrate it’s use case.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slide-item">
+                            <div class="activity-item">
+                                <h4>THE TIME CAPSULE</h4>
+                                <div class="activity-image-box">
+                                    <img src="../images/activities/activity_7.svg" alt="AI-Generative Arts App to Create an Homage to an Artist">
+                                </div>
+                                <div class="activity-info">
+                                    <p>Use image-generative AI and materials to craft a message explaining AI and its ethical considerations to a future civilization.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slide-item">
+                            <div class="activity-item">
+                                <h4>TRAIN AI WITH CAREER CHARACTERS</h4>
+                                <div class="activity-image-box">
+                                    <img src="../images/activities/activity_8.svg" alt="Co-creating Art with AI through Expanding Frames">
+                                </div>
+                                <div class="activity-info">
+                                    <p>Create different career characters with art materials and train personal reorganization AI with Google Teachable Machine.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="slide-item">
+                            <div class="activity-item">
+                                <h4>CRAFT PLAYDOUGH STORYBOARDS</h4>
+                                <div class="activity-image-box">
+                                    <img src="../images/activities/activity_9.svg" alt="Personal Drawing Mixed with Materials">
+                                </div>
+                                <div class="activity-info">
+                                    <p>Craft and iterate physical settings and storyboard of an adventure story with image-generative AI and playdough.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="prev">&#10094;</button>
+                <button class="next">&#10095;</button>
+            </div>
+            <br>
+
+
+
+        </section>
+        <aside class="sidebar sidebar-right">
+            <img src="../images/rightsidebar.svg" alt="right sidebar ai activities" class="sidebar-image">
+            <img src="../images/rightsidebar_down.svg" alt="right sidebar down ai activities" class="sidebar-image">
+
+        </aside>
+    </div>
+</main>
+
+<script src="../js/main.js"></script>
+<script src="../js/app.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const track = document.querySelector('.slider-track');
+        const items = Array.from(track.children);
+        const nextButton = document.querySelector('.next');
+        const prevButton = document.querySelector('.prev');
+
+        const slidesVisible = 3;
+        const totalItems = items.length;
+        let currentIndex = slidesVisible;
+
+        for (let i = 0; i < slidesVisible; i++) {
+            track.appendChild(items[i].cloneNode(true));
+        }
+        for (let i = totalItems - 1; i >= totalItems - slidesVisible; i--) {
+            track.prepend(items[i].cloneNode(true));
+        }
+
+        const updateSliderPosition = () => {
+            const itemWidth = items[0].getBoundingClientRect().width;
+            track.style.transform = `translateX(-${itemWidth * currentIndex}px)`;
+        };
+
+        track.style.transition = 'none';
+        updateSliderPosition();
+        setTimeout(() => {
+            track.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)';
+        });
+
+        nextButton.addEventListener('click', () => {
+            currentIndex++;
+            updateSliderPosition();
+        });
+
+        prevButton.addEventListener('click', () => {
+            currentIndex--;
+            updateSliderPosition();
+        });
+
+        track.addEventListener('transitionend', () => {
+            if (currentIndex >= totalItems + slidesVisible) {
+                track.style.transition = 'none';
+                currentIndex = slidesVisible;
+                updateSliderPosition();
+                setTimeout(() => {
+                    track.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)';
+                });
+            }
+
+            if (currentIndex <= slidesVisible - 1) {
+                track.style.transition = 'none';
+                currentIndex = totalItems + slidesVisible - 1;
+                updateSliderPosition();
+                setTimeout(() => {
+                    track.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)';
+                });
+            }
+        });
+    });
+</script>
+
+
+</body>
+</html>
