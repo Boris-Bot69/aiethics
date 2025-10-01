@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Ethics Activities - TUM</title>
+    <link rel="stylesheet" href="../../css/ai_homage.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar">
+    <a href="../../index.html" class="nav-link active">Co-Creating AI Ethics</a>
+
+    <div class="nav-links-right">
+        <a href="../../ai_ethics_activities.html" class="nav-link">AI Ethics Activities</a>
+        <span class="nav-divider"></span>
+        <a href="../../ai_ethics_scenarios.html" class="nav-link">AI Ethics Scenarios</a>
+        <span class="nav-divider"></span>
+        <a href="../../oecd_principles.html" class="nav-link">Recognizing AI Ethics</a>
+        <span class="nav-divider"></span>
+        <a href="../../research.html" class="nav-link">Research</a>
+        <img src="../../images/tum.svg" alt="tum logo">
+
+    </div>
+    <button class="menu-toggle" aria-label="Open main menu">
+        <span class="hamburger-icon"></span>
+        Menu
+    </button>
+</nav>
+<div class="mobile-nav-menu">
+    <a href="../../ai_ethics_activities.html" class="mobile-nav-link">AI Ethics Activities</a>
+    <a href="../../ai_ethics_scenarios.html" class="mobile-nav-link">AI Ethics Scenarios</a>
+    <a href="../../oecd_principles.html" class="mobile-nav-link">Recognizing AI Ethics</a>
+    <a href="../../research.html" class="mobile-nav-link">Research</a>
+</div>
+
+<nav class="breadcrumb-nav" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="../../index.html">Co-Creating AI ethics</a></li>
+        <li class="breadcrumb-item"><a href="../../ai_ethics_activities.html">AI Ethics Activities</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Train AI Career Characters</li>
+    </ol>
+</nav>
+
+<main class="main-content">
+
+    <div class="three-column-layout">
+        <aside class="sidebar sidebar-left">
+            <img src="../../images/leftsidebar.svg" alt="Left sidebar ai activities" class="sidebar-image">
+            <img src="../../images/leftsidebar_down.svg" alt="Left sidebar down ai activities" class="sidebar-image">
+
+        </aside>
+
+        <section class="main-content-area">
+            <h1 class="custom-header">Train AI Career Characters</h1>
+
+            <h2>Webpage still under construction!</h2>
+
+
+        </section>
+        <aside class="sidebar sidebar-right">
+            <img src="../../images/rightsidebar.svg" alt="right sidebar ai activities" class="sidebar-image">
+            <img src="../../images/rightsidebar_down.svg" alt="right sidebar down ai activities" class="sidebar-image">
+
+        </aside>
+    </div>
+</main>
+
+<script src="../../js/main.js"></script>
+<script src="../../js/app.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const track = document.querySelector('.slider-track');
+        const items = Array.from(track.children);
+        const nextButton = document.querySelector('.next');
+        const prevButton = document.querySelector('.prev');
+
+        const slidesVisible = 3;
+        const totalItems = items.length;
+        let currentIndex = slidesVisible;
+
+        for (let i = 0; i < slidesVisible; i++) {
+            track.appendChild(items[i].cloneNode(true));
+        }
+        for (let i = totalItems - 1; i >= totalItems - slidesVisible; i--) {
+            track.prepend(items[i].cloneNode(true));
+        }
+
+        const updateSliderPosition = () => {
+            const itemWidth = items[0].getBoundingClientRect().width;
+            track.style.transform = `translateX(-${itemWidth * currentIndex}px)`;
+        };
+
+        track.style.transition = 'none';
+        updateSliderPosition();
+        setTimeout(() => {
+            track.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)';
+        });
+
+        nextButton.addEventListener('click', () => {
+            currentIndex++;
+            updateSliderPosition();
+        });
+
+        prevButton.addEventListener('click', () => {
+            currentIndex--;
+            updateSliderPosition();
+        });
+
+        track.addEventListener('transitionend', () => {
+            if (currentIndex >= totalItems + slidesVisible) {
+                track.style.transition = 'none';
+                currentIndex = slidesVisible;
+                updateSliderPosition();
+                setTimeout(() => {
+                    track.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)';
+                });
+            }
+
+            if (currentIndex <= slidesVisible - 1) {
+                track.style.transition = 'none';
+                currentIndex = totalItems + slidesVisible - 1;
+                updateSliderPosition();
+                setTimeout(() => {
+                    track.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)';
+                });
+            }
+        });
+    });
+</script>
+
+
+</body>
+</html>
