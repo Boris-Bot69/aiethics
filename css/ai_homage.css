@@ -718,6 +718,185 @@ body.no-scroll {
 
 
 
+/**AI scenarios*/
+
+.two-column-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    margin-top: 6rem; /* Adds space below your h1 title */
+
+    background-color: #F3F9F0; /* A very light gray background */
+    border: 1px solid #e0e0e0; /* A thin, light gray border */
+    padding: 4rem;
+}
+
+.text-content {
+    padding: 2rem; /* Adds space inside the box, pushing text away from the edges */
+    border-radius: 8px; /* Matches the rounded corners of your image */
+
+    max-width: 80%;          /* Makes the box narrower than its column */
+    margin: 0 auto;          /* Centers the box itself within the column */
+    text-align: center;
+}
+
+/* You can keep your existing rule for the paragraphs inside */
+.text-content p {
+    margin-top: 1rem;
+    line-height: 1.7;
+    color: #444;
+}
+
+/* It's also good to remove the margin from the first paragraph */
+.text-content p:first-child {
+    margin-top: 0;
+}
+
+/* Styling for the image column */
+
+.image-content {
+    display: flex;
+    justify-content: center; /* Horizontally centers the image */
+    align-items: center;     /* Vertically centers the image */
+}
+
+.image-content img {
+    width: 50%; /* Makes the image fill its column */
+    height: auto; /* Maintains aspect ratio */
+    display: block; /* Removes extra space below the image */
+    border-radius: 8px; /* Optional: adds rounded corners */
+}
+
+/* ============================================= */
+/* TESTIMONIAL QUOTE                             */
+/* ============================================= */
+
+.testimonial-wrapper {
+    /* Provides some space around the component */
+    padding: 2rem 1rem;
+}
+
+.testimonial-quote {
+    /* Establishes a positioning context for the decorative elements */
+    position: relative;
+
+    /* Centers the quote block on the page */
+    max-width: 800px;
+    margin: 4rem auto;
+
+    /* Creates vertical space for the lines and quotes */
+    padding: 3rem 0;
+}
+
+/* --- THE DECORATIVE LINES AND QUOTES --- */
+.testimonial-quote::before {
+    content: '“'; /* The opening quote mark */
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    /* Styling the quote mark */
+    font-size: 6rem;
+    font-weight: 800;
+    color: rgba(0, 0, 0, 0.1);
+
+    /* The top horizontal line */
+    border-top: 1px solid rgba(0, 0, 0, 0.15);
+    width: 100%;
+
+    /* Vertically aligns the line with the quote mark */
+    padding-top: 1.5rem;
+}
+
+.testimonial-quote::after {
+    content: '”'; /* The closing quote mark */
+    position: absolute;
+    bottom: 0;
+    right: 0;
+
+    /* Styling the quote mark */
+    font-size: 6rem;
+    font-weight: 800;
+    color: rgba(0, 0, 0, 0.1);
+    line-height: 0; /* Helps with precise positioning */
+
+    /* The bottom horizontal line */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+    width: 100%;
+
+    /* Pushes the quote mark down into position */
+    padding-bottom: 2.5rem;
+}
+
+
+/* --- THE QUOTE CONTENT --- */
+.quote-text {
+    /* Center the text and add some breathing room */
+    text-align: center;
+    padding: 0 2rem;
+
+    /* Text styling */
+    font-size: 1.25rem;
+    line-height: 1.8;
+    color: #333;
+    font-style: italic;
+}
+
+/* --- THE ATTRIBUTION --- */
+.quote-attribution {
+    /* Positioned relative to the main blockquote container */
+    position: absolute;
+    top: 1.5rem;  /* Aligns with the top line */
+    right: 0;
+
+    /* Text styling */
+    font-size: 0.9rem;
+    color: #555;
+    font-style: normal;
+}
+
+.quote-attribution .attribution-title {
+    color: #888; /* Makes the title slightly lighter */
+}
+
+
+/* --- RESPONSIVE STYLES FOR MOBILE --- */
+@media (max-width: 768px) {
+    .testimonial-quote {
+        margin: 2rem auto;
+        padding: 2rem 0;
+    }
+
+    .quote-text {
+        font-size: 1.1rem;
+        padding: 0 1rem;
+    }
+
+    /* Move attribution below the quote on mobile */
+    .quote-attribution {
+        position: static; /* Removes absolute positioning */
+        text-align: center;
+        margin-top: 1.5rem;
+    }
+
+    /* Simplify decorative elements on smaller screens */
+    .testimonial-quote::before,
+    .testimonial-quote::after {
+        border: none; /* Removes the long lines */
+        width: auto;
+        padding: 0;
+    }
+
+    .testimonial-quote::before {
+        top: -1rem;
+        left: 0;
+    }
+    .testimonial-quote::after {
+        bottom: -2rem;
+        right: 0;
+    }
+}
+
 
 
 
