@@ -1,114 +1,88 @@
-// server.js (CORRECTED)
+// server.js (UPDATED FOR STABILITY AI)
 
 const express = require('express');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { VertexAI } = require("@google-cloud/vertexai");
+const fetch = require('node-fetch'); // Make sure to install: npm install node-fetch
+const FormData = require('form-data');
+const { Readable } = require('stream');
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(__dirname));
+app.use(express.static(__dirname)); // Serves your HTML, CSS, JS files
 
-// --- Vertex AI Configuration ---
-const PROJECT_ID = "gen-lang-client-0891654264"; // Your Project ID
-const LOCATION = "europe-west1";
-const vertex_ai = new VertexAI({ project: PROJECT_ID, location: LOCATION });
-
-// --- Gemini Configuration ---
-if (!process.env.GEMINI_API_KEY) {
-    console.warn("GEMINI_API_KEY is not set.");
-}
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-const multiModalModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-// --- Helper function (no changes) ---
-function fileToGenerativePart(base64String, mimeType) {
-    return {
-        inlineData: {
-            data: base64String.split(',')[1],
-            mimeType
-        },
-    };
+// Helper function to convert base64 to a buffer
+function base64ToBuffer(base64) {
+    return Buffer.from(base64.split(',')[1], 'base64');
 }
 
-async function generateImageWithImagen(prompt) {
-    try {
-        // Get the generative model for image generation
-        // Note the different model name for Imagen
-        const generativeModel = vertex_ai.getGenerativeModel({
-            model: 'imagegeneration',
-        });
-
-        // The correct method is also generateContent for image models in this library
-        const result = await generativeModel.generateContent({
-            contents: [{
-                role: 'user',
-                parts: [{ text: `A high-quality, artistic photo of: ${prompt}` }]
-            }],
-            generation_config: {
-                "sampleCount": 1 // Specify how many images to generate
-            }
-        });
-
-        // Extract the base64 image data from the response
-        const base64Image = result.response.candidates[0].content.parts[0].fileData.fileUri.split('base64,')[1];
-        return `data:image/png;base64,${base64Image}`;
-
-    } catch (error) {
-        console.error("Imagen API Error:", error);
-        return null;
-    }
-}
-
-// --- Main API Endpoint (FIXED) ---
-app.post('/ask-gemini', async (req, res) => {
+app.post('/generate-image', async (req, res) => {
     try {
         const userMessage = req.body.message;
         const imageBase64 = req.body.image;
 
+        console.log("Received request:");
+        console.log("User message:", userMessage);
+        console.log("Image Base64 length:", imageBase64 ? imageBase64.length : 'N/A');
+
         if (!userMessage || !imageBase64) {
+            console.error("Missing user message or image.");
             return res.status(400).json({ error: 'Both a message and an image are required.' });
         }
 
-        // 1. Prepare the multimodal prompt for Gemini
-        const mimeTypeMatch = imageBase64.match(/^data:(image\/(?:png|jpeg|webp));base64,/);
-        if (!mimeTypeMatch) {
-            return res.status(400).json({ error: 'Unsupported image format.' });
+        const formData = new FormData();
+        const imageBuffer = base64ToBuffer(imageBase64);
+        formData.append('init_image', imageBuffer, { filename: 'init_image.png', contentType: 'image/png' });
+        formData.append('text_prompts[0][text]', userMessage);
+        formData.append('text_prompts[0][weight]', 1);
+        formData.append('style_preset', 'photographic');
+
+        console.log("Sending request to Stability AI...");
+
+        const response = await fetch(
+            "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/image-to-image", // <-- THE FIX IS HERE
+            {
+                method: 'POST',
+                headers: {
+                    ...formData.getHeaders(),
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${process.env.STABILITY_API_KEY}`, // Check this key!
+                },
+                body: formData,
+            }
+        );
+
+        console.log("Stability AI Response Status:", response.status); // <--- VERY IMPORTANT
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Stability AI API error: ${response.status} - ${errorText}`); // <--- MORE DETAIL HERE
+            throw new Error(`Stability AI API error: ${response.status} ${errorText}`);
         }
-        const imagePart = fileToGenerativePart(imageBase64, mimeTypeMatch[1]);
 
-        // --- FIX IS HERE ---
-        // Every part of the prompt must be an object.
-        const promptParts = [
-            { text: "Based on the style described in the text, transform the uploaded image. Create a new, single-sentence, visually descriptive prompt for an AI image generator that fuses the image and the text. For example, if the image is a person and the text is 'make it manga style', the prompt could be 'A manga-style portrait of the person in the image'." },
-            imagePart,
-            { text: `Text prompt: "${userMessage}"` }
-        ];
+        const data = await response.json();
+        console.log("Stability AI Data Received:", data); // See what API sends back
 
-        // 2. Ask Gemini to create a new text prompt
-        // --- AND THE FIX IS HERE ---
-        // Pass the entire array of parts to the model.
-        const result = await multiModalModel.generateContent(promptParts);
-        const response = await result.response;
-        const newPromptFromGemini = response.text();
+        const generatedImageBase64 = data.artifacts[0].base64;
+        const generatedImageDataUrl = `data:image/png;base64,${generatedImageBase64}`;
 
-        // 3. Generate a new image using Imagen
-        console.log(`Generating new image with Gemini's prompt: ${newPromptFromGemini}`);
-        const generatedImageData = await generateImageWithImagen(newPromptFromGemini);
+        console.log("Successfully generated image with Stability AI.");
 
-        // 4. Send both back to the frontend
         res.json({
-            aiMessage: newPromptFromGemini,
-            generatedImage: generatedImageData
+            aiMessage: `Here is the generated image based on your prompt: "${userMessage}"`,
+            generatedImage: generatedImageDataUrl
         });
 
     } catch (error) {
-        console.error('API error:', error);
-        res.status(500).json({ error: 'Failed to get response from AI.' });
+        console.error('API error in try/catch block:', error); // Catches network issues etc.
+        res.status(500).json({ error: 'Failed to generate the image.' });
     }
 });
+
+app.get('/', (req, res) => {
+    res.redirect('/html/ai_activities_webpages/homage.html');
+});
+
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);

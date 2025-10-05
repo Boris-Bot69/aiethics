@@ -168,138 +168,211 @@ document.addEventListener('DOMContentLoaded', () => {
     //======================================================================
     // 5. AI CHAT PANEL FUNCTIONALITY
     //======================================================================
-    const chatPanel = document.querySelector('.chat-panel');
-    if (chatPanel) {
-        const chatMessages = chatPanel.querySelector('.chat-messages');
-        const inputField = document.getElementById('chatInput');
-        const sendButton = chatPanel.querySelector('.send-btn');
-        const imageUploadInput = document.getElementById('imageUpload');
-        let uploadedImageBase64 = null;
+    // app.js (UPDATED WITH NEW FEATURES)
 
-        imageUploadInput.addEventListener('change', handleImageUpload);
-        sendButton.addEventListener('click', sendMessage);
-        inputField.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        });
+        // This part of your file (slider, mobile menu, etc.) remains the same.
+        // ...
+        // ... paste all your existing code for slider, mobile menu, steps, etc. here ...
+        // ...
 
-        function sendMessage() {
-            const messageText = inputField.value.trim();
-            const imageToSend = uploadedImageBase64;
+        //======================================================================
+        // 5. AI CHAT PANEL FUNCTIONALITY (UPDATED SECTION)
+        //======================================================================
+        const chatPanel = document.querySelector('.chat-panel');
+        if (chatPanel) {
+            const chatMessages = chatPanel.querySelector('.chat-messages');
+            const inputField = document.getElementById('chatInput');
+            const sendButton = chatPanel.querySelector('.send-btn');
+            const imageUploadInput = document.getElementById('imageUpload');
+            let uploadedImageBase64 = null;
 
-            if (messageText === '' && !imageToSend) {
-                return;
-            }
+            imageUploadInput.addEventListener('change', handleImageUpload);
+            sendButton.addEventListener('click', sendMessage);
+            inputField.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    sendMessage();
+                }
+            });
 
-            appendMessage(messageText, 'user-message', imageToSend);
+            // NEW: Function to check image validation
+            function validateImage(file) {
+                return new Promise((resolve, reject) => {
+                    // Check 1: File Format (jpeg or png)
+                    const allowedFormats = ['image/jpeg', 'image/png'];
+                    if (!allowedFormats.includes(file.type)) {
+                        reject("Invalid format. Please upload a JPEG or PNG image.");
+                        return;
+                    }
 
-            // Clear inputs after sending
-            inputField.value = '';
-            uploadedImageBase64 = null;
-            if (imageUploadInput) imageUploadInput.value = '';
-
-            getAIResponse(messageText, imageToSend);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                uploadedImageBase64 = e.target.result;
-                appendMessage('', 'user-message', uploadedImageBase64, 'Image uploaded. Add a prompt or send.');
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function appendMessage(text, className, imageBase64 = null, placeholderText = null) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${className}`;
-
-            if (className === 'ai-message' && placeholderText) {
-                messageDiv.classList.add('is-thinking');
-            }
-
-            const avatar = document.createElement('div');
-            avatar.className = 'avatar';
-
-            const textBubble = document.createElement('div');
-            textBubble.className = 'text';
-
-            let contentAdded = false;
-
-            if (imageBase64) {
-                const imgElement = document.createElement('img');
-                imgElement.src = imageBase64;
-                imgElement.classList.add('chat-image-preview');
-                textBubble.appendChild(imgElement);
-                contentAdded = true;
-            }
-
-            if (text) {
-                const textNode = document.createTextNode(text);
-                textBubble.appendChild(textNode);
-                contentAdded = true;
-            } else if (placeholderText && !contentAdded) {
-                textBubble.textContent = placeholderText;
-            }
-
-
-            if (className === 'user-message') {
-                messageDiv.classList.add('user-align');
-                // The structure is avatar then text bubble
-                messageDiv.appendChild(textBubble);
-                messageDiv.appendChild(avatar);
-            } else {
-                // The structure is text bubble then avatar
-                messageDiv.appendChild(avatar);
-                messageDiv.appendChild(textBubble);
-            }
-
-            chatMessages.appendChild(messageDiv);
-        }
-
-        async function getAIResponse(userMessage, imageBase64) {
-            appendMessage(null, 'ai-message', null, '...');
-
-            try {
-                const payload = {
-                    message: userMessage,
-                    image: imageBase64
-                };
-
-                const response = await fetch('/ask-gemini', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
+                    // Check 2: Dimensions
+                    const allowedDimensions = [
+                        "1024x1024", "1152x896", "1216x832", "1344x768", "1536x640",
+                        "640x1536", "768x1344", "832x1216", "896x1152"
+                    ];
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const image = new Image();
+                        image.onload = function() {
+                            const dimensions = `${this.width}x${this.height}`;
+                            if (allowedDimensions.includes(dimensions)) {
+                                resolve(e.target.result); // Validation passed, return base64
+                            } else {
+                                reject(`Invalid dimensions (${dimensions}). Please use one of the allowed sizes: ${allowedDimensions.join(', ')}.`);
+                            }
+                        };
+                        image.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
                 });
+            }
 
-                if (!response.ok) {
-                    throw new Error(`Request failed: ${response.status}`);
+            // UPDATED: Guided interaction for sending messages
+            function sendMessage() {
+                const messageText = inputField.value.trim();
+
+                // NEW: Check if user typed text without an image
+                if (messageText && !uploadedImageBase64) {
+                    appendMessage("Please upload an image first before sending a prompt.", 'ai-message');
+                    inputField.value = '';
+                    return;
                 }
 
-                const data = await response.json();
-                const aiText = data.aiMessage;
-                const generatedImage = data.generatedImage;
+                // Allow sending if there is an image and text
+                if (messageText && uploadedImageBase64) {
+                    appendMessage(messageText, 'user-message');
+                    getAIResponse(messageText, uploadedImageBase64);
 
-                const thinkingMessage = chatMessages.querySelector('.is-thinking');
-                if (thinkingMessage) thinkingMessage.remove();
-
-                appendMessage(aiText, 'ai-message', generatedImage);
-
-            } catch (error) {
-                console.error('Chat request error:', error);
-                const thinkingMessage = chatMessages.querySelector('.is-thinking');
-                if (thinkingMessage) {
-                    thinkingMessage.querySelector('.text').textContent = 'An error occurred. Please ensure an image is uploaded and try again.';
+                    // Clear inputs after sending
+                    inputField.value = '';
+                    uploadedImageBase64 = null;
+                    if (imageUploadInput) imageUploadInput.value = '';
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
                 }
-            } finally {
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // UPDATED: Handle image upload with validation
+            async function handleImageUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                try {
+                    // NEW: Validate before processing
+                    const base64Image = await validateImage(file);
+                    uploadedImageBase64 = base64Image;
+                    appendMessage('', 'user-message', uploadedImageBase64, 'Image accepted.');
+                    // NEW: Guide user to add a prompt
+                    appendMessage("Great! Now add a text prompt to describe the style you want.", 'ai-message');
+                } catch (error) {
+                    // NEW: Show validation error to user
+                    appendMessage(error, 'ai-message');
+                    uploadedImageBase64 = null;
+                } finally {
+                    if (imageUploadInput) imageUploadInput.value = '';
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            }
+
+            // UPDATED: appendMessage now handles downloads
+            function appendMessage(text, className, imageBase64 = null, placeholderText = null, isDownloadable = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${className}`;
+
+                if (className === 'ai-message' && placeholderText) {
+                    messageDiv.classList.add('is-thinking');
+                }
+
+                const avatar = document.createElement('div');
+                avatar.className = 'avatar';
+
+                const textBubble = document.createElement('div');
+                textBubble.className = 'text';
+
+                if (imageBase64) {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = imageBase64;
+                    imgElement.classList.add('chat-image-preview');
+
+                    if (isDownloadable) {
+                        // NEW: Wrap generated image in a download link
+                        const link = document.createElement('a');
+                        link.href = imageBase64;
+                        link.download = "generated-art.png";
+                        link.appendChild(imgElement);
+                        textBubble.appendChild(link);
+                    } else {
+                        textBubble.appendChild(imgElement);
+                    }
+                }
+
+                if (text) {
+                    textBubble.appendChild(document.createTextNode(text));
+                } else if (placeholderText) {
+                    textBubble.textContent = placeholderText;
+                }
+
+                if (className === 'user-message') {
+                    messageDiv.classList.add('user-align');
+                    messageDiv.appendChild(textBubble);
+                    messageDiv.appendChild(avatar);
+                } else {
+                    messageDiv.appendChild(avatar);
+                    messageDiv.appendChild(textBubble);
+                }
+                chatMessages.appendChild(messageDiv);
+            }
+
+            // UPDATED: getAIResponse now handles re-engagement
+            async function getAIResponse(userMessage, imageBase64) {
+                appendMessage('...', 'ai-message', null, '...');
+
+                try {
+                    const payload = {
+                        message: userMessage,
+                        image: imageBase64
+                    };
+
+                    const response = await fetch('/generate-image', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                    });
+
+                    const thinkingMessage = chatMessages.querySelector('.is-thinking');
+                    if (thinkingMessage) thinkingMessage.remove();
+
+                    if (!response.ok) {
+                        // Try to get a more specific error from the server's JSON response
+                        const errorData = await response.json().catch(() => null);
+                        const errorMessage = errorData?.error || `Request failed with status: ${response.status}`;
+                        throw new Error(errorMessage);
+                    }
+
+                    const data = await response.json();
+                    const aiText = data.aiMessage;
+                    const generatedImage = data.generatedImage;
+
+                    if (aiText) {
+                        appendMessage(aiText, 'ai-message');
+                    }
+
+                    if (generatedImage) {
+                        // UPDATED: The last argument 'true' makes the image downloadable
+                        appendMessage('', 'ai-message', generatedImage, null, true);
+                        // NEW: Re-engagement prompt
+                        appendMessage("Would you like to try again with a different prompt?", 'ai-message');
+                    }
+
+                } catch (error) {
+                    console.error('Chat request error:', error);
+                    const thinkingMessage = chatMessages.querySelector('.is-thinking');
+                    if (thinkingMessage) {
+                        thinkingMessage.querySelector('.text').textContent = `Sorry, something went wrong: ${error.message}`;
+                    } else {
+                        appendMessage(`Sorry, something went wrong: ${error.message}`, 'ai-message');
+                    }
+                } finally {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
             }
         }
-    }
-});
+    });
