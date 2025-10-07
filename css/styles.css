@@ -344,10 +344,18 @@ p {
 }
 
 /* --- Card Internals --- */
-.card-image-placeholder {
+.card-image-placeholder-activities {
+    background-image: url('../images/Activities image bottom home page.svg');
     height: 15rem;
-    width: 100%; /* Ensures placeholder is responsive */
-    background-color: #FFF7F5;
+    width: 100%;
+    border-radius: 0.75rem;
+}
+
+
+.card-image-placeholder-scenarios {
+    background-image: url('../images/Scenarios image bottom home page.svg');
+    height: 15rem;
+    width: 100%;
     border-radius: 0.75rem;
 }
 
