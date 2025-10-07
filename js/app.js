@@ -319,4 +319,104 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    //======================================================================
+// 5. AI TEXTURE MIXER FUNCTIONALITY (UPDATED FOR STABILITY AI BACKEND)
+//======================================================================
+    const mixerPanel = document.querySelector('.texture-mixer-panel');
+    if (mixerPanel) {
+        // This function needs to be available globally for the onchange attribute in the HTML
+        window.previewFile = function(inputId, previewId) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            const file = input.files[0];
+            preview.innerHTML = '<span>Preview</span>'; // Reset
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const img = document.createElement('img');
+                    img.src = reader.result;
+                    preview.innerHTML = '';
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // --- Main API Interaction Logic ---
+        document.getElementById('imageMixerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Get all DOM elements
+            const originalFile = document.getElementById('originalImage').files[0];
+            const textureFile = document.getElementById('textureImage').files[0];
+            const statusMessage = document.getElementById('statusMessage');
+            const mixButton = document.getElementById('mixButton');
+            const buttonText = document.getElementById('buttonText');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const resultArea = document.getElementById('resultArea');
+            const mixedImage = document.getElementById('mixedImage');
+            const resultPlaceholder = document.getElementById('resultPlaceholder');
+
+            if (!originalFile || !textureFile) {
+                statusMessage.textContent = 'Please upload both an original and a texture image.';
+                statusMessage.style.color = '#ef4444';
+                return;
+            }
+
+            // 1. Start Loading State
+            statusMessage.textContent = 'Sending images to your server...';
+            statusMessage.style.color = '#f59e0b';
+            mixButton.disabled = true;
+            buttonText.textContent = 'Combining...';
+            loadingSpinner.classList.remove('hidden');
+            resultArea.classList.add('hidden');
+            mixedImage.style.display = 'none';
+
+            try {
+                // 2. Create FormData to send files to your backend
+                const formData = new FormData();
+                formData.append('originalImage', originalFile);
+                formData.append('textureImage', textureFile);
+
+                // 3. Call YOUR backend endpoint
+                const response = await fetch('/mix-images', {
+                    method: 'POST',
+                    body: formData, // No headers needed, browser sets it for FormData
+                });
+
+                if (!response.ok) {
+                    const errorJson = await response.json();
+                    throw new Error(errorJson.error || `Server error: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                if (result.generatedImage) {
+                    // 4. Display the result
+                    mixedImage.src = result.generatedImage;
+                    mixedImage.style.display = 'block';
+                    resultPlaceholder.style.display = 'none';
+                    resultArea.classList.remove('hidden');
+                    statusMessage.textContent = 'Image successfully combined!';
+                    statusMessage.style.color = '#34d399';
+                } else {
+                    throw new Error("AI did not return a valid image.");
+                }
+
+            } catch (error) {
+                console.error('API Error:', error);
+                statusMessage.textContent = `Error: ${error.message}`;
+                statusMessage.style.color = '#ef4444';
+            } finally {
+                // 5. End Loading State
+                mixButton.disabled = false;
+                buttonText.textContent = 'Combine with AI';
+                loadingSpinner.classList.add('hidden');
+                if (!resultArea.classList.contains('hidden')) {
+                    resultArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+    }
+
 });
