@@ -362,6 +362,25 @@ h1 {
     line-height: 1.6;
 }
 
+
+.summary-bubble {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.summary-item {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.summary-item img {
+    max-width: 150px; /* Adjust size as needed */
+}
+
 /* --- Message Input Bar --- */
 .chat-input-bar {
     display: flex;

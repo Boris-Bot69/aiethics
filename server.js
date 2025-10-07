@@ -1,80 +1,77 @@
-// server.js (UPDATED FOR STABILITY AI)
+// server.js (UPDATED WITH CONVERSATION MEMORY)
 
 const express = require('express');
-const fetch = require('node-fetch'); // Make sure to install: npm install node-fetch
-const FormData = require('form-data');
-const { Readable } = require('stream');
+const fetch = require('node-fetch');
 require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 5001;
 
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(__dirname)); // Serves your HTML, CSS, JS files
-
-// Helper function to convert base64 to a buffer
-function base64ToBuffer(base64) {
-    return Buffer.from(base64.split(',')[1], 'base64');
-}
+app.use(express.static(__dirname));
 
 app.post('/generate-image', async (req, res) => {
     try {
-        const userMessage = req.body.message;
-        const imageBase64 = req.body.image;
+        // CHANGED: We now expect an array of prompts
+        const prompts = req.body.prompts;
 
-        console.log("Received request:");
-        console.log("User message:", userMessage);
-        console.log("Image Base64 length:", imageBase64 ? imageBase64.length : 'N/A');
-
-        if (!userMessage || !imageBase64) {
-            console.error("Missing user message or image.");
-            return res.status(400).json({ error: 'Both a message and an image are required.' });
+        if (!prompts || !Array.isArray(prompts) || prompts.length === 0) {
+            return res.status(400).json({ error: 'A non-empty array of prompts is required.' });
         }
 
-        const formData = new FormData();
-        const imageBuffer = base64ToBuffer(imageBase64);
-        formData.append('init_image', imageBuffer, { filename: 'init_image.png', contentType: 'image/png' });
-        formData.append('text_prompts[0][text]', userMessage);
-        formData.append('text_prompts[0][weight]', 1);
-        formData.append('style_preset', 'photographic');
+        console.log(`Received prompts:`, prompts);
 
-        console.log("Sending request to Stability AI...");
+        // --- NEW: Create weighted prompts for the API ---
+        // This transforms the simple array of strings into the format Stability AI needs,
+        // giving more weight to the most recent prompt.
+        const text_prompts = prompts.map((prompt, index) => ({
+            text: prompt,
+            // The last prompt in the array (the newest one) gets the highest weight.
+            weight: (index === prompts.length - 1) ? 1 : 0.75
+        }));
+
+
+        const engineId = 'stable-diffusion-xl-1024-v1-0';
+        const apiHost = 'https://api.stability.ai';
+        const apiKey = process.env.STABILITY_API_KEY;
 
         const response = await fetch(
-            "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/image-to-image", // <-- THE FIX IS HERE
+            `${apiHost}/v1/generation/${engineId}/text-to-image`,
             {
                 method: 'POST',
                 headers: {
-                    ...formData.getHeaders(),
+                    'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${process.env.STABILITY_API_KEY}`, // Check this key!
+                    'Authorization': `Bearer ${apiKey}`,
                 },
-                body: formData,
+                body: JSON.stringify({
+                    text_prompts: text_prompts, // CHANGED: Use the new weighted prompts
+                    cfg_scale: 7,
+                    height: 1024,
+                    width: 1024,
+                    steps: 30,
+                    samples: 1,
+                    style_preset: "photographic"
+                }),
             }
         );
 
-        console.log("Stability AI Response Status:", response.status); // <--- VERY IMPORTANT
         if (!response.ok) {
             const errorText = await response.text();
-            console.error(`Stability AI API error: ${response.status} - ${errorText}`); // <--- MORE DETAIL HERE
-            throw new Error(`Stability AI API error: ${response.status} ${errorText}`);
+            throw new Error(`API error: ${errorText}`);
         }
 
         const data = await response.json();
-        console.log("Stability AI Data Received:", data); // See what API sends back
+        const generatedImageDataUrl = `data:image/png;base64,${data.artifacts[0].base64}`;
 
-        const generatedImageBase64 = data.artifacts[0].base64;
-        const generatedImageDataUrl = `data:image/png;base64,${generatedImageBase64}`;
-
-        console.log("Successfully generated image with Stability AI.");
+        console.log("Successfully generated image with conversation history.");
 
         res.json({
-            aiMessage: `Here is the generated image based on your prompt: "${userMessage}"`,
             generatedImage: generatedImageDataUrl
         });
 
     } catch (error) {
-        console.error('API error in try/catch block:', error); // Catches network issues etc.
+        console.error('API error:', error);
         res.status(500).json({ error: 'Failed to generate the image.' });
     }
 });
@@ -82,7 +79,6 @@ app.post('/generate-image', async (req, res) => {
 app.get('/', (req, res) => {
     res.redirect('/html/ai_activities_webpages/homage.html');
 });
-
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
