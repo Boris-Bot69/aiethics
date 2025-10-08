@@ -1,21 +1,24 @@
 {
   "dependencies": {
     "@google-cloud/vertexai": "^1.10.0",
-    "@google/genai": "^1.19.0",
+    "@google/genai": "^1.22.0",
     "@google/generative-ai": "^0.24.1",
-    "dotenv": "^17.2.2",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "form-data": "^4.0.4",
     "multer": "^2.0.2",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^2.7.0",
+    "sharp": "^0.34.4"
   },
   "name": "aiethics",
   "version": "1.0.0",
   "description": "A modern, accessible web application for AI Ethics Literacy activities at TUM\r This website was funded and created through the \"Co-designing a Risk-Assessment Dashboard for AI Ethics Literacy in EdTech\" project. Our focus is to develop practical guidance for decision-makers to help them navigate through the process of ethical decision-making in applying AI EdTech.",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
+    "start": "node homage_server.js",
+    "dev": "node homage_server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
