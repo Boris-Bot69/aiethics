@@ -115,7 +115,7 @@ async function downloadAllZip(items) {
         a.remove();
         URL.revokeObjectURL(url);
     } catch (e) {
-        appendMessage(`⚠️ ZIP download not available (${e.message}).`, "ai");
+        appendMessage(`ZIP download not available (${e.message}).`, "ai");
     }
 }
 
@@ -201,7 +201,7 @@ function askToRestart() {
     const container = appendAIContainer();
 
     const question = document.createElement("div");
-    question.textContent = "🔁 Do you want to do another set of 3 images?";
+    question.textContent = "Do you want to do another set of 3 images?";
     question.style.marginBottom = "8px";
     container.appendChild(question);
 
@@ -240,14 +240,14 @@ function askToRestart() {
 
     noBtn.addEventListener("click", () => {
         awaitingRestartChoice = false;
-        appendMessage("👍 Okay. You can still type a new prompt any time to start another set.", "ai");
+        appendMessage("Okay. You can still type a new prompt any time to start another set.", "ai");
     });
 }
 
 function startNewRound() {
     collectedPrompts = [];
     generated = [];
-    appendMessage("✨ New round! Describe the first artwork.", "ai");
+    appendMessage("New round! Describe the first artwork.", "ai");
 }
 
 // --- Backend call: one image per prompt ---
@@ -271,7 +271,7 @@ async function sendPrompt(prompt) {
                 showSummary();
             }
         } else {
-            appendMessage("⚠️ No image returned from the model.", "ai");
+            appendMessage("No image returned from the model.", "ai");
         }
     } catch (err) {
         typing.remove();
