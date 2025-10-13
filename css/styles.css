@@ -579,71 +579,222 @@ body.no-scroll {
 
 /* 5. Responsive Design */
 
+/* ============================================= */
+/* MOBILE + TABLET OPTIMIZATION (single-column)  */
+/* ============================================= */
 @media (max-width: 960px) {
-    .navbar {
-        background-image: none;
-        background-color: #78A564;
-        justify-content: space-between;
-        padding: 0 1rem;
-        height: 4.5rem;
-        flex-wrap: nowrap;
-    }
-    .navbar .nav-link {
-        color: #ffffff;
-    }
 
-
-    .nav-links-right {
-        display: none;
-    }
-
-    .menu-toggle {
-        display: flex; /* This makes the button visible */
+    /* --- Global & Text Scaling --- */
+    html {
+        font-size: 15px;
     }
 
     body {
-        padding-top: 4.5rem; /* Match the navbar height */
         background-image: none;
+        padding-top: 4.5rem;
+        overflow-x: hidden;
+    }
+
+    h1 { font-size: 2rem; line-height: 1.3; }
+    h2 { font-size: 1.4rem; line-height: 1.3; }
+    h3 { font-size: 1.1rem; }
+    p, li { font-size: 0.95rem; line-height: 1.6; }
+
+    /* --- Navbar --- */
+    .navbar {
+        background-image: none;
+        background-color: #78A564;
+        height: 4.5rem;
+        padding: 0 1rem;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .nav-links-right,
+    .nav-divider,
+    .sidebar {
+        display: none;
+    }
+
+    .navbar .nav-link {
+        color: #fff;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .menu-toggle {
+        display: flex;
+        background-color: transparent;
+        border: 1px solid #fff;
+        border-radius: 6px;
+        color: #fff;
+        font-size: 0.95rem;
+        padding: 0.5rem 1rem;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* --- Main Layout: Full single column --- */
+    .three-column-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        padding: 0 1rem;
+    }
+
+    .grid-container-2col,
+    .content-grid {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1.5rem;
     }
 
     .main-content {
         padding-top: 0;
     }
 
-    .sidebar {
+    /* --- Text & Headers --- */
+    .custom-header {
+        font-size: 1.8rem;
+        line-height: 1.35;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .custom-text {
+        font-size: 1rem;
+        line-height: 1.7;
+        text-align: justify;
+        padding: 0 0.5rem;
+    }
+
+    /* --- Images --- */
+    .content-image {
+        display: none;
+
+    }
+
+    .sidebar-image {
         display: none;
     }
 
-    .three-column-layout,
-    .grid-container-2col {
-        grid-template-columns: 1fr;
+    .image-spacer1 {
+        height: 2rem;
     }
 
-    .grid-container-2col .custom-header,
-    .grid-container-2col .custom-text {
+    .btn img {
+        width: clamp(300px, 85vw, 420px);
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .btn img:hover {
+        transform: scale(1.05);
+    }
+
+    .text-and-button-content .btn {
+        align-self: center;
+        margin-top: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* --- Cards (activities/scenarios) --- */
+    .cards-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+        width: 100%;
+    }
+
+    .card {
+        width: 100%;
+        max-width: 400px;
+        padding: 1.25rem;
+        border-width: 0.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .card p {
+        font-size: 0.95rem;
+        text-align: justify;
+    }
+
+    /* --- OECD / Publications --- */
+    .oecd-items {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
         text-align: center;
     }
 
+    .oecd-item img {
+        width: 110px;
+        margin-bottom: 0.5rem;
+    }
+
+    .oecd-item p {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        padding: 0 0.5rem;
+    }
+
+    .publications-list {
+        padding: 0 1rem;
+    }
+
+    .publication-item {
+        font-size: 0.9rem;
+        line-height: 1.55;
+        margin-bottom: 1rem;
+    }
+
+    /* --- Bottom Bar --- */
+    .bottom-bar {
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        height: auto;
+        background-size: contain;
+    }
+
+    .logo-container {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1.25rem;
+    }
+
+    .logo-container img {
+        height: 3.75rem;
+    }
+
+    .funded-by-text {
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Smaller phones */
+@media (max-width: 600px) {
+    html { font-size: 14px; }
+
+    .custom-header { font-size: 1.5rem; }
+    .custom-text { font-size: 0.95rem; }
+
+    .btn img {
+        width: 200px;
+    }
+
+    .card {
+        max-width: 95%;
+        padding: 1rem;
+    }
     .content-image {
         display: none;
     }
 
-    /* Remove original styles that are no longer needed for mobile nav */
-    .nav-link {
-        font-size: initial; /* Reset font size change */
-    }
 
-    .nav-divider {
-        display: none;
-    }
-
-    .card {
-        padding: 1.5rem;
-    }
-
-    .bottom-bar-image {
-        width: 100%;
-        height: auto;
-        display: block;
-    }
 }

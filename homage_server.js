@@ -20,15 +20,8 @@ const PORT = 3000;
 app.use(cors());
 app.use(bodyParser.json({ limit: "10mb" }));
 
-// -------------- IMPORTANT --------------
-// Tell the server where your *actual* homage.html lives.
-// If your file is exactly at:  C:\Users\boris\WebstormProjects\aiethics\homage.html
-// then this default is fine. If it's in a subfolder, change the next line accordingly.
-// Example if it's in "pages/scenarios/homage.html":
-// const HOMAGE_HTML = path.join(__dirname, "pages", "scenarios", "homage.html");
 const HOMAGE_HTML = path.join(__dirname, "homage.html");
 
-// Serve static files from the project root so your ../../css, ../../images paths still work.
 app.use(express.static(__dirname));
 
 // GenAI client
