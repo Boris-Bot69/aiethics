@@ -798,3 +798,122 @@ body.no-scroll {
 
 
 }
+
+
+/* =============================================== */
+/* 🌿 Desktop & Ultra-Wide Optimization            */
+/* =============================================== */
+
+/* Hide sidebars and rebalance content */
+@media (min-width: 1600px) {
+    .sidebar {
+        display: none; /* Hide decorative sidebars */
+    }
+
+    .three-column-layout {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding: 0 5vw;
+    }
+
+    body {
+        background-image: url('../images/scissor.svg');
+        background-repeat: no-repeat;
+        background-position: center 14rem; /* Move scissors down */
+        background-size: clamp(900px, 60vw, 1400px); /* Scale up on large screens */
+        opacity: 1;
+    }
+
+    .main-content-area {
+        max-width: 1800px;
+        padding: 3rem 5vw;
+    }
+
+    /* --- Typography Scaling --- */
+    .custom-header {
+        font-size: clamp(3rem, 2.5vw + 1rem, 5rem);
+        line-height: 1.25;
+        color: #466480;
+    }
+
+    .custom-text {
+        font-size: clamp(1.1rem, 1vw, 1.4rem);
+        line-height: 1.9;
+        max-width: 1000px;
+    }
+
+    h2, .scenario-section-title, .oecd-section-title, .publications-title {
+        font-size: clamp(2rem, 1.8vw, 2.6rem);
+    }
+
+    .list-content h3 {
+        font-size: clamp(1.4rem, 1vw, 1.8rem);
+    }
+
+    .list-content p {
+        font-size: clamp(1.1rem, 0.8vw + 0.8rem, 1.3rem);
+        line-height: 1.8;
+    }
+
+    /* --- Make images more prominent --- */
+    .content-image {
+        max-width: 700px;
+        transform: scale(1.2);
+    }
+
+    /* --- Cards larger and more balanced --- */
+    .cards-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 3rem;
+        justify-items: center;
+        align-items: stretch;
+    }
+
+    .card {
+        max-width: 40rem;
+        min-height: 38rem;
+        padding: 2rem;
+        border-width: 1rem;
+    }
+
+    .card p {
+        font-size: 1.05rem;
+        line-height: 1.8;
+    }
+
+    /* --- Buttons --- */
+    .btn img {
+        width: clamp(400px, 25vw, 550px);
+        transition: transform 0.25s ease-in-out;
+    }
+
+    .btn img:hover {
+        transform: scale(1.05);
+    }
+
+    /* --- General spacing between sections --- */
+    .image-spacer1 {
+        height: 8rem;
+    }
+
+    .scenarios-section,
+    .oecd-section,
+    .publications-section {
+        margin-top: 6rem;
+    }
+}
+
+
+@media (min-width: 2200px) {
+    body {
+        background-position: center 18rem; /* Move slightly lower for ultra-wide displays */
+        background-size: clamp(1200px, 55vw, 1800px);
+    }
+}
+
+
+
+
+
+
