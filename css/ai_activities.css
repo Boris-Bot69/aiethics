@@ -476,93 +476,6 @@ body.no-scroll {
 }
 
 
-:root{
-    /* width reserved for each decorative sidebar */
-    --sidebar-w: clamp(64px, 9vw, 220px);
-    /* inner page max width (central rail) */
-    --content-max: 1400px;
-    /* safe padding inside the central rail */
-    --page-pad: clamp(16px, 2vw, 32px);
-}
-
-
-/* keep your existing <aside class="sidebar ..."> but pin them full height */
-.sidebar {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    width: var(--sidebar-w);
-    z-index: 0;           /* behind content */
-    pointer-events: none; /* purely decorative */
-}
-
-.sidebar-left  { left: 0; }
-.sidebar-right { right: 0; }
-
-.sidebar-image{
-    height: 100vh;        /* fill vertical viewport */
-    width: auto;
-    object-fit: cover;
-}
-
-
-/* push central content away from the fixed sidebars */
-.main-content,
-.navbar {
-    padding-inline: calc(var(--sidebar-w) + var(--page-pad));
-}
-
-/* turn the 3-col wrapper into a single centered rail on wide screens */
-.three-column-layout{
-    display: block;       /* no grid for outer frame when sidebars are fixed */
-}
-
-/* the real center rail */
-.main-content-area{
-    max-width: var(--content-max);
-    margin-inline: auto;  /* always centered */
-    padding-inline: var(--page-pad);
-    position: relative;
-    z-index: 1;           /* above decorative sidebars */
-}
-
-
-.cards-container{
-    display: grid;
-    grid-template-columns: repeat(3, minmax(260px, 1fr));
-    gap: 2.25rem;
-    justify-items: center;      /* center each card in its track */
-    justify-content: center;    /* keep grid centered if it’s narrower */
-    margin-inline: auto;
-    width: 100%;
-    max-width: var(--content-max);
-}
-
-.activity-item{
-    width: 100%;
-    max-width: 420px; /* keeps cards from stretching too wide on 4K */
-}
-
-/* base boost for desktop */
-.navbar{
-    height: clamp(100px, 8vw, 140px);
-    background-position: center bottom;
-}
-
-/* use clamp for titles so they read well on 4K but don’t shout on laptops */
-.custom-header{
-    font-size: clamp(2.2rem, 2.2vw + 1.4rem, 3.6rem);
-    line-height: 1.25;
-}
-
-.activity-item h4{
-    font-size: clamp(0.95rem, 0.4vw + 0.8rem, 1.3rem);
-}
-
-.activity-item p{
-    font-size: clamp(0.85rem, 0.25vw + 0.75rem, 1rem);
-    line-height: 1.6;
-}
 
 @media (min-width: 1600px){
     /* give the grid a bit more air and optionally 4 columns if you want */
@@ -571,6 +484,95 @@ body.no-scroll {
         /* uncomment to go 4-up on very wide:
         grid-template-columns: repeat(4, minmax(260px, 1fr));
         */
+    }
+
+
+    :root{
+        /* width reserved for each decorative sidebar */
+        --sidebar-w: clamp(64px, 9vw, 220px);
+        /* inner page max width (central rail) */
+        --content-max: 1400px;
+        /* safe padding inside the central rail */
+        --page-pad: clamp(16px, 2vw, 32px);
+    }
+
+
+    /* keep your existing <aside class="sidebar ..."> but pin them full height */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        width: var(--sidebar-w);
+        z-index: 0;           /* behind content */
+        pointer-events: none; /* purely decorative */
+    }
+
+    .sidebar-left  { left: 0; }
+    .sidebar-right { right: 0; }
+
+    .sidebar-image{
+        height: 100vh;        /* fill vertical viewport */
+        width: auto;
+        object-fit: cover;
+    }
+
+
+    /* push central content away from the fixed sidebars */
+    .main-content,
+    .navbar {
+        padding-inline: calc(var(--sidebar-w) + var(--page-pad));
+    }
+
+    /* turn the 3-col wrapper into a single centered rail on wide screens */
+    .three-column-layout{
+        display: block;       /* no grid for outer frame when sidebars are fixed */
+    }
+
+    /* the real center rail */
+    .main-content-area{
+        max-width: var(--content-max);
+        margin-inline: auto;  /* always centered */
+        padding-inline: var(--page-pad);
+        position: relative;
+        z-index: 1;           /* above decorative sidebars */
+    }
+
+
+    .cards-container{
+        display: grid;
+        grid-template-columns: repeat(3, minmax(260px, 1fr));
+        gap: 2.25rem;
+        justify-items: center;      /* center each card in its track */
+        justify-content: center;    /* keep grid centered if it’s narrower */
+        margin-inline: auto;
+        width: 100%;
+        max-width: var(--content-max);
+    }
+
+    .activity-item{
+        width: 100%;
+        max-width: 420px; /* keeps cards from stretching too wide on 4K */
+    }
+
+    /* base boost for desktop */
+    .navbar{
+        height: clamp(100px, 8vw, 140px);
+        background-position: center bottom;
+    }
+
+    /* use clamp for titles so they read well on 4K but don’t shout on laptops */
+    .custom-header{
+        font-size: clamp(2.2rem, 2.2vw + 1.4rem, 3.6rem);
+        line-height: 1.25;
+    }
+
+    .activity-item h4{
+        font-size: clamp(0.95rem, 0.4vw + 0.8rem, 1.3rem);
+    }
+
+    .activity-item p{
+        font-size: clamp(0.85rem, 0.25vw + 0.75rem, 1rem);
+        line-height: 1.6;
     }
 }
 

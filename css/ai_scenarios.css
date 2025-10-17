@@ -269,7 +269,7 @@ h1 {
 
 .activity-card-link {
     text-decoration: none;
-    color: inherit;
+    background-color: transparent;
 }
 
 .activity-item {
@@ -277,18 +277,28 @@ h1 {
     flex-direction: column;
     text-align: center;
     gap: 1rem;
+    background-color: transparent;
+
+}
+.activity-image-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: transparent;
+    border: none;
 }
 
 .activity-image-box:hover {
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
+
 .activity-image-box img {
-    width: 70%;
-    height: 70%;
+    width: auto;
+    height: auto;
     display: inline;
-    margin: auto;
-    gap: 2rem;
+    background-color: transparent;
+
 }
 
 /* Styles for the title and description */
