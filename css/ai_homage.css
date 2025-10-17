@@ -889,6 +889,40 @@ body.no-scroll {
 }
 
 
+/* Basic hover hint */
+.zoomable {
+    cursor: zoom-in;
+    transition: transform 0.3s ease;
+    max-width: 100%;
+    border-radius: 8px;
+}
+
+.zoom-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.zoom-overlay img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 10px;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
+    cursor: zoom-out;
+    transition: transform 0.3s ease;
+}
+
+
+
+
+
 /* --- RESPONSIVE STYLES FOR MOBILE --- */
 @media (max-width: 768px) {
     .testimonial-quote {

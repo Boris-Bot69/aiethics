@@ -1,5 +1,3 @@
-// ../../js/homage_chatbot.js
-
 const chatPanel = document.querySelector(".chat-panel");
 const chatMessages = chatPanel.querySelector(".chat-messages");
 const chatInput = chatPanel.querySelector("#chatInput");
@@ -25,7 +23,7 @@ function appendMessage(text, sender = "ai") {
     msg.appendChild(textDiv);
     chatMessages.appendChild(msg);
     chatMessages.scrollTop = chatMessages.scrollHeight;
-    return msg; // return for later removal if needed
+    return msg;
 }
 
 function appendAIContainer() {
@@ -43,13 +41,12 @@ function appendAIContainer() {
     chatMessages.appendChild(msg);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
-    return container; // the bubble ".text"
+    return container;
 }
 
-function appendGeneratedImage(base64, promptText) {
+function appendGeneratedImage(base64, promptText, index) {
     const container = appendAIContainer();
 
-    // image
     const img = document.createElement("img");
     img.src = `data:image/png;base64,${base64}`;
     img.alt = "Generated image";
@@ -57,7 +54,6 @@ function appendGeneratedImage(base64, promptText) {
     img.style.borderRadius = "10px";
     img.style.marginTop = "8px";
 
-    // caption with the prompt
     const caption = document.createElement("div");
     caption.style.marginTop = "6px";
     caption.style.fontSize = "0.95rem";
@@ -65,10 +61,40 @@ function appendGeneratedImage(base64, promptText) {
     caption.style.opacity = "0.9";
     caption.textContent = `Prompt: “${promptText}”`;
 
+    const dlBtn = document.createElement("button");
+    dlBtn.textContent = "⬇️ Download PNG";
+    dlBtn.style.marginTop = "8px";
+    dlBtn.style.cursor = "pointer";
+    dlBtn.style.border = "none";
+    dlBtn.style.padding = "6px 10px";
+    dlBtn.style.borderRadius = "6px";
+    dlBtn.style.background = "#fff0e6";
+    dlBtn.style.color = "#d9534f";
+    dlBtn.addEventListener("click", () =>
+        downloadSingle(`image-${index}.png`, base64)
+    );
+
     container.appendChild(img);
     container.appendChild(caption);
+    container.appendChild(dlBtn);
+
+    // Progress info
+    const progress = document.createElement("div");
+    progress.style.marginTop = "10px";
+    progress.style.fontWeight = "600";
+    progress.textContent = `✅ Image ${index}/3 generated!`;
+    container.appendChild(progress);
+
+    // Ask for next step
+    if (index < 3) {
+        const nextMsg = document.createElement("div");
+        nextMsg.style.marginTop = "6px";
+        nextMsg.textContent = `Now describe your next artwork (${index + 1}/3)...`;
+        container.appendChild(nextMsg);
+    }
 }
 
+// --- Downloads ---
 function downloadSingle(filename, base64) {
     const a = document.createElement("a");
     a.href = `data:image/png;base64,${base64}`;
@@ -78,7 +104,6 @@ function downloadSingle(filename, base64) {
     a.remove();
 }
 
-// Optional lazy loader for JSZip (for "Download all")
 function loadJSZip() {
     return new Promise((resolve, reject) => {
         if (window.JSZip) return resolve(window.JSZip);
@@ -192,7 +217,6 @@ function showSummary() {
     zipBtn.addEventListener("click", () => downloadAllZip(generated));
     actions.appendChild(zipBtn);
 
-    // Ask to restart
     askToRestart();
 }
 
@@ -201,7 +225,7 @@ function askToRestart() {
     const container = appendAIContainer();
 
     const question = document.createElement("div");
-    question.textContent = "Do you want to do another set of 3 images?";
+    question.textContent = "Do you want to create another set of 3 images?";
     question.style.marginBottom = "8px";
     container.appendChild(question);
 
@@ -240,19 +264,21 @@ function askToRestart() {
 
     noBtn.addEventListener("click", () => {
         awaitingRestartChoice = false;
-        appendMessage("Okay. You can still type a new prompt any time to start another set.", "ai");
+        appendMessage("Okay 😊 You can still type a new prompt anytime to start again.", "ai");
     });
 }
 
 function startNewRound() {
     collectedPrompts = [];
     generated = [];
-    appendMessage("New round! Describe the first artwork.", "ai");
+    appendMessage("Let's start fresh! Please describe your first artwork (1/3).", "ai");
 }
 
 // --- Backend call: one image per prompt ---
 async function sendPrompt(prompt) {
+    const index = generated.length + 1;
     const typing = appendMessage("🎨 Generating image...", "ai");
+
     try {
         const res = await fetch("/generate", {
             method: "POST",
@@ -263,10 +289,9 @@ async function sendPrompt(prompt) {
         typing.remove();
 
         if (data?.image) {
-            appendGeneratedImage(data.image, prompt);
+            appendGeneratedImage(data.image, prompt, index);
             generated.push({ prompt, base64: data.image });
 
-            // After 3 images, show summary and ask to restart
             if (generated.length === 3) {
                 showSummary();
             }
@@ -284,23 +309,26 @@ function handleUserInput() {
     const text = chatInput.value.trim();
     if (!text) return;
 
-    // When awaiting restart choice, a user message should dismiss that state and start new
     if (awaitingRestartChoice) {
         awaitingRestartChoice = false;
         startNewRound();
+        return;
     }
 
     appendMessage(text, "user");
     collectedPrompts.push(text);
     chatInput.value = "";
-
-    // Generate right away
     sendPrompt(text);
 }
+
+// --- Initialize chat ---
+appendMessage(
+    "👋 Welcome! Please write 3 prompts — after each one, I’ll generate an image and show it below.\nYou can download each image before moving on.",
+    "ai"
+);
+appendMessage("Start by describing your first artwork (1/3).", "ai");
 
 sendButton.addEventListener("click", handleUserInput);
 chatInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") handleUserInput();
 });
-
-

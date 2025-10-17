@@ -78,7 +78,7 @@
                         <div class="step-content is-active" data-step="1">
                             <h3>1. Look at artwork</h3>
                             <p>Get familiar with the original artwork by an artist, Tania Sívertsen.</p>
-                            <img src="/images/scenarios/Tania%20original.png" alt="Original artwork by Tania Sívertsen">
+                            <img src="/images/scenarios/Tania%20original.png" alt="Original artwork by Tania Sívertsen" class="zoomable">
 
                         </div>
 
@@ -124,10 +124,6 @@
 
                 <main class="chat-panel">
                     <div class="chat-messages">
-                        <div class="message ai-message">
-                            <div class="avatar"></div>
-                            <div class="text">Please describe Tanja's artwork in your own word.</div>
-                        </div>
                     </div>
                     <div class="chat-input-bar">
                         <input type="file" id="imageUpload" accept="image/*" style="display: none;">
@@ -399,6 +395,29 @@
                 });
             }
         });
+    });
+
+
+
+</script>
+<script>
+    document.addEventListener("click", function (e) {
+        const zoomable = e.target.closest(".zoomable");
+        if (!zoomable) return;
+
+        // Create overlay
+        const overlay = document.createElement("div");
+        overlay.classList.add("zoom-overlay");
+
+        const img = document.createElement("img");
+        img.src = zoomable.src;
+        img.alt = zoomable.alt;
+        overlay.appendChild(img);
+
+        // Close on click
+        overlay.addEventListener("click", () => overlay.remove());
+
+        document.body.appendChild(overlay);
     });
 </script>
 
