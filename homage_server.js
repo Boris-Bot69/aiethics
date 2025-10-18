@@ -46,7 +46,7 @@ app.post("/generate", async (req, res) => {
         const imgBase64 = response.generatedImages?.[0]?.image?.imageBytes;
         if (!imgBase64) {
             return res.status(500).json({ error: "No image returned from model" });
-        }
+        }npm
 
         res.json({ image: imgBase64 });
     } catch (err) {
