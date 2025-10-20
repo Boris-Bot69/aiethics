@@ -56,6 +56,44 @@ app.post("/generate", async (req, res) => {
 });
 
 
+// --- API: magazine cut-outs image edit ---
+app.post("/edit-magazine", async (req, res) => {
+    try {
+        const { imageBase64, prompt } = req.body;
+        if (!imageBase64) {
+            return res.status(400).json({ error: "Missing image upload" });
+        }
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash-image",
+            contents: [
+                {
+                    inlineData: {
+                        data: imageBase64.split(",")[1],
+                        mimeType: imageBase64.includes("png") ? "image/png" : "image/jpeg",
+                    },
+                },
+                { text: prompt || "Enhance or edit this drawing creatively." },
+            ],
+            config: { responseModalities: ["IMAGE"] },
+        });
+
+        const imgPart = response?.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.data);
+        if (!imgPart) {
+            return res.status(500).json({ error: "No image returned from model" });
+        }
+
+        res.json({
+            image: `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}`,
+        });
+    } catch (err) {
+        console.error("❌ /edit-magazine error:", err);
+        res.status(500).json({ error: err.message || "Unknown error" });
+    }
+});
+
+
+
 app.post("/mix-texture", async (req, res) => {
     try {
         const { structureBase64, textureBase64, strength, prompt } = req.body;

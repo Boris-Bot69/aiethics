@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Ethics Activities - TUM</title>
-    <link rel="stylesheet" href="../../css/ai_homage.css">
+    <link rel="stylesheet" href="../../css/ai_magazine.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -120,17 +120,24 @@
 
                 <main class="chat-panel">
                     <div class="chat-messages">
-                        <div class="message ai-message">
-                            <div class="avatar"></div>
-                            <div class="text">Please upload a image by clicking + button, and text to fusion it.</div>
-                        </div>
                     </div>
                     <div class="chat-input-bar">
                         <input type="file" id="imageUpload" accept="image/*" style="display: none;">
-                        <button class="upload-btn" aria-label="Upload image" onclick="document.getElementById('imageUpload').click()">+</button>
-                        <input type="text" id="chatInput" placeholder="Send a message">
+                        <button id="uploadBtn" class="upload-btn">📷</button>
+
+                        <div
+                                id="chatEditor"
+                                class="chat-editor"
+                                contenteditable="true"
+                                role="textbox"
+                                aria-multiline="true"
+                                aria-label="Send a message"
+                                data-placeholder="Describe your edit..."
+                        ></div>
+
                         <button class="send-btn" aria-label="Send message">&#9658;</button>
                     </div>
+
                 </main>
 
             </div>
@@ -339,10 +346,29 @@
 
         </aside>
     </div>
+    <div id="consentModal" class="consent-modal">
+        <div class="consent-content">
+            <h2>AI Image Generation Consent</h2>
+            <p>
+                Before using this activity, please note that the text you enter will be
+                sent to Google servers (Gemini API) for image generation.
+            </p>
+            <p>
+                By continuing, you consent to this data transfer for educational and
+                research purposes.
+            </p>
+            <div class="consent-buttons">
+                <button id="agreeBtn" class="agree-btn">I Agree</button>
+                <button id="cancelBtn" class="cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
 </main>
 
 <script src="../../js/main.js"></script>
 <script src="../../js/app.js"></script>
+<script src="../../js/magazine_chatbot.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const track = document.querySelector('.slider-track');
@@ -402,7 +428,31 @@
             }
         });
     });
+
+
+
 </script>
+<script>
+    document.addEventListener("click", function (e) {
+        const zoomable = e.target.closest(".zoomable");
+        if (!zoomable) return;
+
+        // Create overlay
+        const overlay = document.createElement("div");
+        overlay.classList.add("zoom-overlay");
+
+        const img = document.createElement("img");
+        img.src = zoomable.src;
+        img.alt = zoomable.alt;
+        overlay.appendChild(img);
+
+        // Close on click
+        overlay.addEventListener("click", () => overlay.remove());
+
+        document.body.appendChild(overlay);
+    });
+</script>
+
 
 
 </body>
