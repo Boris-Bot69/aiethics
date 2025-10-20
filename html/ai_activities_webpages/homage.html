@@ -127,7 +127,15 @@
                     </div>
                     <div class="chat-input-bar">
                         <input type="file" id="imageUpload" accept="image/*" style="display: none;">
-                        <input type="text" id="chatInput" placeholder="Send a message">
+                        <div
+                                id="chatEditor"
+                                class="chat-editor"
+                                contenteditable="true"
+                                role="textbox"
+                                aria-multiline="true"
+                                aria-label="Send a message"
+                                data-placeholder="Send a message"
+                        ></div>
                         <button class="send-btn" aria-label="Send message">&#9658;</button>
                     </div>
                 </main>

@@ -1,13 +1,90 @@
-const chatPanel = document.querySelector(".chat-panel");
-const chatMessages = chatPanel.querySelector(".chat-messages");
-const chatInput = chatPanel.querySelector("#chatInput");
-const sendButton = chatPanel.querySelector(".send-btn");
+// ===============================
+// Homage Chatbot Script
+// ===============================
+
+// Global variables (initialized later)
+let chatPanel;
+let chatMessages;
+let editor;
+let sendBtn;
 
 let collectedPrompts = [];
 let generated = []; // [{ prompt, base64 }]
 let awaitingRestartChoice = false;
 
-// --- UI helpers ---
+// ===============================
+// DOM READY
+// ===============================
+window.addEventListener("DOMContentLoaded", () => {
+    chatPanel = document.querySelector(".chat-panel");
+    chatMessages = chatPanel?.querySelector(".chat-messages");
+    editor = document.getElementById("chatEditor");
+    sendBtn = chatPanel.querySelector(".send-btn");
+
+    if (!chatMessages) {
+        console.error("⚠️ Chat messages container not found!");
+        return;
+    }
+
+    // --- Paste plain text only ---
+    editor.addEventListener("paste", e => {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData("text");
+        document.execCommand("insertText", false, text);
+    });
+
+    // --- Enter = send, Shift+Enter = newline ---
+    editor.addEventListener("keydown", e => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleUserInput();
+        }
+    });
+
+    // --- Send button ---
+    sendBtn.addEventListener("click", handleUserInput);
+
+    // --- Focus editor when clicking red bar ---
+    document.getElementById("chatBar")?.addEventListener("click", e => {
+        if (e.target === e.currentTarget) editor.focus();
+    });
+
+    // --- Intro messages ---
+    appendMessage(
+        "🎨 Hello and welcome to *Homage to a Local Artist!* In this activity, you’ll describe artworks inspired by Tania Sívertsen’s style — and the AI will turn your descriptions into images.",
+        "ai"
+    );
+    appendMessage(
+        "You’ll create **three artworks** in total. After each prompt, I’ll generate one image for you — and you can download them all at the end as a ZIP file.",
+        "ai"
+    );
+    appendMessage("Let’s begin! Please describe your **first artwork (1/3)** below 👇", "ai");
+});
+
+// ===============================
+// Input handling
+// ===============================
+function handleUserInput() {
+    const text = editor.innerText.trim();
+    if (!text) return;
+
+    if (awaitingRestartChoice) {
+        awaitingRestartChoice = false;
+        startNewRound();
+        return;
+    }
+
+    appendMessage(text, "user");
+    collectedPrompts.push(text);
+    editor.innerHTML = "";
+    editor.focus();
+
+    sendPrompt(text);
+}
+
+// ===============================
+// UI Helpers
+// ===============================
 function appendMessage(text, sender = "ai") {
     const msg = document.createElement("div");
     msg.classList.add("message", `${sender}-message`);
@@ -44,6 +121,9 @@ function appendAIContainer() {
     return container;
 }
 
+// ===============================
+// Image Display
+// ===============================
 function appendGeneratedImage(base64, promptText, index) {
     const container = appendAIContainer();
 
@@ -94,7 +174,9 @@ function appendGeneratedImage(base64, promptText, index) {
     }
 }
 
-// --- Downloads ---
+// ===============================
+// Downloads
+// ===============================
 function downloadSingle(filename, base64) {
     const a = document.createElement("a");
     a.href = `data:image/png;base64,${base64}`;
@@ -144,7 +226,9 @@ async function downloadAllZip(items) {
     }
 }
 
-// --- Summary panel after 3 images ---
+// ===============================
+// Summary
+// ===============================
 function showSummary() {
     const container = appendAIContainer();
 
@@ -220,7 +304,9 @@ function showSummary() {
     askToRestart();
 }
 
-// --- Ask to start another round ---
+// ===============================
+// Restart Logic
+// ===============================
 function askToRestart() {
     const container = appendAIContainer();
 
@@ -274,7 +360,9 @@ function startNewRound() {
     appendMessage("Let's start fresh! Please describe your first artwork (1/3).", "ai");
 }
 
-// --- Backend call: one image per prompt ---
+// ===============================
+// Backend Call
+// ===============================
 async function sendPrompt(prompt) {
     const index = generated.length + 1;
     const typing = appendMessage("🎨 Generating image...", "ai");
@@ -303,32 +391,3 @@ async function sendPrompt(prompt) {
         appendMessage(`❌ Error: ${err.message}`, "ai");
     }
 }
-
-// --- Input handling ---
-function handleUserInput() {
-    const text = chatInput.value.trim();
-    if (!text) return;
-
-    if (awaitingRestartChoice) {
-        awaitingRestartChoice = false;
-        startNewRound();
-        return;
-    }
-
-    appendMessage(text, "user");
-    collectedPrompts.push(text);
-    chatInput.value = "";
-    sendPrompt(text);
-}
-
-// --- Initialize chat ---
-appendMessage(
-    "👋 Welcome! Please write 3 prompts — after each one, I’ll generate an image and show it below.\nYou can download each image before moving on.",
-    "ai"
-);
-appendMessage("Start by describing your first artwork (1/3).", "ai");
-
-sendButton.addEventListener("click", handleUserInput);
-chatInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") handleUserInput();
-});
