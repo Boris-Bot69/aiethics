@@ -461,6 +461,84 @@ h1 {
     object-fit: contain;
 }
 
+/* === Consent Modal === */
+.consent-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(3px);
+    animation: fadeIn .4s ease;
+}
+
+.consent-content {
+    background: #fff;
+    padding: 2rem 2.5rem;
+    border-radius: 16px;
+    max-width: 460px;
+    width: 90%;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+}
+
+.consent-content h2 {
+    margin-bottom: 0.8rem;
+    color: #d9534f;
+    font-weight: 600;
+}
+
+.consent-content p {
+    color: #444;
+    line-height: 1.5;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+.consent-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.agree-btn, .cancel-btn {
+    font-family: 'Inter', sans-serif;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background .25s ease, transform .2s ease;
+}
+
+.agree-btn {
+    background: #d9534f;
+    color: #fff;
+}
+.agree-btn:hover {
+    background: #c54643;
+    transform: scale(1.05);
+}
+
+.cancel-btn {
+    background: #e9e9e9;
+    color: #333;
+}
+.cancel-btn:hover {
+    background: #d5d5d5;
+    transform: scale(1.05);
+}
+
+/* Fade animation */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+
 
 
 /* --- Post-Activity Section Layout --- */
