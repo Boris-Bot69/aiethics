@@ -62,7 +62,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
             // 🆕 Add a single fresh instruction
             appendMessage(
-                "📤 Image uploaded! Now type a short prompt describing how you'd like the AI to modify it (e.g., *Add a small bird on the tree*).",
+                "Image uploaded! Now type a short prompt describing how you'd like the AI to modify it (e.g., *Add a small bird on the tree*).",
                 "ai"
             );
 
