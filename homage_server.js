@@ -198,35 +198,58 @@ app.post("/expand_canvas", async (req, res) => {
         const { image, from, to } = req.body;
         const buf = Buffer.from(image.split(",")[1], "base64");
 
+        // 🧩 Step 1: Downscale for faster generation (prevents timeouts)
+        const resized = await sharp(buf)
+            .resize({ width: 768, height: 768, fit: "inside" })
+            .png()
+            .toBuffer();
+
+        // 🧠 Step 2: Better spatial prompt
         const prompt = `
-You are expanding a multi-stage artwork (A8 → A7 → A6 → A5 → A4).  
-The central colored area must remain pixel-perfect — do not resize, redraw, or move it.
-Only paint outward into the grey background area so that the new image looks like
-a natural larger version of the same painting (like zooming out with more visible surroundings).
-Preserve lighting, brushwork, and texture continuity.
-Do not duplicate or re-insert the original image inside itself.
+You are expanding a multi-stage artwork (A8 → A7 → A6 → A5 → A4).
+The colored center must remain pixel-perfect — do not resize, redraw, or move it.
+Only paint outward into the grey background so that the final image looks like
+a natural zoomed-out continuation of the same painting.
+Preserve lighting, brushwork, and style consistency.
+Do not duplicate, crop, or re-insert the inner region.
 `;
 
+        // 🌀 Step 3: Gemini API call with retry logic
+        let response;
+        let attempt = 0;
+        while (attempt < 2) {
+            try {
+                console.log(`🎨 Expanding canvas ${from} → ${to} (attempt ${attempt + 1})`);
+                response = await ai.models.generateContent({
+                    model: "gemini-2.5-flash-image",
+                    contents: [
+                        { inlineData: { data: resized.toString("base64"), mimeType: "image/png" } },
+                        { text: prompt },
+                    ],
+                    config: { responseModalities: ["IMAGE"], temperature: 0.6 },
+                });
+                break; // success
+            } catch (err) {
+                if (err.status === 503) {
+                    console.warn("⚠️ Gemini timeout, retrying...");
+                    attempt++;
+                    await new Promise(r => setTimeout(r, 2000));
+                    continue;
+                }
+                throw err; // other errors
+            }
+        }
 
+        if (!response) throw new Error("Gemini request failed after retries.");
 
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash-image",
-            contents: [
-                { inlineData: { data: buf.toString("base64"), mimeType: "image/png" } },
-                { text: prompt },
-            ],
-            config: { responseModalities: ["IMAGE"], temperature: 0.6 },
-        });
-
-        const part = response?.candidates?.[0]?.content?.parts?.find(
-            (p) => p.inlineData?.data
-        );
+        // 🖼 Step 4: Extract image
+        const part = response?.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.data);
         if (!part) throw new Error("No image returned from AI.");
 
         const mime = part.inlineData.mimeType || "image/png";
         const dataUrl = `data:${mime};base64,${part.inlineData.data}`;
 
-        // ✅ store this frame for summary
+        // ✅ Step 5: Store this frame for later summary
         frames[to] = dataUrl;
 
         res.json({ image_url: dataUrl });
@@ -235,16 +258,15 @@ Do not duplicate or re-insert the original image inside itself.
         res.status(500).json({ error: err.message });
     }
 });
-
 /* ============================================================
-   SUMMARY (A8→A4 PDF)
+   SUMMARY (A8→A4 PDF, includes original A8)
 ============================================================ */
 app.get("/summary_a4", async (_req, res) => {
     try {
         console.log("🧩 Generating A8→A4 summary PDF...");
 
         const layers = ["A8", "A7", "A6", "A5", "A4"];
-        const borders = ["#007BFF", "#FFD700", "#007BFF", "#FFD700", "#007BFF"];
+        const borders = ["#FFFFFF", "#007BFF", "#FFD700", "#007BFF", "#FFD700"];
         const imgs = [];
 
         for (let i = 0; i < layers.length; i++) {
@@ -255,10 +277,7 @@ app.get("/summary_a4", async (_req, res) => {
             const buf = await sharp(dataUrlToBuffer(img))
                 .resize({ width: 1000 })
                 .extend({
-                    top: 8,
-                    bottom: 8,
-                    left: 8,
-                    right: 8,
+                    top: 8, bottom: 8, left: 8, right: 8,
                     background: borders[i],
                 })
                 .png()
@@ -274,15 +293,22 @@ app.get("/summary_a4", async (_req, res) => {
         const pdf = await PDFDocument.create();
         const font = await pdf.embedFont(StandardFonts.HelveticaBold);
 
-        for (const { layer, buf } of imgs) {
+        for (let i = 0; i < imgs.length; i++) {
+            const { layer, buf } = imgs[i];
             const img = await pdf.embedPng(buf);
             const { width, height } = img.scale(0.7);
-
             const page = pdf.addPage([595.28, 841.89]); // A4 in points
+
             const pageWidth = page.getWidth();
             const pageHeight = page.getHeight();
 
-            const title = `Step ${layers.indexOf(layer)}: ${layer}`;
+            // Title
+            let title;
+            if (layer === "A8") {
+                title = "Original Artwork (A8)";
+            } else {
+                title = `Step ${layers.indexOf(layer)}: ${layer}`;
+            }
             const textWidth = font.widthOfTextAtSize(title, 16);
             page.drawText(title, {
                 x: (pageWidth - textWidth) / 2,
@@ -292,6 +318,7 @@ app.get("/summary_a4", async (_req, res) => {
                 color: rgb(0.1, 0.1, 0.1),
             });
 
+            // Image
             const x = (pageWidth - width) / 2;
             const y = (pageHeight - height) / 2 - 20;
             page.drawImage(img, { x, y, width, height });
@@ -306,6 +333,7 @@ app.get("/summary_a4", async (_req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 
 /* ============================================================
    ROUTES – HTML Pages

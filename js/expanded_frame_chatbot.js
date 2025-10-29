@@ -256,23 +256,24 @@ async function expandWithAI(currentStage, nextStage, previewMeta, btnEl) {
             addBotMessage(`Preparing preview for <b>${next}</b>...`);
             await showGreyPreview(stampedUrl, stage, next); // ✅ Automatically create new grey preview
         } else {
-            addBotMessage("📘 Generating summary (A8 → A4)... please wait...");
-            try {
-                const r = await fetch("http://localhost:3000/summary_a4");
-                const data = await r.json();
-                if (data.pdf_url) {
+            const pdfBtn = document.createElement("button");
+            pdfBtn.className = "download-btn";
+            pdfBtn.textContent = "📄 Download Summary PDF";
+            pdfBtn.onclick = async () => {
+                addBotMessage("📄 Generating your summary PDF...");
+                try {
+                    const response = await fetch("http://localhost:3000/summary_a4");
+                    if (!response.ok) throw new Error("Failed to generate PDF");
+                    const { pdf_url } = await response.json();
                     const a = document.createElement("a");
-                    a.href = data.pdf_url;
+                    a.href = pdf_url;
                     a.download = "Expanded_Frames_Summary_A8_to_A4.pdf";
                     a.click();
-                    addBotMessage("✅ PDF summary downloaded successfully!");
-                } else {
-                    addBotMessage("⚠️ Could not generate PDF summary (no data returned).");
+                } catch (err) {
+                    addBotMessage("⚠️ PDF generation failed: " + err.message);
                 }
-            } catch (err) {
-                console.error(err);
-                addBotMessage("⚠️ Error generating summary PDF. Check server logs.");
-            }
+            };
+            addMessage(null, "bot", pdfBtn);
         }
 
     } catch (err) {
