@@ -7,6 +7,8 @@ import dotenv from "dotenv";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
+import { createWriteStream } from "fs";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 
 
 dotenv.config();
@@ -19,7 +21,7 @@ const toRaw = (dataUrl) => {
     }
 };
 
-const frames = { A8: null, A8b: null, A7: null, A6: null, A5: null };
+const frames = { A8: null, A7: null, A6: null, A5: null };
 
 const stageKey = (stageNum) => {
     if (stageNum === 1) return "A8";
@@ -50,6 +52,8 @@ const EXPANDED_HTML = path.join(HTML_BASE, "expanded_frames.html");
 const TEXTURE_HTML = path.join(HTML_BASE, "drawing_texture.html");
 
 app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, "js")));
+
 
 // GenAI client
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
@@ -114,7 +118,7 @@ app.post("/edit-magazine", async (req, res) => {
             image: `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}`,
         });
     } catch (err) {
-        console.error("❌ /edit-magazine error:", err);
+        console.error("/edit-magazine error:", err);
         res.status(500).json({ error: err.message || "Unknown error" });
     }
 });
@@ -188,174 +192,118 @@ app.post("/mix-texture", async (req, res) => {
     }
 });
 
-// ---------------------------------------------------------------------------
-// 4) Expanded Frames — A8 → A7 → A6 → A5 outpaint (SINGLE route)
-// ---------------------------------------------------------------------------
-app.post("/expand_image", async (req, res) => {
+
+app.post("/expand_canvas", async (req, res) => {
     try {
-        const { image, prompt, stage } = req.body;
-        if (!image) return res.status(400).json({ error: "Missing image upload" });
+        const { image, from, to } = req.body;
+        const buf = Buffer.from(image.split(",")[1], "base64");
 
-        const stageLabel = stage
-            ? `Expanding from ${stage} to the next larger paper frame.`
-            : "Expanding artwork to a larger frame.";
+        const prompt = `
+You are expanding a multi-stage artwork (A8 → A7 → A6 → A5 → A4).  
+The central colored area must remain pixel-perfect — do not resize, redraw, or move it.
+Only paint outward into the grey background area so that the new image looks like
+a natural larger version of the same painting (like zooming out with more visible surroundings).
+Preserve lighting, brushwork, and texture continuity.
+Do not duplicate or re-insert the original image inside itself.
+`;
 
-        const fullPrompt = `
-${stageLabel}
-Preserve artistic style and composition. Expand borders creatively.
-${prompt ? `User input: ${prompt}` : ""}`.trim();
+
 
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash-image",
             contents: [
-                {
-                    inlineData: {
-                        data: toRaw(image),
-                        mimeType: image.includes("png") ? "image/png" : "image/jpeg",
-                    },
-                },
-                { text: fullPrompt },
+                { inlineData: { data: buf.toString("base64"), mimeType: "image/png" } },
+                { text: prompt },
             ],
-            config: { responseModalities: ["IMAGE"] },
+            config: { responseModalities: ["IMAGE"], temperature: 0.6 },
         });
 
-        const imgPart = response?.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.data);
-        if (!imgPart) return res.status(500).json({ error: "No image returned from model" });
+        const part = response?.candidates?.[0]?.content?.parts?.find(
+            (p) => p.inlineData?.data
+        );
+        if (!part) throw new Error("No image returned from AI.");
 
-        const mime = imgPart.inlineData.mimeType || "image/png";
-        const base64 = imgPart.inlineData.data;
-        const dataUrl = `data:${mime};base64,${base64}`;
+        const mime = part.inlineData.mimeType || "image/png";
+        const dataUrl = `data:${mime};base64,${part.inlineData.data}`;
 
-        // store for merging later
-        const key = stageKey(Number(stage));
-        if (key) frames[key] = dataUrl;
+        // ✅ store this frame for summary
+        frames[to] = dataUrl;
 
         res.json({ image_url: dataUrl });
     } catch (err) {
-        console.error("❌ /expand_image error:", err);
-        res.status(500).json({ error: err.message || "Unknown error" });
+        console.error("❌ /expand_canvas error:", err);
+        res.status(500).json({ error: err.message });
     }
 });
 
-// ---------------------------------------------------------------------------
-// 5) Merge A8–A5 into A4 ISO layout (portrait) with two A8s on top-left
-// Layout (portrait A4 2480x3508):
-// ┌────────────────────────────┐
-// │ A8 | A8 |        A6       │
-// │----|----|------------------│
-// │    | A7 |                  │
-// ├────────────────────────────┤
-// │            A5              │
-// └────────────────────────────┘
-// A8,A6 = portrait; A7,A5 = landscape (A7 rotated 90°); A5 big bottom
-// ---------------------------------------------------------------------------
-app.post("/merge_to_a4", async (_req, res) => {
+/* ============================================================
+   SUMMARY (A8→A4 PDF)
+============================================================ */
+app.get("/summary_a4", async (_req, res) => {
     try {
-        // sanity: must have A5, A6, A7, A8
-        if (!frames.A5 || !frames.A6 || !frames.A7 || !frames.A8) {
-            return res.status(400).json({ error: "Missing one or more frames (need A8, A7, A6, A5)." });
+        console.log("🧩 Generating A8→A4 summary PDF...");
+
+        const layers = ["A8", "A7", "A6", "A5", "A4"];
+        const borders = ["#007BFF", "#FFD700", "#007BFF", "#FFD700", "#007BFF"];
+        const imgs = [];
+
+        for (let i = 0; i < layers.length; i++) {
+            const key = layers[i];
+            const img = frames[key];
+            if (!img) continue;
+
+            const buf = await sharp(dataUrlToBuffer(img))
+                .resize({ width: 1000 })
+                .extend({
+                    top: 8,
+                    bottom: 8,
+                    left: 8,
+                    right: 8,
+                    background: borders[i],
+                })
+                .png()
+                .toBuffer();
+
+            imgs.push({ layer: key, buf });
         }
 
-        console.log("🧩 Merging A8–A5 into A4 ISO layout composite...");
+        if (imgs.length === 0) {
+            return res.status(400).json({ error: "No frames available for summary." });
+        }
 
-        // canvas: A4 300DPI portrait
-        const A4W = 2480, A4H = 3508;
-        const margin = 40;
+        const pdf = await PDFDocument.create();
+        const font = await pdf.embedFont(StandardFonts.HelveticaBold);
 
-        // --- Regions (integers only) ---
-        const topH   = Math.round(A4H * 0.42);           // top band height
-        const leftW  = Math.round(A4W * 0.47);           // left column width
-        const rightW = A4W - leftW - margin * 2;         // right column width
-        const bottomH = A4H - topH - margin * 3;         // bottom band (A5) height
+        for (const { layer, buf } of imgs) {
+            const img = await pdf.embedPng(buf);
+            const { width, height } = img.scale(0.7);
 
-        // A5 big (landscape): occupy bottom band centered
-        const A5w = A4W - margin * 2;
-        const A5h = bottomH;
-        const A5x = margin;
-        const A5y = A4H - bottomH - margin;
+            const page = pdf.addPage([595.28, 841.89]); // A4 in points
+            const pageWidth = page.getWidth();
+            const pageHeight = page.getHeight();
 
-        // Left-top area for A8 + A8 + A7
-        const cellPad = 14;
-        const A8w = Math.round((leftW - margin - cellPad) / 2);
-        const A8h = Math.round(A8w * Math.SQRT2);                 // portrait 1:√2
-        const A8_1x = margin;
-        const A8_1y = margin;
-        const A8_2x = margin + A8w + cellPad;
-        const A8_2y = margin;
+            const title = `Step ${layers.indexOf(layer)}: ${layer}`;
+            const textWidth = font.widthOfTextAtSize(title, 16);
+            page.drawText(title, {
+                x: (pageWidth - textWidth) / 2,
+                y: pageHeight - 40,
+                size: 16,
+                font,
+                color: rgb(0.1, 0.1, 0.1),
+            });
 
-        const A7w = leftW - margin;                                // landscape
-        const A7h = Math.round(A7w / Math.SQRT2);
-        const A7x = margin;
-        const A7y = Math.round(margin + Math.max(A8h, 0) + cellPad);
+            const x = (pageWidth - width) / 2;
+            const y = (pageHeight - height) / 2 - 20;
+            page.drawImage(img, { x, y, width, height });
+        }
 
-        // Top-right A6 portrait fills remaining top-right area
-        const A6w = rightW;
-        const A6h = Math.round(A6w * Math.SQRT2);
-        const A6x = A4W - margin - A6w;
-        const A6y = margin;
-
-        // Build composites (convert all to buffers first)
-        const comp = [];
-
-        // A8 top-left
-        comp.push({
-            input: await sharp(dataUrlToBuffer(frames.A8))
-                .resize(A8w, A8h, { fit: "cover" })
-                .toBuffer(),
-            left: A8_1x, top: A8_1y
-        });
-
-        // 2nd A8 (if we ever stored separately, else reuse A8)
-        const a8bDataUrl = frames.A8b || frames.A8;
-        comp.push({
-            input: await sharp(dataUrlToBuffer(a8bDataUrl))
-                .resize(A8w, A8h, { fit: "cover" })
-                .toBuffer(),
-            left: A8_2x, top: A8_2y
-        });
-
-        // A6 portrait (top-right)
-        comp.push({
-            input: await sharp(dataUrlToBuffer(frames.A6))
-                .resize(A6w, A6h, { fit: "cover" })
-                .toBuffer(),
-            left: A6x, top: A6y
-        });
-
-        // A7 landscape (rotate 90 so it’s landscape if needed)
-        comp.push({
-            input: await sharp(dataUrlToBuffer(frames.A7))
-                .rotate(90) // force landscape orientation visually
-                .resize(A7w, A7h, { fit: "cover" })
-                .toBuffer(),
-            left: A7x, top: A7y
-        });
-
-        // A5 large landscape bottom
-        comp.push({
-            input: await sharp(dataUrlToBuffer(frames.A5))
-                .resize(A5w, A5h, { fit: "cover" })
-                .toBuffer(),
-            left: A5x, top: A5y
-        });
-
-        const final = await sharp({
-            create: {
-                width: A4W,
-                height: A4H,
-                channels: 3,
-                background: { r: 255, g: 255, b: 255 }
-            }
-        })
-            .composite(comp)
-            .png()
-            .toBuffer();
-
-        console.log("✅ A4 ISO composite successfully generated.");
-        res.json({ image_url: `data:image/png;base64,${final.toString("base64")}` });
+        const pdfBytes = await pdf.save();
+        const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
+        console.log("✅ Summary PDF ready!");
+        res.json({ pdf_url: `data:application/pdf;base64,${pdfBase64}` });
     } catch (err) {
-        console.error("❌ /merge_to_a4 error:", err);
-        res.status(500).json({ error: err.message || "Unknown error" });
+        console.error("❌ /summary_a4 error:", err);
+        res.status(500).json({ error: err.message });
     }
 });
 

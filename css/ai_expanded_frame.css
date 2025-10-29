@@ -379,6 +379,13 @@ h1 {
     line-height: 1.6;
 }
 
+.chat-image-preview { max-width: 100%; border-radius: 8px; margin: 1rem 0; }
+.expand-btn {
+    background: #ffe6b3; border: 1px solid #f0b400; border-radius: 6px;
+    padding: 6px 10px; font-weight: 600; cursor: pointer; margin-top: .5rem;
+}
+.expand-btn:hover { background: #ffd866; }
+
 
 .download-btn {
     display: inline-block;

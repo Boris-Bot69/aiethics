@@ -52,7 +52,7 @@
         </aside>
 
         <section class="main-content-area">
-            <h1 class="custom-header">Drawing plus Textures</h1>
+            <h1 class="custom-header">Expanded frames</h1>
             <img src="../../images/activities/green_pic_homage.svg" alt="green pic activity" class="green-pic">
             <div class="mini-image-spacer"></div>
 
@@ -64,7 +64,6 @@
             <h2>Activity Instructions</h2>
             <div class="mini-image-spacer"></div>
 
-            <a href="#" id="teacher-mode-btn" class="material-button teacher-guide">Teacher</a>
             <a href="#" id="learner-mode-btn" class="material-button learner-worksheet">Learner</a>
 
             <div class="mini-image-spacer"></div>
@@ -123,21 +122,12 @@
                     <div class="chat-messages">
                     </div>
                     <div class="chat-input-bar">
-                        <input type="file" id="imageUpload" accept="image/*" style="display: none;">
-                        <button id="uploadBtn" class="upload-btn">📷</button>
-
-                        <div
-                                id="chatEditor"
-                                class="chat-editor"
-                                contenteditable="true"
-                                role="textbox"
-                                aria-multiline="true"
-                                aria-label="Send a message"
-                                data-placeholder="Describe your edit..."
-                        ></div>
-
-                        <button class="send-btn" aria-label="Send message">&#9658;</button>
+                        <input type="file" id="imageUpload" accept="image/*" style="display:none;">
+                        <button id="uploadBtn" class="upload-btn">📷 Upload Artwork</button>
+                        <div id="chatEditor" class="chat-editor" contenteditable="true" placeholder="Describe your scene..."></div>
                     </div>
+
+
 
                 </main>
 
@@ -345,23 +335,7 @@
             <img src="../../images/rightsidebar_down.svg" alt="right sidebar down ai activities" class="sidebar-image">
 
         </aside>
-        <div id="consentModal" class="consent-modal">
-            <div class="consent-content">
-                <h2>AI Image Generation Consent</h2>
-                <p>
-                    Before using this activity, please note that the text you enter will be
-                    sent to Google servers (Gemini API) for image generation.
-                </p>
-                <p>
-                    By continuing, you consent to this data transfer for educational and
-                    research purposes.
-                </p>
-                <div class="consent-buttons">
-                    <button id="agreeBtn" class="agree-btn">I Agree</button>
-                    <button id="cancelBtn" class="cancel-btn">Cancel</button>
-                </div>
-            </div>
-        </div>
+
     </div>
 </main>
 

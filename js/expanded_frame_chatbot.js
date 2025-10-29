@@ -1,59 +1,43 @@
-// ===============================
-// EXPANDED FRAMES CHATBOT SCRIPT
-// ===============================
+
 
 let chatPanel, chatMessages, editor, sendBtn, imageUpload;
 let uploadedBase64 = null;
 let aiConsentGiven = false;
-let stage = 1; // A8 → A7 → A6 → A5 → A4
+let lastHumanUploadBase64 = null;
+
+const frameOrder = ["A8", "A7", "A6", "A5", "A4"];
+let stage = "A8";
+let waitingForHumanUploadOf = null;
+let lastPreviewMeta = null;
 
 // ===============================
 // DOM READY
 // ===============================
 window.addEventListener("DOMContentLoaded", () => {
-    console.log("📦 DOM fully loaded — initializing Expanded Frames chatbot...");
-
     chatPanel = document.querySelector(".chat-panel");
     chatMessages = chatPanel?.querySelector(".chat-messages");
     editor = document.getElementById("chatEditor");
     sendBtn = chatPanel.querySelector(".send-btn");
     imageUpload = document.getElementById("imageUpload");
 
-    if (!chatPanel || !chatMessages) {
-        console.error("❌ Chat panel or chat-messages not found!");
-    } else {
-        console.log("✅ Chat panel and message container found.");
-    }
+    addBotMessage(`
+👋 Welcome to <em>Expanded Frames</em>!<br/>
+Upload your <b>A8</b> artwork with 📷.<br/>
+We’ll show a grey canvas preview for the next frame, and AI will fill the grey area.<br/>
+The previous human area will always stay highlighted in <b style="color:#1e63ff">blue</b>.
+  `);
 
-    addBotMessage(
-        "👋 Welcome to the *Expanded Frames* activity!<br><br>Start by uploading your A8 artwork using the 📷 button below. Then describe how you’d like the AI to expand it — from A8 → A7, A7 → A6, and so on until A4.<br><br>Ready when you are!"
-    );
-
-    // Upload handler
     const uploadBtn = document.getElementById("uploadBtn");
     if (uploadBtn && imageUpload) {
         uploadBtn.addEventListener("click", () => imageUpload.click());
         imageUpload.addEventListener("change", handleImageUpload);
     }
 
-    // Send button handler
     if (sendBtn) sendBtn.addEventListener("click", sendUserMessage);
 
-    // Enter key
-    if (editor) {
-        editor.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                sendUserMessage();
-            }
-        });
-    }
-
-    // Consent modal
     const modal = document.getElementById("consentModal");
     const agreeBtn = document.getElementById("agreeBtn");
     const cancelBtn = document.getElementById("cancelBtn");
-
     if (modal && agreeBtn && cancelBtn) {
         agreeBtn.addEventListener("click", () => {
             aiConsentGiven = true;
@@ -62,7 +46,7 @@ window.addEventListener("DOMContentLoaded", () => {
         });
         cancelBtn.addEventListener("click", () => {
             modal.remove();
-            addBotMessage("⚠️ AI generation disabled — you can still chat about your artwork!");
+            addBotMessage("⚠️ AI generation disabled — you can still chat about your artwork.");
         });
     }
 });
@@ -70,7 +54,7 @@ window.addEventListener("DOMContentLoaded", () => {
 // ===============================
 // MESSAGE HELPERS
 // ===============================
-function addMessage(text, sender = "bot", imageSrc = null) {
+function addMessage(text, sender = "bot", node = null) {
     const msg = document.createElement("div");
     msg.className = `message ${sender === "user" ? "user-align" : ""}`;
 
@@ -80,25 +64,7 @@ function addMessage(text, sender = "bot", imageSrc = null) {
     const content = document.createElement("div");
     content.classList.add("text");
 
-    if (imageSrc) {
-        const img = document.createElement("img");
-        img.src = imageSrc;
-        img.classList.add("chat-image-preview");
-
-        const downloadBtn = document.createElement("button");
-        downloadBtn.textContent = "⬇️ Download Image";
-        downloadBtn.classList.add("download-btn");
-        downloadBtn.addEventListener("click", () => {
-            const link = document.createElement("a");
-            link.href = imageSrc;
-            link.download = `expanded_frame_${Date.now()}.png`;
-            link.click();
-        });
-
-        content.appendChild(img);
-        content.appendChild(downloadBtn);
-    }
-
+    if (node) content.appendChild(node);
     if (text) {
         const p = document.createElement("p");
         p.innerHTML = text;
@@ -111,115 +77,306 @@ function addMessage(text, sender = "bot", imageSrc = null) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function addBotMessage(text) {
-    addMessage(text, "bot");
+function addBotMessage(html) {
+    addMessage(html, "bot");
+}
+function addUserMessage(html) {
+    addMessage(html, "user");
 }
 
-function addUserMessage(text, imageSrc = null) {
-    addMessage(text, "user", imageSrc);
+function addImageBubble(src, extraBelow = null) {
+    const wrap = document.createElement("div");
+    const img = document.createElement("img");
+    img.src = src;
+    img.classList.add("chat-image-preview");
+    wrap.appendChild(img);
+
+    if (extraBelow) wrap.appendChild(extraBelow);
+    addMessage(null, "bot", wrap);
+    return { wrap, img };
 }
 
 // ===============================
-// IMAGE UPLOAD HANDLER
+// IMAGE UPLOAD
 // ===============================
-function handleImageUpload(event) {
-    const file = event.target.files[0];
+async function handleImageUpload(e) {
+    const file = e.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = function (e) {
-        uploadedBase64 = e.target.result;
+    reader.onload = async (ev) => {
+        uploadedBase64 = ev.target.result;
+        lastHumanUploadBase64 = ev.target.result;
 
-        // 🧹 Remove previous images (avoid duplicates)
-        const oldImages = chatMessages.querySelectorAll(".chat-image-preview");
-        oldImages.forEach((img) => img.parentElement.parentElement.remove());
+        if (waitingForHumanUploadOf) {
+            stage = waitingForHumanUploadOf;
+            waitingForHumanUploadOf = null;
+        }
 
-        addUserMessage(null, uploadedBase64);
+        addUserMessage(`📸 Uploaded ${stage} artwork.`);
+        const nextStage = getNextStage();
+        if (!nextStage) {
+            addBotMessage("You're already at A4. Nothing to expand.");
+            return;
+        }
 
-        const aiStage = ["A8", "A7", "A6", "A5", "A4"];
-        addBotMessage(
-            `Nice! You've uploaded your ${aiStage[stage - 1]} artwork. Next, I'll help you expand it to ${
-                aiStage[stage] || "A4"
-            } size. Describe what kind of expansion you’d like.`
-        );
+        await showGreyPreview(uploadedBase64, stage, nextStage);
     };
     reader.readAsDataURL(file);
 }
 
-// ===============================
-// SEND MESSAGE HANDLER
-// ===============================
-async function sendUserMessage() {
-    const userText = editor.textContent.trim();
-    if (!userText && !uploadedBase64) return;
+function getNextStage() {
+    const i = frameOrder.indexOf(stage);
+    return i >= 0 ? frameOrder[i + 1] : null;
+}
 
+// ===============================
+// PREVIEW GREY CANVAS
+// ===============================
+async function showGreyPreview(base64, currentStage, nextStage) {
+    const img = await loadImage(base64);
+    const scaleMap = { A8: 1.35, A7: 1.55, A6: 1.75, A5: 1.95 };
+    const scale = scaleMap[currentStage] || 1.5;
+
+    const newW = Math.round(img.width * scale);
+    const newH = Math.round(img.height * scale);
+    const offX = Math.round((newW - img.width) / 2);
+    const offY = Math.round((newH - img.height) / 2);
+
+    // 1️⃣ canvas for chat preview (with border)
+    const previewCanvas = document.createElement("canvas");
+    previewCanvas.width = newW;
+    previewCanvas.height = newH;
+    const previewCtx = previewCanvas.getContext("2d");
+    previewCtx.fillStyle = "#d9d9d9";
+    previewCtx.fillRect(0, 0, newW, newH);
+    previewCtx.drawImage(img, offX, offY);
+    previewCtx.lineWidth = 6;
+    previewCtx.strokeStyle = "#1e63ff";
+    previewCtx.strokeRect(offX + 1, offY + 1, img.width - 2, img.height - 2);
+
+    const previewDataUrl = previewCanvas.toDataURL("image/png");
+
+    // 2️⃣ second clean canvas for AI input (no border)
+    const aiCanvas = document.createElement("canvas");
+    aiCanvas.width = newW;
+    aiCanvas.height = newH;
+    const aiCtx = aiCanvas.getContext("2d");
+    aiCtx.fillStyle = "#d9d9d9";
+    aiCtx.fillRect(0, 0, newW, newH);
+    aiCtx.drawImage(img, offX, offY);
+
+    const aiDataUrl = aiCanvas.toDataURL("image/png");
+
+    lastPreviewMeta = {
+        w: newW,
+        h: newH,
+        x: offX,
+        y: offY,
+        innerW: img.width,
+        innerH: img.height,
+        dataUrl: aiDataUrl,
+        previewUrl: previewDataUrl
+    };
+
+    const expandBtn = document.createElement("button");
+    expandBtn.className = "expand-btn";
+    expandBtn.textContent = `✨ Expand to ${nextStage}`;
+    expandBtn.onclick = async () => {
+        expandBtn.disabled = true;
+        expandBtn.textContent = "🧠 Expanding...";
+        await expandWithAI(currentStage, nextStage, lastPreviewMeta, expandBtn);
+    };
+
+    addBotMessage(`🖼️ Preview for <b>${nextStage}</b>: grey area will be filled by AI.`);
+    addImageBubble(previewDataUrl, expandBtn);
+}
+
+
+// ===============================
+// EXPAND WITH AI
+// ===============================
+async function expandWithAI(currentStage, nextStage, previewMeta, btnEl) {
+
+
+    addBotMessage(`🧠 Expanding <b>${currentStage}</b> → <b>${nextStage}</b>…`);
+
+    try {
+        const response = await fetch("http://localhost:3000/expand_canvas", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: previewMeta.dataUrl, from: currentStage, to: nextStage }),
+        });
+        if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
+        const { image_url } = await response.json();
+
+        const outpaintedImg = await loadImage(image_url);
+        const humanImg = await loadImage(lastHumanUploadBase64 || uploadedBase64);
+
+        const resultCanvas = document.createElement("canvas");
+        resultCanvas.width = previewMeta.w;
+        resultCanvas.height = previewMeta.h;
+        const rctx = resultCanvas.getContext("2d");
+        rctx.drawImage(outpaintedImg, 0, 0, resultCanvas.width, resultCanvas.height);
+
+        const match = await locateHumanRegion(resultCanvas, humanImg);
+        const rect = match || { x: previewMeta.x, y: previewMeta.y, w: previewMeta.innerW, h: previewMeta.innerH };
+
+        rctx.lineWidth = 6;
+        rctx.strokeStyle = "#1e63ff";
+        rctx.strokeRect(rect.x + 1, rect.y + 1, rect.w - 2, rect.h - 2);
+
+        const stampedUrl = resultCanvas.toDataURL("image/png");
+
+        addBotMessage(`✨ AI expanded to <b>${nextStage}</b>. <span style="color:#1e63ff">Blue</span> border = previous human area.`);
+        const { wrap } = addImageBubble(stampedUrl);
+
+        const dl = document.createElement("button");
+        dl.className = "download-btn";
+        dl.textContent = "⬇️ Download image";
+        dl.onclick = () => {
+            const a = document.createElement("a");
+            a.href = stampedUrl;
+            a.download = `${nextStage}_expanded.png`;
+            a.click();
+        };
+        wrap.appendChild(dl);
+
+        if (btnEl?.parentElement) btnEl.parentElement.remove();
+
+        // ✅ Update current state and base image
+        stage = nextStage;
+        uploadedBase64 = stampedUrl; // use AI image as base for next stage
+        lastHumanUploadBase64 = stampedUrl;
+
+        const next = getNextStage();
+
+        if (next) {
+            addBotMessage(`Preparing preview for <b>${next}</b>...`);
+            await showGreyPreview(stampedUrl, stage, next); // ✅ Automatically create new grey preview
+        } else {
+            addBotMessage("📘 Generating summary (A8 → A4)... please wait...");
+            try {
+                const r = await fetch("http://localhost:3000/summary_a4");
+                const data = await r.json();
+                if (data.pdf_url) {
+                    const a = document.createElement("a");
+                    a.href = data.pdf_url;
+                    a.download = "Expanded_Frames_Summary_A8_to_A4.pdf";
+                    a.click();
+                    addBotMessage("✅ PDF summary downloaded successfully!");
+                } else {
+                    addBotMessage("⚠️ Could not generate PDF summary (no data returned).");
+                }
+            } catch (err) {
+                console.error(err);
+                addBotMessage("⚠️ Error generating summary PDF. Check server logs.");
+            }
+        }
+
+    } catch (err) {
+        console.error(err);
+        addBotMessage("⚠️ Expansion failed. Check the server logs.");
+        if (btnEl) {
+            btnEl.disabled = false;
+            btnEl.textContent = `✨ Expand to ${nextStage}`;
+        }
+    }
+}
+
+
+// ===============================
+// TEMPLATE MATCHING (auto-align blue border)
+// ===============================
+async function locateHumanRegion(resultCanvas, humanImg) {
+    const MAX_SIDE = 640;
+
+    function toCanvasScaled(imgOrCanvas, maxSide) {
+        const w = imgOrCanvas.width, h = imgOrCanvas.height;
+        const s = Math.min(1, maxSide / Math.max(w, h));
+        const cw = Math.round(w * s), ch = Math.round(h * s);
+        const c = document.createElement("canvas");
+        c.width = cw; c.height = ch;
+        const cx = c.getContext("2d");
+        cx.drawImage(imgOrCanvas, 0, 0, cw, ch);
+        return { c, scale: s };
+    }
+
+    const resScaled = toCanvasScaled(resultCanvas, MAX_SIDE);
+    const humScaled = toCanvasScaled(humanImg, Math.round(MAX_SIDE * 0.6));
+
+    const resData = getGray(resScaled.c);
+    const humData = getGray(humScaled.c);
+
+    const strides = 3;
+    const scales = [0.95, 1.0, 1.05];
+    let best = { score: -Infinity, x: 0, y: 0, w: humScaled.c.width, h: humScaled.c.height, scale: 1 };
+
+    for (const s of scales) {
+        const tw = Math.round(humScaled.c.width * s);
+        const th = Math.round(humScaled.c.height * s);
+        const tCanvas = document.createElement("canvas");
+        tCanvas.width = tw; tCanvas.height = th;
+        tCanvas.getContext("2d").drawImage(humScaled.c, 0, 0, tw, th);
+        const tData = getGray(tCanvas);
+
+        for (let y = 0; y <= resScaled.c.height - th; y += strides) {
+            for (let x = 0; x <= resScaled.c.width - tw; x += strides) {
+                const score = ncc(resData, resScaled.c.width, resScaled.c.height, tData, tw, th, x, y);
+                if (score > best.score) best = { score, x, y, w: tw, h: th, scale: s };
+            }
+        }
+    }
+
+    if (best.score < 0.55) return null;
+    const inv = 1 / resScaled.scale;
+    return { x: Math.round(best.x * inv), y: Math.round(best.y * inv), w: Math.round(best.w * inv), h: Math.round(best.h * inv) };
+
+    function getGray(canvas) {
+        const ctx = canvas.getContext("2d");
+        const { data, width } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const arr = new Float32Array(canvas.width * canvas.height);
+        for (let i = 0, j = 0; i < data.length; i += 4, j++) arr[j] = (0.2126 * data[i] + 0.7152 * data[i+1] + 0.0722 * data[i+2]) / 255;
+        return { arr, width, height: canvas.height };
+    }
+
+    function ncc(res, rw, rh, tmpl, tw, th, x, y) {
+        let sumR = 0, sumT = 0, sumR2 = 0, sumT2 = 0, sumRT = 0;
+        for (let j = 0; j < th; j++) {
+            let rIdx = (y + j) * rw + x;
+            let tIdx = j * tw;
+            for (let i = 0; i < tw; i++, rIdx++, tIdx++) {
+                const R = res.arr[rIdx], T = tmpl.arr[tIdx];
+                sumR += R; sumT += T;
+                sumR2 += R * R; sumT2 += T * T;
+                sumRT += R * T;
+            }
+        }
+        const N = tw * th;
+        const numerator = sumRT - (sumR * sumT) / N;
+        const denomL = Math.max(1e-6, sumR2 - (sumR * sumR) / N);
+        const denomR = Math.max(1e-6, sumT2 - (sumT * sumT) / N);
+        const denom = Math.sqrt(denomL * denomR);
+        return denom ? numerator / denom : -Infinity;
+    }
+}
+
+// ===============================
+// HELPERS
+// ===============================
+function loadImage(dataUrl) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = dataUrl;
+    });
+}
+
+function sendUserMessage() {
+    const userText = editor.textContent.trim();
+    if (!userText) return;
     addUserMessage(userText);
     editor.textContent = "";
-
-    if (!aiConsentGiven) {
-        addBotMessage("⚠️ Please provide consent to use AI image generation first.");
-        return;
-    }
-
-    if (uploadedBase64) {
-        addBotMessage("🧠 Expanding your frame with AI... please wait a moment.");
-
-        try {
-            const payload = { image: uploadedBase64, prompt: userText, stage };
-            const response = await fetch("http://localhost:3000/expand_image", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
-
-            if (!response.ok) throw new Error(`Server error: ${response.status}`);
-            const data = await response.json();
-            const imgSrc = data.image_url || data.imageDataUrl || data.image;
-
-            if (imgSrc) {
-                addBotMessage("Here’s your AI-expanded artwork!");
-                addBotMessage("Upload your next artwork when ready.");
-
-                addMessage(null, "bot", imgSrc.trim());
-                uploadedBase64 = null;
-                stage++;
-            } else {
-                addBotMessage("⚠️ No image returned — please try again.");
-            }
-        } catch (err) {
-            console.error("❌ Error:", err);
-            addBotMessage("⚠️ Error contacting AI server.");
-        }
-    } else {
-        addBotMessage("Got it! Upload your next artwork when ready.");
-    }
-
-    // ✅ After A5 expansion → trigger A4 merge
-    if (stage === 5) {
-        addBotMessage("🎉 Fantastic — you’ve reached A5! Now I’ll merge all four stages (A8 → A5) into one A4 composite...");
-        addBotMessage("🧩 Combining all frames into A4 layout...");
-
-        try {
-            const mergeResponse = await fetch("http://localhost:3000/merge_to_a4", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({}), // server handles internally
-            });
-
-            const mergeData = await mergeResponse.json();
-
-            if (mergeData?.image_url) {
-                addBotMessage("✅ Here’s your final A4 artwork — all frames beautifully combined!");
-                addMessage(null, "bot", mergeData.image_url);
-
-                // Optional: reset flow to allow a new run
-                stage = 1;
-                uploadedBase64 = null;
-                addBotMessage("You can start a new Expanded Frames run by uploading a new A8 artwork.");
-            }
-        } catch (err) {
-            console.error("❌ Merge error:", err);
-            addBotMessage("⚠️ Error while merging into A4 layout — check the console.");
-        }
-    }
 }
