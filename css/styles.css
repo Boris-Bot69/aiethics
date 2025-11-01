@@ -805,7 +805,7 @@ body.no-scroll {
 /* =============================================== */
 
 /* Hide sidebars and rebalance content */
-@media (min-width: 1600px) {
+@media (min-width: 2200px) {
     .sidebar {
         display: none; /* Hide decorative sidebars */
     }
@@ -905,7 +905,7 @@ body.no-scroll {
 }
 
 
-@media (min-width: 2200px) {
+@media (min-width: 2600px) {
     body {
         background-position: center 18rem; /* Move slightly lower for ultra-wide displays */
         background-size: clamp(1200px, 55vw, 1800px);

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Ethics Activities - TUM</title>
-    <link rel="stylesheet" href="../../css/ai_homage.css">
+    <link rel="stylesheet" href="../../css/ai_superhero.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -120,19 +120,28 @@
                 </aside>
 
                 <main class="chat-panel">
+
                     <div class="chat-messages">
-                        <div class="message ai-message">
-                            <div class="avatar"></div>
-                            <div class="text">Please upload a image by clicking + button, and text to fusion it.</div>
-                        </div>
                     </div>
                     <div class="chat-input-bar">
                         <input type="file" id="imageUpload" accept="image/*" style="display: none;">
-                        <button class="upload-btn" aria-label="Upload image" onclick="document.getElementById('imageUpload').click()">+</button>
-                        <input type="text" id="chatInput" placeholder="Send a message">
+                        <button id="uploadBtn" class="upload-btn">📷</button>
+
+                        <div
+                                id="chatEditor"
+                                class="chat-editor"
+                                contenteditable="true"
+                                role="textbox"
+                                aria-multiline="true"
+                                aria-label="Send a message"
+                                data-placeholder="Describe your edit..."
+                        ></div>
+
                         <button class="send-btn" aria-label="Send message">&#9658;</button>
                     </div>
+
                 </main>
+
 
             </div>
 
@@ -300,6 +309,10 @@
 
 <script src="../../js/main.js"></script>
 <script src="../../js/app.js"></script>
+<script src="../../js/superhero.js"></script>
+
+<script src="../../homage_server.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const track = document.querySelector('.slider-track');

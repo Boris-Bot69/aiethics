@@ -236,7 +236,7 @@ Be consistent with:
 - Smooth transitions—no visible square borders.
 - No frames, text, or mirrored areas.
 
-Produce one coherent image that looks like a zoomed-out view of the original.
+Produce one coherent image that looks like extension of the original.
 `;
 
         console.log("🧠 Expanding image (smooth zoom-out)...");
@@ -336,6 +336,70 @@ app.get("/summary_a4", async (_req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+app.post("/generate-superhero", async (req, res) => {
+    try {
+        const { imageBase64, prompt } = req.body;
+        if (!prompt) return res.status(400).json({ error: "Missing prompt" });
+
+        console.log("🎨 Generating comic-style AI Superhero story...");
+
+        const fullPrompt = `
+Create a digital comic page (3–5 panels) in a clean sci-fi comic-book style.
+Include speech bubbles and short English text inside them.
+Use cinematic lighting and clear composition.
+Make the story self-contained with a beginning, conflict, and resolution.
+
+Context: The main character is an AI superhero that promotes ethical AI — fairness, transparency, and responsibility.
+Theme: “${prompt}”
+
+Ensure the comic shows the hero's emotions and dialogue (in comic bubbles).
+Do NOT include realistic human faces — keep it stylized and consistent.
+Use white speech bubbles with black text.
+Include a clear story title at the top.
+`;
+
+        const contents = [];
+
+        if (imageBase64) {
+            contents.push({
+                inlineData: {
+                    data: imageBase64.split(",")[1],
+                    mimeType: imageBase64.includes("png") ? "image/png" : "image/jpeg",
+                },
+            });
+        }
+
+        contents.push({ text: fullPrompt });
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash-image",
+            contents,
+            config: {
+                responseModalities: ["IMAGE"],
+                temperature: 0.9,
+            },
+        });
+
+        const part = response?.candidates?.[0]?.content?.parts?.find(
+            (p) => p.inlineData?.data
+        );
+
+        if (!part) throw new Error("No image returned");
+
+        const mime = part.inlineData.mimeType || "image/png";
+        const base64 = part.inlineData.data;
+
+        res.json({ image: `data:${mime};base64,${base64}` });
+    } catch (err) {
+        console.error("❌ /generate-superhero error:", err);
+        res.status(500).json({ error: err.message || "Unknown error" });
+    }
+});
+
+
+
+
 
 
 /* ============================================================

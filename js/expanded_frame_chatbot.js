@@ -179,14 +179,14 @@ async function showGreyPreview(base64, currentStage, nextStage) {
 
     const expandBtn = document.createElement("button");
     expandBtn.className = "expand-btn";
-    expandBtn.textContent = `✨ Expand to ${nextStage}`;
+    expandBtn.textContent = `Expand to ${nextStage}`;
     expandBtn.onclick = async () => {
         expandBtn.disabled = true;
-        expandBtn.textContent = "🧠 Expanding...";
+        expandBtn.textContent = "Expanding...";
         await expandWithAI(currentStage, nextStage, lastPreviewMeta, expandBtn);
     };
 
-    addBotMessage(`🖼️ Preview for <b>${nextStage}</b>: grey area will be filled by AI.`);
+    addBotMessage(`Preview for <b>${nextStage}</b>: grey area will be filled by AI.`);
     addImageBubble(previewDataUrl, expandBtn);
 }
 
@@ -276,7 +276,7 @@ async function expandWithAI(currentStage, nextStage, previewMeta, btnEl) {
         addBotMessage("⚠️ Expansion failed. Check the server logs.");
         if (btnEl) {
             btnEl.disabled = false;
-            btnEl.textContent = `✨ Expand to ${nextStage}`;
+            btnEl.textContent = `Expand to ${nextStage}`;
         }
     }
 }
