@@ -151,9 +151,7 @@ async function showGreyPreview(base64, currentStage, nextStage) {
     previewCtx.fillStyle = "#d9d9d9";
     previewCtx.fillRect(0, 0, newW, newH);
     previewCtx.drawImage(img, offX, offY);
-    previewCtx.lineWidth = 6;
-    previewCtx.strokeStyle = "#1e63ff";
-    previewCtx.strokeRect(offX + 1, offY + 1, img.width - 2, img.height - 2);
+
 
     const previewDataUrl = previewCanvas.toDataURL("image/png");
 
@@ -223,13 +221,10 @@ async function expandWithAI(currentStage, nextStage, previewMeta, btnEl) {
         const match = await locateHumanRegion(resultCanvas, humanImg);
         const rect = match || { x: previewMeta.x, y: previewMeta.y, w: previewMeta.innerW, h: previewMeta.innerH };
 
-        rctx.lineWidth = 6;
-        rctx.strokeStyle = "#1e63ff";
-        rctx.strokeRect(rect.x + 1, rect.y + 1, rect.w - 2, rect.h - 2);
+
 
         const stampedUrl = resultCanvas.toDataURL("image/png");
 
-        addBotMessage(`✨ AI expanded to <b>${nextStage}</b>. <span style="color:#1e63ff">Blue</span> border = previous human area.`);
         const { wrap } = addImageBubble(stampedUrl);
 
         const dl = document.createElement("button");

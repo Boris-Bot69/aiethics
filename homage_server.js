@@ -192,72 +192,75 @@ app.post("/mix-texture", async (req, res) => {
     }
 });
 
-
 app.post("/expand_canvas", async (req, res) => {
     try {
-        const { image, from, to } = req.body;
-        const buf = Buffer.from(image.split(",")[1], "base64");
+        const { image } = req.body;
+        const baseBuf = Buffer.from(image.split(",")[1], "base64");
 
-        // 🧩 Step 1: Downscale for faster generation (prevents timeouts)
-        const resized = await sharp(buf)
-            .resize({ width: 768, height: 768, fit: "inside" })
+        // 1️⃣ Resize to 768×768 with white background
+        const base = await sharp(baseBuf)
+            .resize({
+                width: 768,
+                height: 768,
+                fit: "contain",
+                background: { r: 255, g: 255, b: 255, alpha: 1 }
+            })
             .png()
             .toBuffer();
 
-        // 🧠 Step 2: Better spatial prompt
+        // 2️⃣ Extend canvas (zoom-out)
+        const margin = 200;
+        const newW = 768 + margin * 2;
+        const newH = 768 + margin * 2;
+
+        const extended = await sharp({
+            create: {
+                width: newW,
+                height: newH,
+                channels: 4,
+                background: { r: 255, g: 255, b: 255, alpha: 1 }
+            }
+        })
+            .composite([{ input: base, top: margin, left: margin }])
+            .png()
+            .toBuffer();
+
+        // 3️⃣ Natural expansion prompt
         const prompt = `
-You are expanding a multi-stage artwork (A8 → A7 → A6 → A5 → A4).
-The colored center must remain pixel-perfect — do not resize, redraw, or move it.
-Only paint outward into the grey background so that the final image looks like
-a natural zoomed-out continuation of the same painting.
-Preserve lighting, brushwork, and style consistency.
-Do not duplicate, crop, or re-insert the inner region.
+Expand this artwork outward to reveal a larger, continuous scene.
+Keep the center unchanged and extend the same world outward naturally.
+
+Be consistent with:
+- The same palette, texture, and lighting.
+- The same perspective and brush style.
+- Smooth transitions—no visible square borders.
+- No frames, text, or mirrored areas.
+
+Produce one coherent image that looks like a zoomed-out view of the original.
 `;
 
-        // 🌀 Step 3: Gemini API call with retry logic
-        let response;
-        let attempt = 0;
-        while (attempt < 2) {
-            try {
-                console.log(`🎨 Expanding canvas ${from} → ${to} (attempt ${attempt + 1})`);
-                response = await ai.models.generateContent({
-                    model: "gemini-2.5-flash-image",
-                    contents: [
-                        { inlineData: { data: resized.toString("base64"), mimeType: "image/png" } },
-                        { text: prompt },
-                    ],
-                    config: { responseModalities: ["IMAGE"], temperature: 0.6 },
-                });
-                break; // success
-            } catch (err) {
-                if (err.status === 503) {
-                    console.warn("⚠️ Gemini timeout, retrying...");
-                    attempt++;
-                    await new Promise(r => setTimeout(r, 2000));
-                    continue;
-                }
-                throw err; // other errors
-            }
-        }
+        console.log("🧠 Expanding image (smooth zoom-out)...");
 
-        if (!response) throw new Error("Gemini request failed after retries.");
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash-image",
+            contents: [
+                { inlineData: { data: extended.toString("base64"), mimeType: "image/png" } },
+                { text: prompt }
+            ],
+            config: { responseModalities: ["IMAGE"], temperature: 0.8 }
+        });
 
-        // 🖼 Step 4: Extract image
         const part = response?.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.data);
-        if (!part) throw new Error("No image returned from AI.");
+        if (!part) throw new Error("No image returned from Gemini.");
 
-        const mime = part.inlineData.mimeType || "image/png";
-        const dataUrl = `data:${mime};base64,${part.inlineData.data}`;
-
-        // ✅ Step 5: Store this frame for later summary
-        frames[to] = dataUrl;
-
+        const dataUrl = `data:image/png;base64,${part.inlineData.data}`;
         res.json({ image_url: dataUrl });
     } catch (err) {
         console.error("❌ /expand_canvas error:", err);
         res.status(500).json({ error: err.message });
     }
 });
+
 /* ============================================================
    SUMMARY (A8→A4 PDF, includes original A8)
 ============================================================ */
@@ -339,18 +342,12 @@ app.get("/summary_a4", async (_req, res) => {
    ROUTES – HTML Pages
 ============================================================ */
 app.get("/", (_req, res) => {
-    res.send(`<h1>🎨 AI Ethics Activities</h1>
-    <ul>
-      <li><a href="/homage">Homage to a Local Artist</a></li>
-      <li><a href="/magazine">Magazine Cut-Outs</a></li>
-      <li><a href="/expanded">Expanded Frames</a></li>
-      <li><a href="/texture">Texture Mixer</a></li>
-    </ul>`);
+    res.sendFile(HOMAGE_HTML);
+    res.sendFile(MAGAZINE_HTML);
+    res.sendFile(EXPANDED_HTML);
+    res.sendFile(TEXTURE_HTML);
+
 });
-app.get("/homage",   (_req, res) => res.sendFile(HOMAGE_HTML));
-app.get("/magazine", (_req, res) => res.sendFile(MAGAZINE_HTML));
-app.get("/expanded", (_req, res) => res.sendFile(EXPANDED_HTML));
-app.get("/texture",  (_req, res) => res.sendFile(TEXTURE_HTML));
 
 /* ============================================================
    START SERVER
