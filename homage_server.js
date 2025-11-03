@@ -79,6 +79,8 @@ app.use(
 // GenAI client
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
 
+const sessions = new Map();
+
 // --- API: generate one image per prompt ---
 app.post("/generate", async (req, res) => {
     try {
@@ -319,30 +321,49 @@ app.get("/summary_a4", async (_req, res) => {
 });
 
 
-app.post("/generate-superhero", async (req, res) => {
+// AI SUPERHERO
+
+app.post("/generate-panel", async (req, res) => {
     try {
-        const { imageBase64, prompt } = req.body;
+        const { sessionId, imageBase64, prompt } = req.body;
         if (!prompt) return res.status(400).json({ error: "Missing prompt" });
+        if (!sessionId) return res.status(400).json({ error: "Missing sessionId" });
 
-        console.log("🎨 Generating comic-style AI Superhero story...");
+        // Initialize or update session memory
+        if (!sessions.has(sessionId)) {
+            sessions.set(sessionId, {
+                panels: [],
+                context: "",
+                heroDescription: "",
+                ended: false,
+            });
+        }
+        const story = sessions.get(sessionId);
+        if (story.ended) {
+            return res.json({
+                message:
+                    "📖 The story has already reached an ending! You can start a new hero if you wish.",
+            });
+        }
 
-        const fullPrompt = `
-Create a digital comic page (3–5 panels) in a clean sci-fi comic-book style.
-Include speech bubbles and short English text inside them.
-Use cinematic lighting and clear composition.
-Make the story self-contained with a beginning, conflict, and resolution.
+        console.log(`🎨 [${sessionId}] New panel prompt:`, prompt);
 
-Context: The main character is an AI superhero that promotes ethical AI — fairness, transparency, and responsibility.
-Theme: “${prompt}”
+        // Build story memory
+        story.context += `\nPanel ${story.panels.length + 1}: ${prompt}`;
 
-Ensure the comic shows the hero's emotions and dialogue (in comic bubbles).
-Do NOT include realistic human faces — keep it stylized and consistent.
-Use white speech bubbles with black text.
-Include a clear story title at the top.
+        const combinedPrompt = `
+You are generating the next comic panel in an ongoing story.
+Maintain the same main hero identity, costume, and abilities from previous panels.
+Show smooth continuity between scenes.
+
+Story so far:
+${story.context}
+
+Generate ONE new comic panel in consistent style, with speech bubbles if dialogue fits.
+If the story logically reaches a conclusion, end it naturally with an emotional or moral closure.
 `;
 
         const contents = [];
-
         if (imageBase64) {
             contents.push({
                 inlineData: {
@@ -351,37 +372,173 @@ Include a clear story title at the top.
                 },
             });
         }
-
-        contents.push({ text: fullPrompt });
+        contents.push({ text: combinedPrompt });
 
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash-image",
             contents,
-            config: {
-                responseModalities: ["IMAGE"],
-                temperature: 0.9,
-            },
+            config: { responseModalities: ["IMAGE"], temperature: 0.8 },
         });
 
         const part = response?.candidates?.[0]?.content?.parts?.find(
             (p) => p.inlineData?.data
         );
-
-        if (!part) throw new Error("No image returned");
+        if (!part) throw new Error("No image returned.");
 
         const mime = part.inlineData.mimeType || "image/png";
         const base64 = part.inlineData.data;
+        story.panels.push({ prompt, image: base64 });
 
-        res.json({ image: `data:${mime};base64,${base64}` });
+        // Decide if story ends
+        if (story.panels.length >= 5) story.ended = true;
+
+        res.json({
+            image: `data:${mime};base64,${base64}`,
+            ended: story.ended,
+        });
     } catch (err) {
-        console.error("❌ /generate-superhero error:", err);
-        res.status(500).json({ error: err.message || "Unknown error" });
+        console.error("❌ /generate-panel error:", err);
+        res.status(500).json({ error: err.message });
     }
 });
 
+/* ============================================================
+   2️⃣  Suggest next-panel ideas (context-aware)
+============================================================ */
+app.post("/suggest-panel-prompt", async (req, res) => {
+    try {
+        const { sessionId } = req.body;
+        const story = sessions.get(sessionId);
+        const previous = story?.context || "The hero’s story is just beginning.";
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: [
+                {
+                    text: `Continue this superhero comic in one short panel idea.
+Story so far:
+${previous}
+
+Suggest one creative next event that fits naturally. Keep it positive and concise.`,
+                },
+            ],
+            config: { temperature: 0.9 },
+        });
+
+        const suggestion =
+            response?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ||
+            "The hero faces a new challenge involving technology and ethics.";
+
+        res.json({ suggestion });
+    } catch (err) {
+        console.error("❌ /suggest-panel-prompt error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/* ============================================================
+   3️⃣  Reset story (start new hero)
+============================================================ */
+app.post("/reset-story", (req, res) => {
+    const { sessionId } = req.body;
+    sessions.delete(sessionId);
+    res.json({ message: "Story reset. You can start a new superhero!" });
+});
 
 
+app.post("/delete-panel", (req, res) => {
+    const { sessionId, imageDataUrl } = req.body;
+    const story = sessions.get(sessionId);
+    if (!story) return res.status(400).json({ error: "Invalid session" });
 
+    story.panels = story.panels.filter(
+        (p) => `data:image/png;base64,${p.image}` !== imageDataUrl
+    );
+    res.json({ message: "Panel deleted" });
+});
+
+
+/* ============================================================
+   Generate final comic strip after story ends
+============================================================ */
+app.get("/generate-comic-pdf", async (req, res) => {
+    try {
+        const { sessionId } = req.query;
+        const story = sessions.get(sessionId);
+        if (!story || !story.panels?.length)
+            return res.status(400).json({ error: "No panels found" });
+
+        const pdf = await PDFDocument.create();
+        const font = await pdf.embedFont(StandardFonts.HelveticaBold);
+        const page = pdf.addPage([595, 842]); // A4 portrait
+        const pageWidth = page.getWidth();
+        const pageHeight = page.getHeight();
+        const margin = 40;
+        const innerWidth = pageWidth - margin * 2;
+        const innerHeight = pageHeight - margin * 2;
+
+        // Title
+        page.drawText("AI Superhero Comic", {
+            x: margin,
+            y: pageHeight - 40,
+            size: 18,
+            font,
+            color: rgb(0.1, 0.1, 0.1),
+        });
+
+        // Rows and columns layout (2 columns)
+        const numCols = 2;
+        const colGap = 12;
+        const rowGap = 20;
+        const cellWidth = (innerWidth - colGap) / numCols;
+
+        const numPanels = story.panels.length;
+        const numRows = Math.ceil(numPanels / numCols);
+        const totalRowsHeight = innerHeight - 60; // leave top area for title
+        const cellHeight = totalRowsHeight / numRows - rowGap / 2;
+
+        let panelIndex = 0;
+        for (let r = 0; r < numRows; r++) {
+            for (let c = 0; c < numCols; c++) {
+                if (panelIndex >= numPanels) break;
+                const p = story.panels[panelIndex];
+                const imgBytes = Buffer.from(p.image, "base64");
+                const img = await pdf.embedPng(imgBytes);
+                const { width, height } = img.scale(1);
+
+                // Fit image proportionally into cell
+                const scale = Math.min(cellWidth / width, cellHeight / height);
+                const drawW = width * scale;
+                const drawH = height * scale;
+
+                const x = margin + c * (cellWidth + colGap) + (cellWidth - drawW) / 2;
+                const y =
+                    pageHeight -
+                    80 - // leave top space
+                    (r + 1) * (cellHeight + rowGap) +
+                    (cellHeight - drawH);
+
+                page.drawImage(img, { x, y, width: drawW, height: drawH });
+                page.drawText(`Panel ${panelIndex + 1}`, {
+                    x,
+                    y: y - 14,
+                    size: 10,
+                    font,
+                    color: rgb(0.3, 0.3, 0.3),
+                });
+
+                panelIndex++;
+            }
+        }
+
+        const pdfBytes = await pdf.save();
+        const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
+        res.json({ pdf: `data:application/pdf;base64,${pdfBase64}` });
+    } catch (err) {
+        console.error("/generate-comic-pdf error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
 
 
 /* ============================================================

@@ -372,24 +372,93 @@ h1 {
     line-height: 1.6;
 }
 
+.suggest-btn {
+    margin-left: 10px;
+    background: #f1c40f;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: 600;
+}
 
-.summary-bubble {
+.panel-gallery {
+    margin-top: 20px;
     display: flex;
-    flex-direction: row;
-    gap: 1rem;
-    justify-content: space-around;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 10px;
+    padding: 10px;
+    background: #fafafa;
+    border-radius: 10px;
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.1);
 }
 
-.summary-item {
+.panel-card {
+    position: relative;
+    flex: 0 0 auto;
+    width: 120px;
+    height: 120px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.panel-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.panel-delete-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(255, 60, 60, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    color: white;
+    cursor: pointer;
+}
+
+.panel-download-btn {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: rgba(50,150,255,0.9);
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    color: white;
+    font-size: 14px;
     text-align: center;
-    font-size: 0.9rem;
-    color: #555;
+    line-height: 22px;
+    text-decoration: none;
 }
 
-.summary-item img {
-    max-width: 150px; /* Adjust size as needed */
+.download-all-btn {
+    display: block;
+    margin: 15px auto;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
 }
+
+.download-all-btn:hover {
+    background: #0056cc;
+}
+
+
+
+
 
 /* --- Message Input Bar --- */
 .chat-input-bar {

@@ -1,51 +1,59 @@
+// chatbot.js — streamlined horizontal gallery + PDF download
 document.addEventListener("DOMContentLoaded", () => {
+    const chatPanel = document.querySelector(".chat-panel");
+    const chatMessages = document.querySelector(".chat-messages");
+    const chatEditor = document.getElementById("chatEditor");
+    const sendBtn = chatPanel.querySelector(".send-btn");
     const uploadBtn = document.getElementById("uploadBtn");
     const imageInput = document.getElementById("imageUpload");
 
-    // Open file picker when upload button is clicked
+    // === Panel gallery (horizontal) ===
+    const galleryContainer = document.createElement("div");
+    galleryContainer.id = "panelGallery";
+    galleryContainer.className = "panel-gallery";
+    chatPanel.insertAdjacentElement("afterend", galleryContainer);
+
+    // === Download full PDF button (hidden initially) ===
+    const downloadAllBtn = document.createElement("button");
+    downloadAllBtn.id = "downloadAllBtn";
+    downloadAllBtn.textContent = "📄 Download Full Comic PDF";
+    downloadAllBtn.className = "download-all-btn";
+    downloadAllBtn.style.display = "none";
+    galleryContainer.insertAdjacentElement("afterend", downloadAllBtn);
+
+    let uploadedBase64 = null;
+    let isProcessing = false;
+    let sessionId = crypto.randomUUID();
+    const API_BASE = window.location.hostname.includes("onrender.com")
+        ? "https://aiethics-5ncx.onrender.com"
+        : "http://localhost:3000";
+
+    setTimeout(() => {
+        addBotMessage(
+            "👋 Welcome to <em>AI Superhero Comic Builder!</em><br>Upload your image and describe your hero’s powers to start your story! Add maximum 6 Images"
+        );
+    }, 200);
+
+    // === Upload image ===
     uploadBtn.addEventListener("click", (e) => {
         e.preventDefault();
         imageInput.click();
     });
 
-    // Handle image selection
     imageInput.addEventListener("change", (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = (ev) => {
-            const base64 = ev.target.result;
-            console.log("Image selected:", file.name);
-
-            const chatMessages = document.querySelector(".chat-messages");
-            const msg = document.createElement("div");
-            msg.className = "message user-align";
-            msg.innerHTML = `
-                <div class="avatar"></div>
-                <div class="text">
-                    <img src="${base64}" alt="Uploaded image" class="chat-image-preview" />
-                </div>`;
-            chatMessages.appendChild(msg);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            // Save globally
-            window.uploadedSuperheroBase64 = base64;
+            uploadedBase64 = ev.target.result;
+            addUserMessage("Image uploaded!");
+            addImageMessage(uploadedBase64, "user");
+            addBotMessage("Now describe your superhero’s powers or mission to begin!");
         };
         reader.readAsDataURL(file);
     });
-});
 
-let chatPanel, chatMessages, chatEditor, sendBtn;
-let isProcessing = false;
-
-window.addEventListener("DOMContentLoaded", () => {
-    chatPanel = document.querySelector(".chat-panel");
-    chatMessages = chatPanel.querySelector(".chat-messages");
-    chatEditor = document.getElementById("chatEditor");
-    sendBtn = chatPanel.querySelector(".send-btn");
-
-    // Press Enter to send message
+    // === Send on Enter ===
     chatEditor.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
@@ -53,132 +61,175 @@ window.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Send message button
-    sendBtn.addEventListener("click", handleSendMessage);
+    sendBtn.addEventListener("click", async () => {
+        const prompt = chatEditor.innerText.trim();
+        if (!prompt) return;
+        addUserMessage(prompt);
+        chatEditor.innerText = "";
+        await generatePanel(prompt);
+    });
 
-    addBotMessage(`
-Welcome to <em>AI Superhero</em>.<br>
-Upload a photo or drawing of yourself and describe your superhero idea.<br>
-The AI will reimagine you as an ethical AI defender.
-    `);
-});
+    // === Generate panel ===
+    async function generatePanel(prompt) {
+        if (isProcessing) return;
+        if (!uploadedBase64) {
+            addBotMessage("Please upload an image first.");
+            return;
+        }
 
-// =============================================================
-// Chat Utilities
-// =============================================================
-function addBotMessage(html) {
-    const msg = document.createElement("div");
-    msg.className = "message ai-message";
-    msg.innerHTML = `<div class="avatar"></div><div class="text">${html}</div>`;
-    chatMessages.appendChild(msg);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
+        try {
+            isProcessing = true;
+            addBotMessage("🎨 Generating your next comic panel...");
 
-function addUserMessage(text) {
-    const msg = document.createElement("div");
-    msg.className = "message user-align";
-    msg.innerHTML = `<div class="avatar"></div><div class="text">${text}</div>`;
-    chatMessages.appendChild(msg);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
+            const response = await fetch(`${API_BASE}/generate-panel`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sessionId, imageBase64: uploadedBase64, prompt }),
+            });
 
-function addImageMessage(src, sender = "ai") {
-    const msg = document.createElement("div");
-    msg.className = `message ${sender === "user" ? "user-align" : "ai-message"}`;
-    msg.innerHTML = `
-        <div class="avatar"></div>
-        <div class="text">
-            <img src="${src}" alt="Generated superhero" class="chat-image-preview"/>
-        </div>`;
-    chatMessages.appendChild(msg);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "Server error");
+            if (data.message) {
+                addBotMessage(data.message);
+                return;
+            }
 
-// =============================================================
-// Message Handler
-// =============================================================
-async function handleSendMessage() {
-    if (isProcessing) return;
+            addImageMessage(data.image, "ai");
+            addPanelToGallery(data.image);
 
-    const prompt = chatEditor.innerText.trim();
-    if (!prompt) return;
-
-    addUserMessage(prompt);
-    chatEditor.innerText = "";
-
-    if (!window.uploadedSuperheroBase64) {
-        addBotMessage("Please upload an image first before sending a description.");
-        return;
+            if (data.ended) {
+                addBotMessage("Your story has reached an ending! Generate your final comic PDF by clicking the button");
+                await generatePDF();
+            } else {
+                addBotMessageWithSuggestion("What happens next?");
+            }
+        } catch (err) {
+            console.error("❌ Error generating panel:", err);
+            addBotMessage(`Error! Please try again with your prompt`);
+        } finally {
+            isProcessing = false;
+        }
     }
 
-    try {
-        isProcessing = true;
-        addBotMessage("Generating your AI superhero… please wait.");
-        const API_BASE =
-            window.location.hostname.includes("onrender.com")
-                ? "https://aiethics-5ncx.onrender.com"
-                : "http://localhost:3000";
-        const response = await fetch(`${API_BASE}/generate-superhero`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                imageBase64: window.uploadedSuperheroBase64,
-                prompt: `Transform this person or drawing into an AI superhero that embodies ethical AI principles. ${prompt}`,
-            }),
+    // === Add each panel to gallery ===
+    function addPanelToGallery(imageDataUrl) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "panel-card";
+
+        const img = document.createElement("img");
+        img.src = imageDataUrl;
+        img.className = "panel-thumb";
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "panel-delete-btn";
+        delBtn.textContent = "✖";
+        delBtn.title = "Delete panel";
+        delBtn.addEventListener("click", () => {
+            wrapper.remove();
+            fetch(`${API_BASE}/delete-panel`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sessionId, imageDataUrl }),
+            });
         });
 
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || "Server error");
+        const downloadBtn = document.createElement("a");
+        downloadBtn.className = "panel-download-btn";
+        downloadBtn.textContent = "⬇️";
+        downloadBtn.href = imageDataUrl;
+        downloadBtn.download = `panel_${Date.now()}.png`;
 
-        addImageMessage(data.image, "ai");
-        addBotMessage(`
-Here’s your superhero.<br>
-You can refine the description or upload another image to create variations.
-        `);
+        wrapper.appendChild(img);
+        wrapper.appendChild(delBtn);
+        wrapper.appendChild(downloadBtn);
+        galleryContainer.appendChild(wrapper);
 
-        // Add Restart Button
-        const restartBtn = document.createElement("button");
-        restartBtn.className = "download-btn";
-        restartBtn.textContent = "Start new superhero";
-        restartBtn.onclick = () => {
-            resetSession();
-        };
-        const wrap = document.createElement("div");
-        wrap.className = "restart-controls";
-        wrap.appendChild(restartBtn);
-        addMessageNode(wrap);
-
-    } catch (err) {
-        console.error("Generation error:", err);
-        addBotMessage(`An error occurred: ${err.message}`);
-    } finally {
-        isProcessing = false;
+        downloadAllBtn.style.display = "block"; // show global download button
     }
-}
 
-// =============================================================
-// Restart Helper
-// =============================================================
-function resetSession() {
-    window.uploadedSuperheroBase64 = null;
-    chatEditor.innerText = "";
-    addBotMessage(`
-Session reset.<br>
-You can now upload a new photo or drawing to start creating another superhero.
-    `);
+    // === Generate final PDF ===
+    async function generatePDF() {
+        try {
+            const res = await fetch(`${API_BASE}/generate-comic-pdf?sessionId=${sessionId}`);
+            const data = await res.json();
+            if (res.ok && data.pdf) {
+                const link = document.createElement("a");
+                link.href = data.pdf;
+                link.download = "AI_Superhero_Comic.pdf";
+                link.textContent = "📄 Download your Comic PDF";
+                const msg = document.createElement("div");
+                msg.className = "message ai-message";
+                msg.appendChild(link);
+                chatMessages.appendChild(msg);
+            } else {
+                addBotMessage("Could not generate final PDF.");
+            }
+        } catch (err) {
+            console.error("PDF error:", err);
+        }
+    }
 
-    const imageInput = document.getElementById("imageUpload");
-    if (imageInput) imageInput.click();
-}
+    downloadAllBtn.addEventListener("click", generatePDF);
 
-function addMessageNode(node) {
-    const msg = document.createElement("div");
-    msg.className = "message ai-message";
-    const container = document.createElement("div");
-    container.classList.add("text");
-    container.appendChild(node);
-    msg.appendChild(document.createElement("div")).classList.add("avatar");
-    msg.appendChild(container);
-    chatMessages.appendChild(msg);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
+    // === Chat helpers ===
+    function addBotMessage(html) {
+        const msg = document.createElement("div");
+        msg.className = "message ai-message";
+        msg.innerHTML = `<div class="avatar"></div><div class="text">${html}</div>`;
+        chatMessages.appendChild(msg);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addBotMessageWithSuggestion(text) {
+        const msg = document.createElement("div");
+        msg.className = "message ai-message";
+        msg.innerHTML = `
+      <div class="avatar"></div>
+      <div class="text">
+        ${text}
+        <div class="suggest-inline">
+          <button class="suggest-inline-btn">💡 Suggest Prompt</button>
+          <button class="reset-inline-btn">🔄 New Hero</button>
+        </div>
+      </div>`;
+        chatMessages.appendChild(msg);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        msg.querySelector(".suggest-inline-btn").addEventListener("click", async () => {
+            const res = await fetch(`${API_BASE}/suggest-panel-prompt`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sessionId }),
+            });
+            const data = await res.json();
+            addBotMessage(`💡 Suggestion: <em>${data.suggestion}</em>`);
+        });
+
+        msg.querySelector(".reset-inline-btn").addEventListener("click", async () => {
+            await fetch(`${API_BASE}/reset-story`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sessionId }),
+            });
+            sessionId = crypto.randomUUID();
+            galleryContainer.innerHTML = "";
+            addBotMessage("New hero session started!");
+        });
+    }
+
+    function addUserMessage(text) {
+        const msg = document.createElement("div");
+        msg.className = "message user-align";
+        msg.innerHTML = `<div class="avatar"></div><div class="text">${text}</div>`;
+        chatMessages.appendChild(msg);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addImageMessage(src, sender = "ai") {
+        const msg = document.createElement("div");
+        msg.className = `message ${sender === "user" ? "user-align" : "ai-message"}`;
+        msg.innerHTML = `<div class="avatar"></div><div class="text"><img src="${src}" class="chat-image-preview"/></div>`;
+        chatMessages.appendChild(msg);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+});
