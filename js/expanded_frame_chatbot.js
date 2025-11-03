@@ -192,7 +192,12 @@ async function expandWithAI(currentStage, nextStage, previewMeta, btnEl) {
     addBotMessage(`Expanding ${currentStage} → ${nextStage}...`);
 
     try {
-        const response = await fetch("http://localhost:3000/expand_canvas", {
+        const API_BASE =
+            window.location.hostname.includes("onrender.com")
+                ? "https://aiethics-5ncx.onrender.com"
+                : "http://localhost:3000";
+
+        const response = await fetch(`${API_BASE}/expand_canvas`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ image: previewMeta.dataUrl, from: currentStage, to: nextStage }),

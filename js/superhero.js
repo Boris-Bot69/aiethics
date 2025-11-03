@@ -114,8 +114,11 @@ async function handleSendMessage() {
     try {
         isProcessing = true;
         addBotMessage("Generating your AI superhero… please wait.");
-
-        const response = await fetch("http://localhost:3000/generate-superhero", {
+        const API_BASE =
+            window.location.hostname.includes("onrender.com")
+                ? "https://aiethics-5ncx.onrender.com"
+                : "http://localhost:3000";
+        const response = await fetch(`${API_BASE}/generate-superhero`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

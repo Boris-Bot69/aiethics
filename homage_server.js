@@ -55,6 +55,27 @@ app.use(express.static(__dirname));
 app.use(express.static(path.join(__dirname, "js")));
 
 
+
+const allowedOrigins = [
+    "http://localhost:3000",
+    "https://aiethics-5ncx.onrender.com",
+];
+
+app.use(
+    cors({
+        origin: function (origin, callback) {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                console.warn("❌ Blocked CORS request from:", origin);
+                callback(new Error("Not allowed by CORS"));
+            }
+        },
+        credentials: true,
+    })
+);
+
+
 // GenAI client
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
 
