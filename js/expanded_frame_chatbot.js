@@ -1,5 +1,3 @@
-
-
 let chatPanel, chatMessages, editor, sendBtn, imageUpload;
 let uploadedBase64 = null;
 let aiConsentGiven = false;
@@ -21,8 +19,8 @@ window.addEventListener("DOMContentLoaded", () => {
     imageUpload = document.getElementById("imageUpload");
 
     addBotMessage(`
-👋 Welcome to <em>Expanded Frames</em>!<br/>
-Upload your <b>A8</b> artwork with 📷.<br/>
+Welcome to <em>Expanded Frames</em>.<br/>
+Upload your <b>A8</b> artwork using the camera button.<br/>
 We’ll show a grey canvas preview for the next frame, and AI will fill the grey area.<br/>
 The previous human area will always stay highlighted in <b style="color:#1e63ff">blue</b>.
   `);
@@ -42,11 +40,11 @@ The previous human area will always stay highlighted in <b style="color:#1e63ff"
         agreeBtn.addEventListener("click", () => {
             aiConsentGiven = true;
             modal.remove();
-            addBotMessage("✅ Great! You can now generate AI expansions.");
+            addBotMessage("AI generation is now enabled.");
         });
         cancelBtn.addEventListener("click", () => {
             modal.remove();
-            addBotMessage("⚠️ AI generation disabled — you can still chat about your artwork.");
+            addBotMessage("AI generation disabled — you can still chat about your artwork.");
         });
     }
 });
@@ -113,10 +111,10 @@ async function handleImageUpload(e) {
             waitingForHumanUploadOf = null;
         }
 
-        addUserMessage(`📸 Uploaded ${stage} artwork.`);
+        addUserMessage(`Uploaded ${stage} artwork.`);
         const nextStage = getNextStage();
         if (!nextStage) {
-            addBotMessage("You're already at A4. Nothing to expand.");
+            addBotMessage("You are already at A4. Nothing left to expand.");
             return;
         }
 
@@ -143,7 +141,6 @@ async function showGreyPreview(base64, currentStage, nextStage) {
     const offX = Math.round((newW - img.width) / 2);
     const offY = Math.round((newH - img.height) / 2);
 
-    // 1️⃣ canvas for chat preview (with border)
     const previewCanvas = document.createElement("canvas");
     previewCanvas.width = newW;
     previewCanvas.height = newH;
@@ -152,10 +149,8 @@ async function showGreyPreview(base64, currentStage, nextStage) {
     previewCtx.fillRect(0, 0, newW, newH);
     previewCtx.drawImage(img, offX, offY);
 
-
     const previewDataUrl = previewCanvas.toDataURL("image/png");
 
-    // 2️⃣ second clean canvas for AI input (no border)
     const aiCanvas = document.createElement("canvas");
     aiCanvas.width = newW;
     aiCanvas.height = newH;
@@ -190,14 +185,11 @@ async function showGreyPreview(base64, currentStage, nextStage) {
     addImageBubble(previewDataUrl, expandBtn);
 }
 
-
 // ===============================
 // EXPAND WITH AI
 // ===============================
 async function expandWithAI(currentStage, nextStage, previewMeta, btnEl) {
-
-
-    addBotMessage(`🧠 Expanding <b>${currentStage}</b> → <b>${nextStage}</b>…`);
+    addBotMessage(`Expanding ${currentStage} → ${nextStage}...`);
 
     try {
         const response = await fetch("http://localhost:3000/expand_canvas", {
@@ -221,15 +213,12 @@ async function expandWithAI(currentStage, nextStage, previewMeta, btnEl) {
         const match = await locateHumanRegion(resultCanvas, humanImg);
         const rect = match || { x: previewMeta.x, y: previewMeta.y, w: previewMeta.innerW, h: previewMeta.innerH };
 
-
-
         const stampedUrl = resultCanvas.toDataURL("image/png");
-
         const { wrap } = addImageBubble(stampedUrl);
 
         const dl = document.createElement("button");
         dl.className = "download-btn";
-        dl.textContent = "⬇️ Download image";
+        dl.textContent = "Download image";
         dl.onclick = () => {
             const a = document.createElement("a");
             a.href = stampedUrl;
@@ -240,22 +229,21 @@ async function expandWithAI(currentStage, nextStage, previewMeta, btnEl) {
 
         if (btnEl?.parentElement) btnEl.parentElement.remove();
 
-        // ✅ Update current state and base image
         stage = nextStage;
-        uploadedBase64 = stampedUrl; // use AI image as base for next stage
+        uploadedBase64 = stampedUrl;
         lastHumanUploadBase64 = stampedUrl;
 
         const next = getNextStage();
 
         if (next) {
-            addBotMessage(`Preparing preview for <b>${next}</b>...`);
-            await showGreyPreview(stampedUrl, stage, next); // ✅ Automatically create new grey preview
+            addBotMessage(`Preparing preview for ${next}...`);
+            await showGreyPreview(stampedUrl, stage, next);
         } else {
             const pdfBtn = document.createElement("button");
             pdfBtn.className = "download-btn";
-            pdfBtn.textContent = "📄 Download Summary PDF";
+            pdfBtn.textContent = "Download Summary PDF";
             pdfBtn.onclick = async () => {
-                addBotMessage("📄 Generating your summary PDF...");
+                addBotMessage("Generating summary PDF...");
                 try {
                     const response = await fetch("http://localhost:3000/summary_a4");
                     if (!response.ok) throw new Error("Failed to generate PDF");
@@ -265,22 +253,40 @@ async function expandWithAI(currentStage, nextStage, previewMeta, btnEl) {
                     a.download = "Expanded_Frames_Summary_A8_to_A4.pdf";
                     a.click();
                 } catch (err) {
-                    addBotMessage("⚠️ PDF generation failed: " + err.message);
+                    addBotMessage("PDF generation failed: " + err.message);
                 }
             };
-            addMessage(null, "bot", pdfBtn);
+
+            const restartBtn = document.createElement("button");
+            restartBtn.className = "download-btn";
+            restartBtn.textContent = "Start new sequence (A8)";
+            restartBtn.onclick = () => {
+                stage = "A8";
+                uploadedBase64 = null;
+                lastHumanUploadBase64 = null;
+                waitingForHumanUploadOf = null;
+                addBotMessage(`
+You can now upload a new <b>A8</b> artwork to start a new cycle.
+                `);
+                if (imageUpload) imageUpload.click();
+            };
+
+            const wrap = document.createElement("div");
+            wrap.className = "restart-controls";
+            wrap.appendChild(pdfBtn);
+            wrap.appendChild(restartBtn);
+            addMessage(null, "bot", wrap);
         }
 
     } catch (err) {
         console.error(err);
-        addBotMessage("⚠️ Expansion failed. Check the server logs.");
+        addBotMessage("Expansion failed. Check the server logs.");
         if (btnEl) {
             btnEl.disabled = false;
             btnEl.textContent = `Expand to ${nextStage}`;
         }
     }
 }
-
 
 // ===============================
 // TEMPLATE MATCHING (auto-align blue border)
