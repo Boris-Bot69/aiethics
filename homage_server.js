@@ -216,98 +216,78 @@ app.post("/mix-texture", async (req, res) => {
 app.post("/expand_canvas", async (req, res) => {
     try {
         const { image } = req.body;
+        if (!image) return res.status(400).json({ error: "Missing image data" });
+
         const baseBuf = Buffer.from(image.split(",")[1], "base64");
+        const meta = await sharp(baseBuf).metadata();
 
-        // 1️⃣ Resize to 768×768 with white background
-        const base = await sharp(baseBuf)
-            .resize({
-                width: 768,
-                height: 768,
-                fit: "contain",
-                background: { r: 255, g: 255, b: 255, alpha: 1 }
-            })
-            .png()
-            .toBuffer();
+        // Add 25% margin around
+        const margin = Math.round(meta.width * 0.25);
+        const newW = meta.width + margin * 2;
+        const newH = meta.height + margin * 2;
 
-        // 2️⃣ Extend canvas (zoom-out)
-        const margin = 200;
-        const newW = 768 + margin * 2;
-        const newH = 768 + margin * 2;
-
+        // Composite onto a slightly neutral background
         const extended = await sharp({
             create: {
                 width: newW,
                 height: newH,
                 channels: 4,
-                background: { r: 255, g: 255, b: 255, alpha: 1 }
-            }
+                background: { r: 245, g: 245, b: 245, alpha: 1 },
+            },
         })
-            .composite([{ input: base, top: margin, left: margin }])
+            .composite([{ input: baseBuf, top: margin, left: margin }])
             .png()
             .toBuffer();
 
-        // 3️⃣ Natural expansion prompt
+        // Simple, natural prompt
         const prompt = `
-Expand this artwork outward to reveal a larger, continuous scene.
-Keep the center unchanged and extend the same world outward naturally.
-
-Be consistent with:
-- The same palette, texture, and lighting.
-- The same perspective and brush style.
-- Smooth transitions—no visible square borders.
-- No frames, text, or mirrored areas.
-
-Produce one coherent image that looks like extension of the original.
+Just expand the image outward naturally.
+Keep everything in the original area completely unchanged.
+Extend the scene smoothly beyond the borders, continuing background and lighting.
+Do not zoom out or add any borders or frames.
 `;
 
-        console.log("🧠 Expanding image (smooth zoom-out)...");
+        console.log("🎨 Expanding image naturally...");
 
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash-image",
             contents: [
                 { inlineData: { data: extended.toString("base64"), mimeType: "image/png" } },
-                { text: prompt }
+                { text: prompt },
             ],
-            config: { responseModalities: ["IMAGE"], temperature: 0.8 }
+            config: { responseModalities: ["IMAGE"], temperature: 0.7 },
         });
 
-        const part = response?.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.data);
+        const part = response?.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data);
         if (!part) throw new Error("No image returned from Gemini.");
 
-        const dataUrl = `data:image/png;base64,${part.inlineData.data}`;
-        res.json({ image_url: dataUrl });
+        res.json({
+            image_url: `data:image/png;base64,${part.inlineData.data}`,
+        });
     } catch (err) {
         console.error("❌ /expand_canvas error:", err);
         res.status(500).json({ error: err.message });
     }
 });
 
+
 /* ============================================================
-   SUMMARY (A8→A4 PDF, includes original A8)
+   SUMMARY PDF
 ============================================================ */
 app.get("/summary_a4", async (_req, res) => {
     try {
-        console.log("🧩 Generating A8→A4 summary PDF...");
-
+        console.log("🧩 Generating summary PDF...");
         const layers = ["A8", "A7", "A6", "A5", "A4"];
-        const borders = ["#FFFFFF", "#007BFF", "#FFD700", "#007BFF", "#FFD700"];
         const imgs = [];
 
-        for (let i = 0; i < layers.length; i++) {
-            const key = layers[i];
+        for (const key of layers) {
             const img = frames[key];
             if (!img) continue;
-
-            const buf = await sharp(dataUrlToBuffer(img))
+            const buf = await sharp(Buffer.from(toRaw(img), "base64"))
                 .resize({ width: 1000 })
-                .extend({
-                    top: 8, bottom: 8, left: 8, right: 8,
-                    background: borders[i],
-                })
                 .png()
                 .toBuffer();
-
-            imgs.push({ layer: key, buf });
+            imgs.push({ key, buf });
         }
 
         if (imgs.length === 0) {
@@ -317,46 +297,27 @@ app.get("/summary_a4", async (_req, res) => {
         const pdf = await PDFDocument.create();
         const font = await pdf.embedFont(StandardFonts.HelveticaBold);
 
-        for (let i = 0; i < imgs.length; i++) {
-            const { layer, buf } = imgs[i];
+        for (const { key, buf } of imgs) {
             const img = await pdf.embedPng(buf);
             const { width, height } = img.scale(0.7);
-            const page = pdf.addPage([595.28, 841.89]); // A4 in points
-
-            const pageWidth = page.getWidth();
-            const pageHeight = page.getHeight();
-
-            // Title
-            let title;
-            if (layer === "A8") {
-                title = "Original Artwork (A8)";
-            } else {
-                title = `Step ${layers.indexOf(layer)}: ${layer}`;
-            }
-            const textWidth = font.widthOfTextAtSize(title, 16);
-            page.drawText(title, {
-                x: (pageWidth - textWidth) / 2,
-                y: pageHeight - 40,
-                size: 16,
-                font,
-                color: rgb(0.1, 0.1, 0.1),
-            });
-
-            // Image
-            const x = (pageWidth - width) / 2;
-            const y = (pageHeight - height) / 2 - 20;
-            page.drawImage(img, { x, y, width, height });
+            const page = pdf.addPage([595.28, 841.89]);
+            const pw = page.getWidth();
+            const ph = page.getHeight();
+            const text = key === "A8" ? "Original Artwork (A8)" : `Expansion ${key}`;
+            const textW = font.widthOfTextAtSize(text, 16);
+            page.drawText(text, { x: (pw - textW) / 2, y: ph - 40, size: 16, font, color: rgb(0.1, 0.1, 0.1) });
+            page.drawImage(img, { x: (pw - width) / 2, y: (ph - height) / 2 - 20, width, height });
         }
 
         const pdfBytes = await pdf.save();
         const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
-        console.log("✅ Summary PDF ready!");
         res.json({ pdf_url: `data:application/pdf;base64,${pdfBase64}` });
     } catch (err) {
         console.error("❌ /summary_a4 error:", err);
         res.status(500).json({ error: err.message });
     }
 });
+
 
 app.post("/generate-superhero", async (req, res) => {
     try {
