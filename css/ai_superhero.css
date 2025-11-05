@@ -284,20 +284,6 @@ h1 {
     cursor: not-allowed;
 }
 
-.chat-panel {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    height: 100%;
-    border: 2px dotted var(--accent-color);
-
-}
-
-.chat-messages {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding: 1.5rem;
-}
 
 .step-counter {
     display: flex;
@@ -341,22 +327,32 @@ h1 {
     font-size: 1.5rem;
     cursor: pointer;
 }
-
-.chat-input-bar {
-    flex-basis: 16%; /* Takes up 2/3 of the footer width */
+/* === Chat Panel Layout === */
+.chat-panel {
     display: flex;
-    padding: 1rem;
-    background-color: var(--accent-color);
-    align-items: center;
+    flex-direction: column;
+    height: 100%;
+    border: 2px dotted var(--accent-color);
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #fff;
 }
 
+/* Scrollable chat messages area */
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
 
+/* === Message bubbles === */
 .message {
     display: flex;
     align-items: flex-start;
     margin-bottom: 1.5rem;
     max-width: 70%;
 }
+
 .message .avatar {
     width: 32px;
     height: 32px;
@@ -365,6 +361,7 @@ h1 {
     margin-right: 1rem;
     flex-shrink: 0;
 }
+
 .message .text {
     background-color: #f1f1f1;
     padding: 1rem;
@@ -372,106 +369,95 @@ h1 {
     line-height: 1.6;
 }
 
-.suggest-btn {
-    margin-left: 10px;
-    background: #f1c40f;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 12px;
-    cursor: pointer;
-    font-weight: 600;
+.message.user-align {
+    justify-content: flex-end;
 }
 
-.panel-gallery {
-    margin-top: 20px;
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    gap: 10px;
-    padding: 10px;
-    background: #fafafa;
-    border-radius: 10px;
-    box-shadow: inset 0 0 4px rgba(0,0,0,0.1);
+.message.user-align .text {
+    background-color: #e1f5fe;
 }
 
-.panel-card {
-    position: relative;
-    flex: 0 0 auto;
-    width: 120px;
-    height: 120px;
-    border-radius: 10px;
-    overflow: hidden;
-    background: #fff;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+.message.user-align .avatar {
+    order: 2;
+    margin-left: 1rem;
+    margin-right: 0;
 }
 
-.panel-thumb {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+/* Preview images inside chat messages */
+.chat-image-preview {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    object-fit: contain;
 }
 
-.panel-delete-btn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: rgba(255, 60, 60, 0.9);
-    border: none;
-    border-radius: 50%;
-    width: 22px;
-    height: 22px;
-    color: white;
-    cursor: pointer;
-}
-
-.panel-download-btn {
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    background: rgba(50,150,255,0.9);
-    border: none;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    color: white;
-    font-size: 14px;
-    text-align: center;
-    line-height: 22px;
-    text-decoration: none;
-}
-
-.download-all-btn {
-    display: block;
-    margin: 15px auto;
-    background: #007bff;
-    color: #fff;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 6px;
-    font-size: 15px;
-    cursor: pointer;
-}
-
-.download-all-btn:hover {
-    background: #0056cc;
-}
-
-
-
-
-
-/* --- Message Input Bar --- */
+/* === Input Bar === */
 .chat-input-bar {
     display: flex;
     align-items: flex-end;
-    gap: .5rem;
+    gap: 0.5rem;
     width: 100%;
     background: var(--accent-color);
-    padding: .75rem 1rem;
-    border: none;
+    padding: 0.75rem 1rem;
     border-top: 3px solid var(--accent-color);
-    border-radius: 0 0 8px 8px;
 }
+
+/* === Inline Buttons (Suggest Prompt, New Hero, Accept) === */
+.suggest-inline {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.suggest-inline-btn,
+.reset-inline-btn,
+.accept-suggestion-btn {
+    background: var(--accent-color);
+    color: #fff;
+    border: none;
+    padding: 0.45rem 0.9rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Hover / Active effects */
+.suggest-inline-btn:hover,
+.reset-inline-btn:hover,
+.accept-suggestion-btn:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+}
+
+.suggest-inline-btn:active,
+.reset-inline-btn:active,
+.accept-suggestion-btn:active {
+    transform: translateY(0);
+}
+
+/* Disabled state */
+.suggest-inline-btn:disabled,
+.reset-inline-btn:disabled,
+.accept-suggestion-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Optional color variations for clarity */
+.reset-inline-btn {
+    background: #555;          /* dark grey tone */
+}
+
+.accept-suggestion-btn {
+    background: #2ecc71;       /* green for accept */
+}
+
+
 
 .chat-editor {
     flex: 1;
@@ -485,19 +471,14 @@ h1 {
     background: transparent;
     outline: none;
     border: none;
-    padding: .25rem .5rem;
+    padding: 0.25rem 0.5rem;
 }
 
 .chat-editor:empty:before {
     content: attr(data-placeholder);
-    color: rgba(255, 255, 255, .85);
+    color: rgba(255, 255, 255, 0.85);
     pointer-events: none;
 }
-
-.chat-editor * { background: transparent !important; }
-.chat-editor br { line-height: 0; }
-
-
 
 .chat-input-bar button {
     background: none;
@@ -506,30 +487,100 @@ h1 {
     font-size: 1.5rem;
     cursor: pointer;
 }
-
-
-.message.user-align {
-    justify-content: flex-end;
+/* === Gallery Row BELOW input bar === */
+.panel-gallery {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    background: #fafafa;
+    border-top: 2px dotted var(--accent-color);
+    scroll-behavior: smooth;
+    align-items: center;
+    min-height: 60px;              /* 🟢 smaller placeholder space on load */
+    max-height: 180px;
+    transition: min-height 0.3s ease, padding 0.3s ease;
+    box-sizing: border-box;
 }
 
-.message.user-align .text {
-    background-color: #e1f5fe;
+/* Expand smoothly when images appear */
+.panel-gallery.has-images {
+    min-height: 180px;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
 }
 
-.message.user-align .avatar {
-    order: 2;
-    margin-right: 0;
-    margin-left: 1rem;
-}
-
-.chat-image-preview {
-    max-width: 100%;
-    max-height: 200px;
+/* === Panel thumbnails === */
+.panel-card {
+    position: relative;
+    flex: 0 0 auto;
+    height: 100%;
+    aspect-ratio: 16 / 9;
+    border: 1px solid #ddd;
     border-radius: 8px;
-    margin-bottom: 0.5rem;
-    object-fit: contain;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+.panel-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+/* === Download Full PDF Button (always visible) === */
+.download-all-btn {
+    display: block;
+    width: fit-content;
+    margin: 0.3rem auto 0.8rem;   /* 🟢 smaller margins on load */
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    border: none;
+    background: var(--accent-color);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.download-all-btn:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+}
+
+/* Buttons on image cards */
+.panel-delete-btn,
+.panel-download-btn {
+    position: absolute;
+    top: 6px;
+    background: rgba(255, 255, 255, 0.85);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 4px 6px;
+    font-size: 1rem;
+    transition: background 0.2s ease;
+}
+
+.panel-delete-btn:hover,
+.panel-download-btn:hover {
+    background: #fff;
+}
+
+.panel-delete-btn {
+    right: 6px;
+    color: red;
+}
+
+.panel-download-btn {
+    left: 6px;
+    color: #333;
+}
 
 
 
@@ -1082,20 +1133,6 @@ body.no-scroll {
     transition: transform 0.3s ease;
 }
 
-.upload-btn {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1.4rem;
-    cursor: pointer;
-    transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.upload-btn:hover {
-    transform: scale(1.1);
-    opacity: 0.9;
-}
-
 
 
 
@@ -1208,7 +1245,7 @@ body.no-scroll {
         font-size: 0.95rem;
         line-height: 1.5;
         overflow: hidden;
-        height: 85vh;
+        height: 600px;
         overflow-y: auto;
 
     }
@@ -1237,7 +1274,7 @@ body.no-scroll {
         border-radius: 8px;
         padding: 0;
         height: auto;
-        min-height: 300px;
+        min-height: 600px;
         font-size: 0.95rem;
     }
 

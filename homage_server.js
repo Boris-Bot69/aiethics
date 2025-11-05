@@ -7,7 +7,6 @@ import dotenv from "dotenv";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
-import { createWriteStream } from "fs";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 
 
@@ -359,7 +358,7 @@ Show smooth continuity between scenes.
 Story so far:
 ${story.context}
 
-Generate ONE new comic panel in consistent style, with speech bubbles if dialogue fits.
+Generate ONE new comic panel in consistent style, without speech bubbles.
 If the story logically reaches a conclusion, end it naturally with an emotional or moral closure.
 `;
 
@@ -419,7 +418,7 @@ app.post("/suggest-panel-prompt", async (req, res) => {
 Story so far:
 ${previous}
 
-Suggest one creative next event that fits naturally. Keep it positive and concise.`,
+Suggest one creative next event that fits naturally. Keep it positive and concise. It should makes in context`,
                 },
             ],
             config: { temperature: 0.9 },

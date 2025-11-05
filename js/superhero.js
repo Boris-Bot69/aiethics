@@ -6,20 +6,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const sendBtn = chatPanel.querySelector(".send-btn");
     const uploadBtn = document.getElementById("uploadBtn");
     const imageInput = document.getElementById("imageUpload");
+    const galleryContainer = chatPanel.querySelector("#panelGallery");
 
-    // === Panel gallery (horizontal) ===
-    const galleryContainer = document.createElement("div");
     galleryContainer.id = "panelGallery";
     galleryContainer.className = "panel-gallery";
-    chatPanel.insertAdjacentElement("afterend", galleryContainer);
 
-    // === Download full PDF button (hidden initially) ===
-    const downloadAllBtn = document.createElement("button");
-    downloadAllBtn.id = "downloadAllBtn";
-    downloadAllBtn.textContent = "📄 Download Full Comic PDF";
-    downloadAllBtn.className = "download-all-btn";
-    downloadAllBtn.style.display = "none";
-    galleryContainer.insertAdjacentElement("afterend", downloadAllBtn);
+    const downloadAllBtn = document.getElementById("downloadAllBtn");
+    downloadAllBtn.disabled = true;
+    downloadAllBtn.style.opacity = "0.6";
 
     let uploadedBase64 = null;
     let isProcessing = false;
@@ -30,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setTimeout(() => {
         addBotMessage(
-            "👋 Welcome to <em>AI Superhero Comic Builder!</em><br>Upload your image and describe your hero’s powers to start your story! Add maximum 6 Images"
+            "👋 Welcome to <em>AI Superhero Comic Builder!</em><br>Upload your image and describe your hero’s powers to start your story! Add maximum 6 Images! If you want to finish (earlier) the comic, type something related with the word conclusion"
         );
     }, 200);
 
@@ -47,7 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.onload = (ev) => {
             uploadedBase64 = ev.target.result;
             addUserMessage("Image uploaded!");
-            addImageMessage(uploadedBase64, "user");
             addBotMessage("Now describe your superhero’s powers or mission to begin!");
         };
         reader.readAsDataURL(file);
@@ -79,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             isProcessing = true;
-            addBotMessage("🎨 Generating your next comic panel...");
+            addBotMessage("Generating your next comic panel...");
 
             const response = await fetch(`${API_BASE}/generate-panel`, {
                 method: "POST",
@@ -104,14 +97,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 addBotMessageWithSuggestion("What happens next?");
             }
         } catch (err) {
-            console.error("❌ Error generating panel:", err);
+            console.error("Error generating panel:", err);
             addBotMessage(`Error! Please try again with your prompt`);
         } finally {
             isProcessing = false;
         }
     }
 
-    // === Add each panel to gallery ===
     function addPanelToGallery(imageDataUrl) {
         const wrapper = document.createElement("div");
         wrapper.className = "panel-card";
@@ -144,8 +136,12 @@ document.addEventListener("DOMContentLoaded", () => {
         wrapper.appendChild(downloadBtn);
         galleryContainer.appendChild(wrapper);
 
-        downloadAllBtn.style.display = "block"; // show global download button
+        galleryContainer.classList.add("has-images"); // ⬅ add this
+
+        downloadAllBtn.disabled = false;
+        downloadAllBtn.style.opacity = "1";
     }
+
 
     // === Generate final PDF ===
     async function generatePDF() {
@@ -179,7 +175,6 @@ document.addEventListener("DOMContentLoaded", () => {
         chatMessages.appendChild(msg);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
-
     function addBotMessageWithSuggestion(text) {
         const msg = document.createElement("div");
         msg.className = "message ai-message";
@@ -188,23 +183,63 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="text">
         ${text}
         <div class="suggest-inline">
-          <button class="suggest-inline-btn">💡 Suggest Prompt</button>
-          <button class="reset-inline-btn">🔄 New Hero</button>
+          <button class="suggest-inline-btn">Suggest Prompt</button>
+          <button class="reset-inline-btn">New Hero</button>
         </div>
       </div>`;
         chatMessages.appendChild(msg);
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
-        msg.querySelector(".suggest-inline-btn").addEventListener("click", async () => {
-            const res = await fetch(`${API_BASE}/suggest-panel-prompt`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ sessionId }),
-            });
-            const data = await res.json();
-            addBotMessage(`💡 Suggestion: <em>${data.suggestion}</em>`);
+        // === Suggest Prompt button ===
+        msg.querySelector(".suggest-inline-btn").addEventListener("click", async (e) => {
+            const btn = e.target;
+            btn.disabled = true;
+            const originalText = btn.textContent;
+            btn.textContent = "⏳ Wait for a second...";
+            btn.style.opacity = "0.6";
+
+            try {
+                const res = await fetch(`${API_BASE}/suggest-panel-prompt`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ sessionId }),
+                });
+                const data = await res.json();
+
+                if (data.suggestion) {
+                    // 💡 Create new message with Accept button
+                    const suggestionMsg = document.createElement("div");
+                    suggestionMsg.className = "message ai-message";
+                    suggestionMsg.innerHTML = `
+                  <div class="avatar"></div>
+                  <div class="text">
+                    💡 Suggestion: <em>${data.suggestion}</em>
+                    <div class="suggest-accept">
+                      <button class="accept-suggestion-btn">Accept</button>
+                    </div>
+                  </div>`;
+                    chatMessages.appendChild(suggestionMsg);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                    // === Accept Suggestion button logic ===
+                    const acceptBtn = suggestionMsg.querySelector(".accept-suggestion-btn");
+                    acceptBtn.addEventListener("click", async () => {
+                        addUserMessage(data.suggestion);
+                        await generatePanel(data.suggestion);
+                    });
+                } else {
+                    addBotMessage("⚠️ No suggestion available.");
+                }
+            } catch (err) {
+                addBotMessage(`Error fetching suggestion: ${err.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+                btn.style.opacity = "1";
+            }
         });
 
+        // === Reset Hero button ===
         msg.querySelector(".reset-inline-btn").addEventListener("click", async () => {
             await fetch(`${API_BASE}/reset-story`, {
                 method: "POST",
@@ -216,6 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
             addBotMessage("New hero session started!");
         });
     }
+
 
     function addUserMessage(text) {
         const msg = document.createElement("div");
