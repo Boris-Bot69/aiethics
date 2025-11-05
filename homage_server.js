@@ -456,10 +456,6 @@ app.post("/delete-panel", (req, res) => {
     res.json({ message: "Panel deleted" });
 });
 
-
-/* ============================================================
-   Generate final comic strip after story ends
-============================================================ */
 app.get("/generate-comic-pdf", async (req, res) => {
     try {
         const { sessionId } = req.query;
@@ -469,70 +465,108 @@ app.get("/generate-comic-pdf", async (req, res) => {
 
         const pdf = await PDFDocument.create();
         const font = await pdf.embedFont(StandardFonts.HelveticaBold);
-        const page = pdf.addPage([595, 842]); // A4 portrait
-        const pageWidth = page.getWidth();
-        const pageHeight = page.getHeight();
-        const margin = 40;
-        const innerWidth = pageWidth - margin * 2;
-        const innerHeight = pageHeight - margin * 2;
 
-        // Title
-        page.drawText("AI Superhero Comic", {
-            x: margin,
-            y: pageHeight - 40,
-            size: 18,
-            font,
-            color: rgb(0.1, 0.1, 0.1),
-        });
+        // ---- page factory
+        const makePage = () => {
+            const page = pdf.addPage([595, 842]);            // A4 portrait
+            const pageWidth = page.getWidth();
+            const pageHeight = page.getHeight();
+            const margin = 28;
+            const innerW = pageWidth - margin * 2;
 
-        // Rows and columns layout (2 columns)
+            // Title
+            page.drawText("AI Superhero Comic", {
+                x: margin,
+                y: pageHeight - 36,
+                size: 18,
+                font,
+                color: rgb(0.1, 0.1, 0.1),
+            });
+
+            // y cursor starts below the title
+            const startY = pageHeight - 36 - 16;
+            return { page, pageWidth, pageHeight, margin, innerW, y: startY };
+        };
+
+        let ctx = makePage();
+
+        // layout constants
+        const colGap = 6;              // small gaps for tight packing
+        const rowGap = 8;
         const numCols = 2;
-        const colGap = 12;
-        const rowGap = 20;
-        const cellWidth = (innerWidth - colGap) / numCols;
+        const cellW = (ctx.innerW - colGap) / numCols;
 
-        const numPanels = story.panels.length;
-        const numRows = Math.ceil(numPanels / numCols);
-        const totalRowsHeight = innerHeight - 60; // leave top area for title
-        const cellHeight = totalRowsHeight / numRows - rowGap / 2;
-
-        let panelIndex = 0;
-        for (let r = 0; r < numRows; r++) {
-            for (let c = 0; c < numCols; c++) {
-                if (panelIndex >= numPanels) break;
-                const p = story.panels[panelIndex];
-                const imgBytes = Buffer.from(p.image, "base64");
-                const img = await pdf.embedPng(imgBytes);
+        // Pre-embed images once, keep native sizes
+        const items = await Promise.all(
+            story.panels.map(async (p) => {
+                const img = await pdf.embedPng(Buffer.from(p.image, "base64"));
                 const { width, height } = img.scale(1);
+                return { img, width, height };
+            })
+        );
 
-                // Fit image proportionally into cell
-                const scale = Math.min(cellWidth / width, cellHeight / height);
-                const drawW = width * scale;
-                const drawH = height * scale;
-
-                const x = margin + c * (cellWidth + colGap) + (cellWidth - drawW) / 2;
-                const y =
-                    pageHeight -
-                    80 - // leave top space
-                    (r + 1) * (cellHeight + rowGap) +
-                    (cellHeight - drawH);
-
-                page.drawImage(img, { x, y, width: drawW, height: drawH });
-                page.drawText(`Panel ${panelIndex + 1}`, {
-                    x,
-                    y: y - 14,
-                    size: 10,
-                    font,
-                    color: rgb(0.3, 0.3, 0.3),
-                });
-
-                panelIndex++;
+        // Helper: ensure space or add new page
+        const ensureSpace = (needed) => {
+            if (ctx.y - needed < ctx.margin) {
+                ctx = makePage();
             }
+        };
+
+        // Draw rows in pairs; if odd, handle last single row centered
+        const fullRows = Math.floor(items.length / 2);
+        const hasSingleLast = items.length % 2 === 1;
+
+        let index = 0;
+
+        // --- full 2-column rows ---
+        for (let r = 0; r < fullRows; r++) {
+            const left = items[index];
+            const right = items[index + 1];
+
+            // compute scaled heights using fixed cell width
+            const scaleL = cellW / left.width;
+            const scaleR = cellW / right.width;
+            const drawHL = left.height * scaleL;
+            const drawHR = right.height * scaleR;
+            const rowH = Math.max(drawHL, drawHR); // row height is max of both
+
+            ensureSpace(rowH + rowGap);
+
+            // y position for this row (baseline at bottom of tallest)
+            const y = ctx.y - rowH;
+
+            // center each image vertically within the row
+            const xL = ctx.margin;
+            const yL = y + (rowH - drawHL) / 2;
+
+            const xR = ctx.margin + cellW + colGap;
+            const yR = y + (rowH - drawHR) / 2;
+
+            ctx.page.drawImage(left.img,  { x: xL, y: yL, width: cellW, height: drawHL });
+            ctx.page.drawImage(right.img, { x: xR, y: yR, width: cellW, height: drawHR });
+
+            ctx.y = y - rowGap; // advance cursor
+            index += 2;
+        }
+
+        // --- single last row (centered, full width) ---
+        if (hasSingleLast) {
+            const last = items[index];
+            const scale = ctx.innerW / last.width;
+            const drawW = ctx.innerW;
+            const drawH = last.height * scale;
+
+            ensureSpace(drawH);
+
+            const x = ctx.margin;
+            const y = ctx.y - drawH;
+
+            ctx.page.drawImage(last.img, { x, y, width: drawW, height: drawH });
+            ctx.y = y - rowGap;
         }
 
         const pdfBytes = await pdf.save();
-        const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
-        res.json({ pdf: `data:application/pdf;base64,${pdfBase64}` });
+        res.json({ pdf: `data:application/pdf;base64,${Buffer.from(pdfBytes).toString("base64")}` });
     } catch (err) {
         console.error("/generate-comic-pdf error:", err);
         res.status(500).json({ error: err.message });
