@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Ethics Activities - TUM</title>
-    <link rel="stylesheet" href="../../css/ai_homage.css">
+    <link rel="stylesheet" href="../../css/ai_prototype_pitch.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -77,11 +77,13 @@
                         <div class="step-content is-active" data-step="1">
                             <h3>1. Design:</h3>
                             <p>Design an AI product that will help your school reach Sustainable Development Goals. Consider what ethical features are important in your AI product, based on the OECD principles.</p>
+
                         </div>
 
                         <div class="step-content" data-step="2">
                             <h3>2. Illustrate and pitch:</h3>
                             <p>Use image-generative AI to illustrate your AI product, and text-generative AI to create a pitch that you will present to the rest of the groups.</p>
+
                         </div>
 
                         <div class="step-content" data-step="3">
@@ -91,10 +93,12 @@
                         <div class="step-content" data-step="4">
                             <h3>4. Feedback:</h3>
                             <p>Swap designs with another group and comment on their product from four selected perspectives: learners, teachers, parents, principal, school staff, investor (pick 4) and in relation to OECD AI principles. What ethical issues are at stake?</p>
+
                         </div>
                         <div class="step-content" data-step="5">
                             <h3>5. Iterate:</h3>
                             <p>Redesign based on comments with a focus on AI Ethics.</p>
+
                         </div>
                         <div class="step-content" data-step="6">
                             <h3>6. Share:</h3>
@@ -119,15 +123,18 @@
 
                 <main class="chat-panel">
                     <div class="chat-messages">
-                        <div class="message ai-message">
-                            <div class="avatar"></div>
-                            <div class="text">Please upload a image by clicking + button, and text to fusion it.</div>
-                        </div>
                     </div>
                     <div class="chat-input-bar">
                         <input type="file" id="imageUpload" accept="image/*" style="display: none;">
-                        <button class="upload-btn" aria-label="Upload image" onclick="document.getElementById('imageUpload').click()">+</button>
-                        <input type="text" id="chatInput" placeholder="Send a message">
+                        <div
+                                id="chatEditor"
+                                class="chat-editor"
+                                contenteditable="true"
+                                role="textbox"
+                                aria-multiline="true"
+                                aria-label="Send a message"
+                                data-placeholder="Write a message"
+                        ></div>
                         <button class="send-btn" aria-label="Send message">&#9658;</button>
                     </div>
                 </main>
@@ -295,6 +302,7 @@
 
 <script src="../../js/main.js"></script>
 <script src="../../js/app.js"></script>
+<script src="../../js/prototype_pitch_chatbot.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const track = document.querySelector('.slider-track');

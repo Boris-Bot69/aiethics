@@ -66,7 +66,7 @@ app.use(
             if (!origin || allowedOrigins.includes(origin)) {
                 callback(null, true);
             } else {
-                console.warn("❌ Blocked CORS request from:", origin);
+                console.warn("Blocked CORS request from:", origin);
                 callback(new Error("Not allowed by CORS"));
             }
         },
@@ -88,7 +88,7 @@ app.post("/generate", async (req, res) => {
             return res.status(400).json({ error: "Missing 'prompt' string" });
         }
 
-        console.log("🎨 Generating image for:", prompt);
+        console.log("Generating image for:", prompt);
 
         const response = await ai.models.generateImages({
             model: "imagen-4.0-generate-001",
@@ -103,7 +103,7 @@ app.post("/generate", async (req, res) => {
 
         res.json({ image: imgBase64 });
     } catch (err) {
-        console.error("❌ Error generating image:", err);
+        console.error("Error generating image:", err);
         res.status(500).json({ error: err.message || "Unknown error" });
     }
 });
@@ -572,6 +572,148 @@ app.get("/generate-comic-pdf", async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+/* ============================================
+   1. /pitch — Text generieren
+=============================================== */
+app.post("/pitch", async (req, res) => {
+    try {
+        const { prompt } = req.body;
+        const shortPrompt = `
+        Summarize the user's AI idea in 2–3 short sentences.
+        Be clear, concise, and simple.
+        Do NOT explain technical details.
+        Do NOT generate long lists.
+        User idea: ${prompt}
+        `;
+
+        console.log("[/pitch] Received prompt:", prompt);
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: [{ text: prompt }]
+        });
+
+        // Google GenAI valid path:
+        const text =
+            response.candidates?.[0]?.content?.parts?.[0]?.text ??
+            "No output generated.";
+
+        console.log("[/pitch] Output:", text);
+
+        res.json({ text });
+
+    } catch (err) {
+        console.error("[/pitch] Error:", err);
+        res.status(500).json({ error: "Pitch generation failed." });
+    }
+});
+/* ============================================
+   2. /image — Image generieren
+=============================================== */
+app.post("/image", async (req, res) => {
+    try {
+        const { prompt } = req.body;
+
+        console.log("[/image] Received prompt:", prompt);
+
+        const response = await ai.models.generateImages({
+            model: "imagen-4.0-generate-001",
+            prompt,
+            config: { numberOfImages: 1 }
+        });
+
+        const image = response.generatedImages?.[0]?.image?.imageBytes;
+
+        if (!image) {
+            console.log("[/image] No image returned.");
+            return res.status(500).json({ error: "No image returned." });
+        }
+
+        console.log("[/image] Image generated.");
+
+        res.json({ image });
+
+    } catch (err) {
+        console.error("[/image] Error:", err);
+        res.status(500).json({ error: "Image generation failed." });
+    }
+});
+/* ============================================
+   3. /feedback — Stakeholder analysis
+=============================================== */
+app.post("/feedback", async (req, res) => {
+    try {
+        const { text } = req.body;
+
+        console.log("[/feedback] Received input:", text);
+
+        const prompt = `
+Analyze this AI school product:
+
+"${text}".
+
+Return benefits, risks, harms, stakeholders, OECD principles. Keep it short in total of 100 words.
+        `;
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: [{ text: prompt }]
+        });
+
+        const output =
+            response.candidates?.[0]?.content?.parts?.[0]?.text ??
+            "No output generated.";
+
+        console.log("[/feedback] Output:", output);
+
+        res.json({ text: output });
+
+    } catch (err) {
+        console.error("[/feedback] Error:", err);
+        res.status(500).json({ error: "Feedback generation failed." });
+    }
+});
+/* ============================================
+   4. /refine — Idea refinement
+=============================================== */
+app.post("/refine", async (req, res) => {
+    try {
+        const { idea, feedback } = req.body;
+
+        console.log("[/refine] Inputs:", { idea, feedback });
+
+        const prompt = `
+Refine this AI idea.
+
+Idea:
+${idea}
+
+Feedback:
+${feedback}
+
+Return a concise improved version with ethical alignment.
+        `;
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: [{ text: prompt }]
+        });
+
+        const improved =
+            response.candidates?.[0]?.content?.parts?.[0]?.text ??
+            "No output generated.";
+
+        console.log("[/refine] Output:", improved);
+
+        res.json({ text: improved });
+
+    } catch (err) {
+        console.error("[/refine] Error:", err);
+        res.status(500).json({ error: "Refinement failed." });
+    }
+});
+
 
 
 /* ============================================================
