@@ -9,6 +9,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let flowStage = "idea";
     let ideaText = "";
     let feedbackText = "";
+    let pitchExampleText = "";
+    let imageData = "";
 
     /* ENTER KEY HANDLER */
     chatEditor.addEventListener("keydown", (e) => {
@@ -76,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* ================================
-       API HELPERS WITH FULL DEBUG LOGS
+       API HELPERS
     ================================= */
 
     async function requestPitch(text) {
@@ -89,10 +91,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify({ prompt: text })
             });
 
-            console.log("/pitch response status:", res.status);
             const data = await res.json();
             console.log("/pitch response data:", data);
-
             return data;
         } catch (err) {
             console.error("Error during /pitch request:", err);
@@ -110,10 +110,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify({ prompt })
             });
 
-            console.log("/image response status:", res.status);
             const data = await res.json();
             console.log("/image response data:", data);
-
             return data;
         } catch (err) {
             console.error("Error during /image request:", err);
@@ -131,10 +129,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify({ text })
             });
 
-            console.log("/feedback response status:", res.status);
             const data = await res.json();
             console.log("/feedback response data:", data);
-
             return data;
         } catch (err) {
             console.error("Error during /feedback request:", err);
@@ -152,14 +148,28 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify({ idea, feedback })
             });
 
-            console.log("/refine response status:", res.status);
             const data = await res.json();
             console.log("/refine response data:", data);
-
             return data;
         } catch (err) {
             console.error("Error during /refine request:", err);
             addBotMessage("Error: unable to refine design.");
+        }
+    }
+
+    async function requestPitchExample(idea) {
+        console.log("Calling /pitchExample with:", idea);
+        try {
+            const res = await fetch("/pitchExample", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ idea })
+            });
+            const data = await res.json();
+            return data;
+        } catch (err) {
+            console.error("Error during /pitchExample request:", err);
+            addBotMessage("Error: unable to create pitch example.");
         }
     }
 
@@ -180,52 +190,84 @@ document.addEventListener("DOMContentLoaded", () => {
         addUserMessage(userText);
         chatEditor.innerText = "";
 
+        // restart logic
         if (flowStage === "done") {
             if (userText.toLowerCase().includes("restart")) {
                 console.log("Restarting chat flow.");
                 flowStage = "idea";
-                addBotMessage("New round. Please describe your AI product idea.");
+                ideaText = "";
+                feedbackText = "";
+                pitchExampleText = "";
+                imageData = "";
+                addBotMessage("🔄 New round started! Please describe your new AI product idea.");
                 return;
             }
-            return addBotMessage("Write 'restart' to begin again.");
+            return addBotMessage("Type 'restart' to start a new idea.");
         }
 
+        /* -----------------------------
+           IDEA → PITCH + IMAGE
+        ----------------------------- */
         if (flowStage === "idea") {
-            console.log("Flow: idea → pitch");
+            console.log("Flow: idea → extract components + auto image + pitch setup");
             ideaText = userText;
 
             showTyping();
-            const data = await requestPitch(userText);
+            const pitchData = await requestPitch(userText);
+            addBotMessage(`Main components:\n${pitchData.text}`);
 
-            addBotMessage(data.text);
-            flowStage = "image";
-            return addBotMessage("Now describe what your AI product looks like.");
-        }
-
-        if (flowStage === "image") {
-            console.log("Flow: image → image-generation");
-
+            // auto-generate illustration (text-free)
             showTyping();
-            const data = await requestImage(userText);
+            const imgData = await requestImage(`Illustrate: ${pitchData.text}`);
+            imageData = imgData.image;
+            addBotImage(imageData);
 
-            addBotImage(data.image);
-            flowStage = "feedback";
-            return addBotMessage("Now send me your pitch text. I will analyze it ethically.");
+            flowStage = "design";
+            return addBotMessage("You can now describe design ideas or type 'pitch example' to generate a short pitch.");
         }
 
+        /* -----------------------------
+           DESIGN → PITCH EXAMPLE OR IMAGE
+        ----------------------------- */
+        if (flowStage === "design") {
+            if (userText.toLowerCase().includes("pitch example")) {
+                console.log("Generating automatic pitch example...");
+
+                showTyping();
+                const data = await requestPitchExample(ideaText);
+                pitchExampleText = data.text;
+                addBotMessage(pitchExampleText);
+
+                flowStage = "refine";
+                return addBotMessage("Would you like to refine or improve your product further?");
+            } else {
+                console.log("User adds design refinements.");
+                showTyping();
+                const imgData = await requestImage(`Design refinement: ${userText}`);
+                imageData = imgData.image;
+                addBotImage(imageData);
+                return;
+            }
+        }
+
+        /* -----------------------------
+           FEEDBACK (optional legacy path)
+        ----------------------------- */
         if (flowStage === "feedback") {
             console.log("Flow: feedback → stakeholder analysis");
 
             showTyping();
             const data = await requestFeedback(userText);
-
             feedbackText = data.text;
-            addBotMessage(data.text);
+            addBotMessage(feedbackText);
 
             flowStage = "refine";
             return addBotMessage("Write 'refine' when you're ready to improve your product.");
         }
 
+        /* -----------------------------
+           REFINE → SUMMARY
+        ----------------------------- */
         if (flowStage === "refine") {
             if (!userText.toLowerCase().includes("refine")) {
                 console.log("User wrote something else; waiting for 'refine'.");
@@ -236,15 +278,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
             showTyping();
             const data = await requestRefine(ideaText, feedbackText);
+            feedbackText = data.text;
 
-            addBotMessage(data.text);
+            addBotMessage(feedbackText);
+
+            console.log("Flow: refinement completed → showing summary");
+
+            const summaryHTML = `
+        <div class="summary-block">
+            <h3>Final Concept Summary</h3>
+            <p><strong>Idea:</strong><br>${ideaText}</p>
+            ${imageData ? `<div><strong>Concept Image:</strong><br><img src="data:image/png;base64,${imageData}" class="chat-image" /></div>` : ""}
+            ${pitchExampleText ? `<p><strong>Pitch Example:</strong><br>${pitchExampleText}</p>` : ""}
+            ${feedbackText ? `<p><strong>Refined Version:</strong><br>${feedbackText}</p>` : ""}
+        </div>
+    `;
+
+            const msg = document.createElement("div");
+            msg.className = "message bot summary";
+            msg.innerHTML = summaryHTML;
+            chatMessages.appendChild(msg);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            addBotMessage("Here’s your complete concept summary. Type 'restart' to start again!");
             flowStage = "done";
-
-            return addBotMessage("Process completed. Write 'restart' to begin again.");
+            return;
         }
+
     });
 
     /* Initial message */
-    addBotMessage("Welcome. Please describe your AI product idea to begin.");
+    addBotMessage("Welcome Please describe your AI product idea to begin.");
 
 });

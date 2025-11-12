@@ -20,7 +20,7 @@ const toRaw = (dataUrl) => {
     }
 };
 
-const frames = { A8: null, A7: null, A6: null, A5: null };
+const frames = { A8: null, A7: null, A6: null, A5: null, A4: null };
 
 const stageKey = (stageNum) => {
     if (stageNum === 1) return "A8";
@@ -39,7 +39,6 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = 3000;
 
-app.use(cors());
 app.use(bodyParser.json({ limit: "1000mb" }));
 app.use(bodyParser.urlencoded({ limit: "1000mb", extended: true }));
 
@@ -579,25 +578,24 @@ app.get("/generate-comic-pdf", async (req, res) => {
 app.post("/pitch", async (req, res) => {
     try {
         const { prompt } = req.body;
-        const shortPrompt = `
-        Summarize the user's AI idea in 2–3 short sentences.
-        Be clear, concise, and simple.
-        Do NOT explain technical details.
-        Do NOT generate long lists.
-        User idea: ${prompt}
-        `;
 
         console.log("[/pitch] Received prompt:", prompt);
 
+        const shortPrompt = `
+Extract the main components of the following AI product idea.
+List only 3–5 key elements in bullet points.
+Avoid explanations or extra text.
+
+Idea:
+${prompt}
+        `;
+
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
-            contents: [{ text: prompt }]
+            contents: [{ text: shortPrompt }]
         });
 
-        // Google GenAI valid path:
-        const text =
-            response.candidates?.[0]?.content?.parts?.[0]?.text ??
-            "No output generated.";
+        const text = response.candidates?.[0]?.content?.parts?.[0]?.text ?? "No output generated.";
 
         console.log("[/pitch] Output:", text);
 
@@ -608,6 +606,44 @@ app.post("/pitch", async (req, res) => {
         res.status(500).json({ error: "Pitch generation failed." });
     }
 });
+
+
+app.post("/pitchExample", async (req, res) => {
+    try {
+        const { idea } = req.body;
+
+        console.log("[/pitchExample] Received idea:", idea);
+
+        const prompt = `
+Create a 3-sentence elevator pitch for this AI product idea:
+"${idea}"
+
+Tone: confident, clear, and audience-friendly.
+Do not explain technical details.
+        `;
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: [{ text: prompt }]
+        });
+
+        const text =
+            response.candidates?.[0]?.content?.parts?.[0]?.text ??
+            "No pitch example generated.";
+
+        console.log("[/pitchExample] Output:", text);
+
+        res.json({ text });
+
+    } catch (err) {
+        console.error("[/pitchExample] Error:", err);
+        res.status(500).json({ error: "Pitch example generation failed." });
+    }
+});
+
+
+
+
 /* ============================================
    2. /image — Image generieren
 =============================================== */
@@ -617,10 +653,25 @@ app.post("/image", async (req, res) => {
 
         console.log("[/image] Received prompt:", prompt);
 
+        // 🔹 Enhanced prompt: automatically enforce “no text or labels”
+        const enhancedPrompt = `
+Create a clean, modern concept-flow or visualization illustration based on:
+"${prompt}"
+
+Show the logical relationship between components clearly
+(e.g., arrows, data flow, or transformations),
+but absolutely DO NOT include any text, letters, words, numbers, or symbols in the image.
+
+Keep the focus purely on visuals, structure, and flow.
+Style: 3D or semi-flat design, minimal background, smooth gradients, soft lighting.
+Palette: tech-inspired blues, teals, grays.
+Aspect ratio: square or 16:9.
+        `;
+
         const response = await ai.models.generateImages({
             model: "imagen-4.0-generate-001",
-            prompt,
-            config: { numberOfImages: 1 }
+            prompt: enhancedPrompt,
+            config: { numberOfImages: 1 },
         });
 
         const image = response.generatedImages?.[0]?.image?.imageBytes;
@@ -630,7 +681,7 @@ app.post("/image", async (req, res) => {
             return res.status(500).json({ error: "No image returned." });
         }
 
-        console.log("[/image] Image generated.");
+        console.log("[/image] Text-free concept image generated successfully.");
 
         res.json({ image });
 
