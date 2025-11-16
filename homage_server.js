@@ -766,6 +766,38 @@ Return a concise improved version with ethical alignment.
 });
 
 
+app.post("/chat", async (req, res) => {
+    try {
+        const { text } = req.body;
+
+        if (!text || typeof text !== "string") {
+            return res.status(400).json({ error: "Missing 'text' message." });
+        }
+
+        console.log("/chat user:", text);
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: [{ text }],
+            config: { temperature: 0.7 }
+        });
+
+        const reply =
+            response.candidates?.[0]?.content?.parts?.[0]?.text ||
+            "I'm not sure what to say.";
+
+        console.log("/chat reply:", reply);
+
+        res.json({ text: reply });
+
+    } catch (err) {
+        console.error("/chat error:", err);
+        res.status(500).json({ error: "Chat endpoint error." });
+    }
+});
+
+
+
 
 /* ============================================================
    ROUTES – HTML Pages
