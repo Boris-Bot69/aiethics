@@ -796,6 +796,139 @@ app.post("/chat", async (req, res) => {
     }
 });
 
+app.post("/generate-capsule-pdf", async (req, res) => {
+    try {
+        const { reflection, designs } = req.body;
+
+        if (!reflection || !designs) {
+            return res.status(400).json({ error: "Missing Time Capsule data." });
+        }
+
+        const pdf = await PDFDocument.create();
+        const font = await pdf.embedFont(StandardFonts.Helvetica);
+        const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+
+        const pageWidth = 595;
+        const pageHeight = 842;
+        const margin = 40;
+
+        /* ---------------- PAGE 1 — TEXT ---------------- */
+
+        const page1 = pdf.addPage([pageWidth, pageHeight]);
+        let y = pageHeight - margin;
+
+        page1.drawText("AI Time Capsule", {
+            x: margin,
+            y,
+            font: bold,
+            size: 22
+        });
+        y -= 40;
+
+        // Reflection section
+        page1.drawText("🧠 Reflection:", {
+            x: margin,
+            y,
+            font: bold,
+            size: 16
+        });
+        y -= 20;
+
+        const reflectionText = reflection.replace(/\n+/g, " ").trim();
+        page1.drawText(reflectionText, {
+            x: margin,
+            y,
+            font,
+            size: 12,
+            maxWidth: pageWidth - margin * 2
+        });
+        y -= 80;
+
+        // Designed text (if exists)
+        const textDesign = designs.find(d => d.type === "text");
+        if (textDesign) {
+            page1.drawText("💬 Designed Message:", {
+                x: margin,
+                y,
+                font: bold,
+                size: 16
+            });
+            y -= 20;
+
+            page1.drawText(textDesign.content, {
+                x: margin,
+                y,
+                font,
+                size: 12,
+                maxWidth: pageWidth - margin * 2
+            });
+        }
+
+        /* ---------------- PAGE 2 — IMAGES ---------------- */
+
+        const images = designs.filter(d => d.type === "image");
+
+        if (images.length > 0) {
+            const page2 = pdf.addPage([pageWidth, pageHeight]);
+            let y2 = pageHeight - margin;
+
+            page2.drawText("Time Capsule Images", {
+                x: margin,
+                y: y2,
+                font: bold,
+                size: 20
+            });
+            y2 -= 40;
+
+            for (let i = 0; i < images.length; i++) {
+                const imgBase64 = images[i].src.split(",")[1];
+                const imgBuffer = Buffer.from(imgBase64, "base64");
+                const embedded = await pdf.embedPng(imgBuffer);
+
+                const scale = 400 / embedded.width; // scale to fit width
+                const w = embedded.width * scale;
+                const h = embedded.height * scale;
+
+                if (y2 - h < margin) {
+                    page2.addPage();
+                    y2 = pageHeight - margin;
+                }
+
+                page2.drawText(`Image ${i + 1} (${images[i].mode})`, {
+                    x: margin,
+                    y: y2,
+                    font: bold,
+                    size: 14
+                });
+
+                y2 -= 20;
+
+                page2.drawImage(embedded, {
+                    x: margin,
+                    y: y2 - h,
+                    width: w,
+                    height: h
+                });
+
+                y2 -= h + 30;
+            }
+        }
+
+        /* ---------------- OUTPUT ---------------- */
+
+        const pdfBytes = await pdf.save();
+        const base64 = Buffer.from(pdfBytes).toString("base64");
+
+        res.json({
+            pdf_url: `data:application/pdf;base64,${base64}`
+        });
+
+    } catch (err) {
+        console.error("PDF generation failed:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 
 
 

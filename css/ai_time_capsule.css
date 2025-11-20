@@ -417,30 +417,27 @@ body.no-scroll {
     padding: 1.5rem;
 }
 
-/* Suggestion buttons row */
 
-.suggestion-buttons {
-    padding: 1rem;
-    background: #fff7f7;
-    border-top: 2px dotted var(--accent-color);
+.design-mode-row {
     display: flex;
-    gap: 0.5rem;
+    gap: 10px;
+    margin: 12px 0;
     flex-wrap: wrap;
 }
 
-.suggestion-btn {
-    padding: 0.4rem 0.8rem;
-    border-radius: 999px;
-    border: 1px solid #f5b3b3;
-    background: #ffecec;
-    font-size: 0.85rem;
+.design-mode-btn {
+    padding: 10px 14px;
+    background: #e6f3ff;
+    border: 2px solid #bcdcff;
+    border-radius: 10px;
     cursor: pointer;
-    white-space: nowrap;
-    transition: background 0.2s ease, transform 0.1s ease;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.2s;
 }
 
-.suggestion-btn:hover {
-    background: #ffd2d2;
+.design-mode-btn:hover {
+    background: #cfe8ff;
     transform: translateY(-1px);
 }
 
