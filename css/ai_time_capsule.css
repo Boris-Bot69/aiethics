@@ -560,16 +560,17 @@ body.no-scroll {
 }
 
 /* Typing indicator */
-
 .typing-indicator {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 4px;
     padding: 10px 14px;
     background: #ffffff;
     border-radius: 14px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-    margin: 8px 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    margin: 8px 0 8px 48px; /* align with bot avatar */
+    max-width: 70%;
+    border: 1px solid #eee;
 }
 
 .typing-dot {

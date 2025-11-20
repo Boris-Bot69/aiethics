@@ -1,6 +1,6 @@
 // time_capsule.js
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("Time Capsule Bot (v2.1) initialized");
+    console.log("Time Capsule Bot initialized");
 
     const messages = document.querySelector(".chat-messages");
     const input = document.getElementById("chatEditor");
@@ -74,10 +74,10 @@ document.addEventListener("DOMContentLoaded", () => {
         row.className = "suggestion-row design-mode-row";
 
         const modes = [
-            { id: "text", label: "📝 Text Message" },
-            { id: "image", label: "🎨 Image" },
-            { id: "comic", label: "📚 Comic" },
-            { id: "hieroglyph", label: "🔣 Symbols" }
+            { id: "text", label: "Text Message" },
+            { id: "image", label: "Image" },
+            { id: "comic", label: "Comic" },
+            { id: "hieroglyph", label: "Symbols" }
         ];
 
         modes.forEach(mode => {
@@ -152,7 +152,7 @@ Design input:
         if (mode === "hieroglyph") {
             const prompt = `
 Turn the following concept into a symbolic emoji-based hieroglyph representation.
-Keep it short and fun.
+Keep it short and fun. 
 
 ${combinedIdea}
         `;
@@ -174,7 +174,7 @@ ${combinedIdea}
         if (mode === "image") {
             const promptForImage = `
 Create a child-friendly illustration for a classroom.
-No text, labels, or numbers.
+No text inside the image.
 
 Student understanding of AI:
 "${reflectionText}"
@@ -202,8 +202,8 @@ Use friendly visual metaphors.
         /* -------- COMIC MODE -------- */
         if (mode === "comic") {
             const promptForComic = `
-Create a comic-style vignette representing:
-"${reflectionText}"
+Create a comic-style representing:
+"${reflectionText}". Have a nice story for children to explain. 
 No text or speech bubbles.
         `;
 
@@ -279,7 +279,7 @@ No text or speech bubbles.
 
         const btn = document.createElement("button");
         btn.className = "suggestion-btn design-mode-btn";
-        btn.textContent = "📄 Download Time Capsule PDF";
+        btn.textContent = "Download Time Capsule PDF";
 
         btn.addEventListener("click", async () => {
             const typing = showTyping();

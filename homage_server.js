@@ -804,123 +804,159 @@ app.post("/generate-capsule-pdf", async (req, res) => {
             return res.status(400).json({ error: "Missing Time Capsule data." });
         }
 
-        const pdf = await PDFDocument.create();
-        const font = await pdf.embedFont(StandardFonts.Helvetica);
-        const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+        /* ---------------- LOAD UNICODE FONT ---------------- */
+        const fontPath = path.join(__dirname, "fonts", "NotoSans-Regular.ttf");
+        const fontBytes = fs.readFileSync(fontPath);
 
-        const pageWidth = 595;
+        const pdf = await PDFDocument.create();
+        const unicodeFont = await pdf.embedFont(fontBytes, { subset: true });
+
+        const pageWidth = 595;   // A4 portrait
         const pageHeight = 842;
         const margin = 40;
 
-        /* ---------------- PAGE 1 — TEXT ---------------- */
+        /* ==================== PAGE 1 (TEXT) ==================== */
 
         const page1 = pdf.addPage([pageWidth, pageHeight]);
         let y = pageHeight - margin;
 
-        page1.drawText("AI Time Capsule", {
+        // Title
+        page1.drawText("AI Time Capsule 🧠✨", {
             x: margin,
             y,
-            font: bold,
+            font: unicodeFont,
             size: 22
         });
-        y -= 40;
+        y -= 50;
 
-        // Reflection section
-        page1.drawText("🧠 Reflection:", {
+        // Reflection
+        page1.drawText("Reflection:", {
             x: margin,
             y,
-            font: bold,
+            font: unicodeFont,
             size: 16
         });
-        y -= 20;
+        y -= 22;
 
-        const reflectionText = reflection.replace(/\n+/g, " ").trim();
-        page1.drawText(reflectionText, {
+        page1.drawText(reflection || "(No reflection)", {
             x: margin,
             y,
-            font,
+            font: unicodeFont,
             size: 12,
-            maxWidth: pageWidth - margin * 2
+            maxWidth: pageWidth - margin * 2,
+            lineHeight: 14
         });
-        y -= 80;
+        y -= 120;
 
         // Designed text (if exists)
         const textDesign = designs.find(d => d.type === "text");
+
         if (textDesign) {
-            page1.drawText("💬 Designed Message:", {
+            page1.drawText("Designed Message:", {
                 x: margin,
                 y,
-                font: bold,
+                font: unicodeFont,
                 size: 16
             });
-            y -= 20;
+            y -= 22;
 
-            page1.drawText(textDesign.content, {
+            page1.drawText(textDesign.content || "(empty)", {
                 x: margin,
                 y,
-                font,
+                font: unicodeFont,
                 size: 12,
-                maxWidth: pageWidth - margin * 2
+                maxWidth: pageWidth - margin * 2,
+                lineHeight: 14
             });
         }
 
-        /* ---------------- PAGE 2 — IMAGES ---------------- */
+        /* ==================== PAGES 2+ (IMAGES) ==================== */
 
-        const images = designs.filter(d => d.type === "image");
+        const images = designs.filter(d => d.type === "image" && d.src);
 
         if (images.length > 0) {
-            const page2 = pdf.addPage([pageWidth, pageHeight]);
+            let page = pdf.addPage([pageWidth, pageHeight]);
             let y2 = pageHeight - margin;
 
-            page2.drawText("Time Capsule Images", {
+            page.drawText("Time Capsule Images", {
                 x: margin,
                 y: y2,
-                font: bold,
-                size: 20
+                font: unicodeFont,
+                size: 18
             });
             y2 -= 40;
 
             for (let i = 0; i < images.length; i++) {
-                const imgBase64 = images[i].src.split(",")[1];
-                const imgBuffer = Buffer.from(imgBase64, "base64");
-                const embedded = await pdf.embedPng(imgBuffer);
+                const src = images[i].src;
+                const parts = src.split(",");
+                if (parts.length < 2) continue;
 
-                const scale = 400 / embedded.width; // scale to fit width
+                const header = parts[0];
+                const imgBase64 = parts[1];
+
+                const mimeMatch = header.match(/data:(image\/[a-zA-Z0-9+.\-]+);base64/);
+                const mime = mimeMatch ? mimeMatch[1] : "image/png";
+
+                const imgBuffer = Buffer.from(imgBase64, "base64");
+
+                let embedded;
+                try {
+                    if (mime === "image/jpeg" || mime === "image/jpg") {
+                        embedded = await pdf.embedJpg(imgBuffer);
+                    } else {
+                        embedded = await pdf.embedPng(imgBuffer);
+                    }
+                } catch (e) {
+                    console.error("Skipping image due to embed error:", e);
+                    continue;
+                }
+
+                // scale to width 400px
+                const maxW = 400;
+                const scale = Math.min(1, maxW / embedded.width);
                 const w = embedded.width * scale;
                 const h = embedded.height * scale;
 
-                if (y2 - h < margin) {
-                    page2.addPage();
+                // new page if needed
+                if (y2 - h - 50 < margin) {
+                    page = pdf.addPage([pageWidth, pageHeight]);
                     y2 = pageHeight - margin;
+
+                    page.drawText("Time Capsule Images (cont.)", {
+                        x: margin,
+                        y: y2,
+                        font: unicodeFont,
+                        size: 16
+                    });
+                    y2 -= 40;
                 }
 
-                page2.drawText(`Image ${i + 1} (${images[i].mode})`, {
+                page.drawText(`Image ${i + 1} (${images[i].mode})`, {
                     x: margin,
                     y: y2,
-                    font: bold,
-                    size: 14
+                    font: unicodeFont,
+                    size: 12
                 });
-
                 y2 -= 20;
 
-                page2.drawImage(embedded, {
+                page.drawImage(embedded, {
                     x: margin,
                     y: y2 - h,
                     width: w,
                     height: h
                 });
 
-                y2 -= h + 30;
+                y2 -= h + 40;
             }
         }
 
-        /* ---------------- OUTPUT ---------------- */
+        /* ==================== SEND RESULT ==================== */
 
         const pdfBytes = await pdf.save();
-        const base64 = Buffer.from(pdfBytes).toString("base64");
+        const base64Pdf = Buffer.from(pdfBytes).toString("base64");
 
         res.json({
-            pdf_url: `data:application/pdf;base64,${base64}`
+            pdf_url: `data:application/pdf;base64,${base64Pdf}`
         });
 
     } catch (err) {
