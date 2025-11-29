@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import fs from "node:fs";
 
 
 dotenv.config();
@@ -804,12 +805,8 @@ app.post("/generate-capsule-pdf", async (req, res) => {
             return res.status(400).json({ error: "Missing Time Capsule data." });
         }
 
-        /* ---------------- LOAD UNICODE FONT ---------------- */
-        const fontPath = path.join(__dirname, "fonts", "NotoSans-Regular.ttf");
-        const fontBytes = fs.readFileSync(fontPath);
-
         const pdf = await PDFDocument.create();
-        const unicodeFont = await pdf.embedFont(fontBytes, { subset: true });
+        const baseFont = await pdf.embedFont(StandardFonts.Helvetica);
 
         const pageWidth = 595;   // A4 portrait
         const pageHeight = 842;
@@ -821,10 +818,10 @@ app.post("/generate-capsule-pdf", async (req, res) => {
         let y = pageHeight - margin;
 
         // Title
-        page1.drawText("AI Time Capsule 🧠✨", {
+        page1.drawText("AI Time Capsule", {
             x: margin,
             y,
-            font: unicodeFont,
+            font: baseFont,
             size: 22
         });
         y -= 50;
@@ -833,7 +830,7 @@ app.post("/generate-capsule-pdf", async (req, res) => {
         page1.drawText("Reflection:", {
             x: margin,
             y,
-            font: unicodeFont,
+            font: baseFont,
             size: 16
         });
         y -= 22;
@@ -841,21 +838,21 @@ app.post("/generate-capsule-pdf", async (req, res) => {
         page1.drawText(reflection || "(No reflection)", {
             x: margin,
             y,
-            font: unicodeFont,
+            font: baseFont,
             size: 12,
             maxWidth: pageWidth - margin * 2,
             lineHeight: 14
         });
         y -= 120;
 
-        // Designed text (if exists)
+        // Designed text (first text design only, if exists)
         const textDesign = designs.find(d => d.type === "text");
 
         if (textDesign) {
             page1.drawText("Designed Message:", {
                 x: margin,
                 y,
-                font: unicodeFont,
+                font: baseFont,
                 size: 16
             });
             y -= 22;
@@ -863,7 +860,7 @@ app.post("/generate-capsule-pdf", async (req, res) => {
             page1.drawText(textDesign.content || "(empty)", {
                 x: margin,
                 y,
-                font: unicodeFont,
+                font: baseFont,
                 size: 12,
                 maxWidth: pageWidth - margin * 2,
                 lineHeight: 14
@@ -881,7 +878,7 @@ app.post("/generate-capsule-pdf", async (req, res) => {
             page.drawText("Time Capsule Images", {
                 x: margin,
                 y: y2,
-                font: unicodeFont,
+                font: baseFont,
                 size: 18
             });
             y2 -= 40;
@@ -911,13 +908,11 @@ app.post("/generate-capsule-pdf", async (req, res) => {
                     continue;
                 }
 
-                // scale to width 400px
                 const maxW = 400;
                 const scale = Math.min(1, maxW / embedded.width);
                 const w = embedded.width * scale;
                 const h = embedded.height * scale;
 
-                // new page if needed
                 if (y2 - h - 50 < margin) {
                     page = pdf.addPage([pageWidth, pageHeight]);
                     y2 = pageHeight - margin;
@@ -925,7 +920,7 @@ app.post("/generate-capsule-pdf", async (req, res) => {
                     page.drawText("Time Capsule Images (cont.)", {
                         x: margin,
                         y: y2,
-                        font: unicodeFont,
+                        font: baseFont,
                         size: 16
                     });
                     y2 -= 40;
@@ -934,7 +929,7 @@ app.post("/generate-capsule-pdf", async (req, res) => {
                 page.drawText(`Image ${i + 1} (${images[i].mode})`, {
                     x: margin,
                     y: y2,
-                    font: unicodeFont,
+                    font: baseFont,
                     size: 12
                 });
                 y2 -= 20;
@@ -964,6 +959,8 @@ app.post("/generate-capsule-pdf", async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+
 
 
 

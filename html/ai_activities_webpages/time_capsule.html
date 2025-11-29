@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Ethics Activities - TUM</title>
-    <link rel="stylesheet" href="../../css/ai_homage.css">
+    <link rel="stylesheet" href="../../css/ai_time_capsule.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -116,6 +116,11 @@
 
                     <div class="chat-input-bar">
                         <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+
+                        <button id="uploadBtn" class="upload-btn" type="button" aria-label="Upload image">
+                            +
+                        </button>
+
                         <div
                                 id="chatEditor"
                                 class="chat-editor"
@@ -125,8 +130,10 @@
                                 aria-label="Send a message"
                                 data-placeholder="Write a message"
                         ></div>
+
                         <button class="send-btn" aria-label="Send message">&#9658;</button>
                     </div>
+
                 </main>
 
             </div>
