@@ -22,7 +22,7 @@ window.addEventListener("DOMContentLoaded", () => {
     sendBtn = chatPanel.querySelector(".send-btn");
 
     if (!chatMessages) {
-        console.error("⚠️ Chat messages container not found!");
+        console.error("Chat messages container not found.");
         return;
     }
 
@@ -51,15 +51,54 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // --- Intro messages ---
     appendMessage(
-        "🎨 Hello and welcome to *Homage to a Local Artist!* In this activity, you’ll describe artworks inspired by Tania Sívertsen’s style — and the AI will turn your descriptions into images.",
+        "Hello and welcome to 'Homage to a Local Artist'. In this activity, you describe artworks inspired by Tania Sívertsen’s style, and the AI will turn your descriptions into images.",
         "ai"
     );
     appendMessage(
-        "You’ll create **three artworks** in total. After each prompt, I’ll generate one image for you — and you can download them all at the end as a ZIP file.",
+        "You will create three artworks in total. After each prompt, I will generate one image for you, and you can download them all at the end as a ZIP file.",
         "ai"
     );
-    appendMessage("Let’s begin! Please describe your **first artwork (1/3)** below 👇", "ai");
+    appendMessage(
+        "Let us begin. Please describe your first artwork (1/3) below.",
+        "ai"
+    );
 });
+
+// ===============================
+// Typing Indicator Helpers
+// ===============================
+function showTyping() {
+    if (!chatMessages) return;
+
+    // Avoid duplicates
+    const existing = chatMessages.querySelector(".message.ai-message.typing");
+    if (existing) return;
+
+    const msg = document.createElement("div");
+    msg.classList.add("message", "ai-message", "typing");
+
+    const avatar = document.createElement("div");
+    avatar.classList.add("avatar");
+
+    const bubble = document.createElement("div");
+    bubble.classList.add("typing-indicator");
+    bubble.innerHTML = `
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+    `;
+
+    msg.appendChild(avatar);
+    msg.appendChild(bubble);
+    chatMessages.appendChild(msg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function hideTyping() {
+    if (!chatMessages) return;
+    const bubble = chatMessages.querySelector(".message.ai-message.typing");
+    if (bubble) bubble.remove();
+}
 
 // ===============================
 // Input handling
@@ -139,10 +178,10 @@ function appendGeneratedImage(base64, promptText, index) {
     caption.style.fontSize = "0.95rem";
     caption.style.lineHeight = "1.4";
     caption.style.opacity = "0.9";
-    caption.textContent = `Prompt: “${promptText}”`;
+    caption.textContent = `Prompt: "${promptText}"`;
 
     const dlBtn = document.createElement("button");
-    dlBtn.textContent = "⬇️ Download PNG";
+    dlBtn.textContent = "Download PNG";
     dlBtn.style.marginTop = "8px";
     dlBtn.style.cursor = "pointer";
     dlBtn.style.border = "none";
@@ -162,14 +201,14 @@ function appendGeneratedImage(base64, promptText, index) {
     const progress = document.createElement("div");
     progress.style.marginTop = "10px";
     progress.style.fontWeight = "600";
-    progress.textContent = `✅ Image ${index}/3 generated!`;
+    progress.textContent = `Image ${index}/3 generated.`;
     container.appendChild(progress);
 
     // Ask for next step
     if (index < 3) {
         const nextMsg = document.createElement("div");
         nextMsg.style.marginTop = "6px";
-        nextMsg.textContent = `Now describe your next artwork (${index + 1}/3)...`;
+        nextMsg.textContent = `Now describe your next artwork (${index + 1}/3).`;
         container.appendChild(nextMsg);
     }
 }
@@ -235,7 +274,7 @@ function showSummary() {
     const title = document.createElement("div");
     title.style.fontWeight = "600";
     title.style.marginBottom = "8px";
-    title.textContent = "📦 Summary of your 3 images";
+    title.textContent = "Summary of your three images";
     container.appendChild(title);
 
     const grid = document.createElement("div");
@@ -311,7 +350,7 @@ function askToRestart() {
     const container = appendAIContainer();
 
     const question = document.createElement("div");
-    question.textContent = "Do you want to create another set of 3 images?";
+    question.textContent = "Do you want to create another set of three images?";
     question.style.marginBottom = "8px";
     container.appendChild(question);
 
@@ -350,14 +389,17 @@ function askToRestart() {
 
     noBtn.addEventListener("click", () => {
         awaitingRestartChoice = false;
-        appendMessage("Okay 😊 You can still type a new prompt anytime to start again.", "ai");
+        appendMessage(
+            "Okay. You can still type a new prompt anytime to start again.",
+            "ai"
+        );
     });
 }
 
 function startNewRound() {
     collectedPrompts = [];
     generated = [];
-    appendMessage("Let's start fresh! Please describe your first artwork (1/3).", "ai");
+    appendMessage("Let us start fresh. Please describe your first artwork (1/3).", "ai");
 }
 
 // ===============================
@@ -365,7 +407,8 @@ function startNewRound() {
 // ===============================
 async function sendPrompt(prompt) {
     const index = generated.length + 1;
-    const typing = appendMessage("🎨 Generating image...", "ai");
+
+    showTyping();
 
     try {
         const res = await fetch("/generate", {
@@ -374,7 +417,7 @@ async function sendPrompt(prompt) {
             body: JSON.stringify({ prompt }),
         });
         const data = await res.json();
-        typing.remove();
+        hideTyping();
 
         if (data?.image) {
             appendGeneratedImage(data.image, prompt, index);
@@ -387,8 +430,8 @@ async function sendPrompt(prompt) {
             appendMessage("No image returned from the model.", "ai");
         }
     } catch (err) {
-        typing.remove();
-        appendMessage(`❌ Error: ${err.message}`, "ai");
+        hideTyping();
+        appendMessage(`Error: ${err.message}`, "ai");
     }
 }
 
@@ -419,7 +462,7 @@ window.addEventListener("DOMContentLoaded", () => {
     cancelBtn.addEventListener("click", () => {
         modal.style.display = "none";
         appendMessage(
-            "⚠️ You have declined consent. Image generation is disabled.",
+            "You have declined consent. Image generation is disabled.",
             "ai"
         );
     });

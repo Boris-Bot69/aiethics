@@ -11,7 +11,7 @@ let aiConsentGiven = false;
 // DOM READY
 // ===============================
 window.addEventListener("DOMContentLoaded", () => {
-    console.log("✅ Magazine chatbot loaded");
+    console.log(" Magazine chatbot loaded");
 
     chatPanel = document.querySelector(".chat-panel");
     chatMessages = chatPanel?.querySelector(".chat-messages");
@@ -23,11 +23,11 @@ window.addEventListener("DOMContentLoaded", () => {
     if (uploadBtn && imageUpload) {
         uploadBtn.addEventListener("click", () => imageUpload.click());
     } else {
-        console.error("❌ Upload button or file input not found in DOM!");
+        console.error(" Upload button or file input not found in DOM!");
     }
 
     if (!chatMessages) {
-        console.error("⚠️ Chat messages container not found!");
+        console.error("Chat messages container not found!");
         return;
     }
 
@@ -35,7 +35,7 @@ window.addEventListener("DOMContentLoaded", () => {
     imageUpload.addEventListener("change", e => {
         const file = e.target.files[0];
         if (!file) {
-            console.warn("⚠️ No file selected");
+            console.warn(" No file selected");
             return;
         }
 
@@ -49,18 +49,16 @@ window.addEventListener("DOMContentLoaded", () => {
             existingMsgs.forEach(el => {
                 const text = el.textContent.trim();
                 if (
-                    text.startsWith("📤 Image uploaded!") ||
-                    text.startsWith("💬 Great — image uploaded!") ||
+                    text.startsWith(" Image uploaded!") ||
+                    text.startsWith("Great — image uploaded!") ||
                     text.includes("Now type a short prompt")
                 ) {
                     el.parentElement.remove(); // remove the message container
                 }
             });
 
-            // 🖼️ Show the new image preview
             showImagePreview(uploadedBase64);
 
-            // 🆕 Add a single fresh instruction
             appendMessage(
                 "Image uploaded! Now type a short prompt describing how you'd like the AI to modify it (e.g., *Add a small bird on the tree*).",
                 "ai"
@@ -70,7 +68,7 @@ window.addEventListener("DOMContentLoaded", () => {
             editor.focus();
         };
 
-        reader.onerror = err => console.error("❌ FileReader error:", err);
+        reader.onerror = err => console.error("FileReader error:", err);
         reader.readAsDataURL(file);
     });
 
@@ -79,14 +77,49 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // Intro messages
     appendMessage(
-        "🖼️ Welcome to *Magazine Cut-Outs!* This activity combines your drawings, collage layers, and AI edits to visualize how ideas evolve.",
+        "Welcome to*Magazine Cut-Outs! This activity combines your drawings, collage layers, and AI edits to visualize how ideas evolve.",
         "ai"
     );
     appendMessage(
-        "Step 1️⃣ Upload your **black-and-white drawing**, then describe how you'd like the AI to edit it (e.g., *Add a small bird on the branch*).",
+        "Step 1: Upload your black-and-white drawing, then describe how you'd like the AI to edit it (e.g., Add a small bird on the branch).",
         "ai"
     );
 });
+
+// ===============================
+// Typing Indicator Helpers
+// ===============================
+function showTyping() {
+    if (!chatMessages) return;
+    // Avoid duplicates
+    const existing = chatMessages.querySelector(".message.ai-message.typing");
+    if (existing) return;
+
+    const msg = document.createElement("div");
+    msg.classList.add("message", "ai-message", "typing");
+
+    const avatar = document.createElement("div");
+    avatar.classList.add("avatar");
+
+    const bubble = document.createElement("div");
+    bubble.classList.add("typing-indicator");
+    bubble.innerHTML = `
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+    `;
+
+    msg.appendChild(avatar);
+    msg.appendChild(bubble);
+    chatMessages.appendChild(msg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function hideTyping() {
+    if (!chatMessages) return;
+    const bubble = chatMessages.querySelector(".message.ai-message.typing");
+    if (bubble) bubble.remove();
+}
 
 // ===============================
 // Consent Modal
@@ -107,7 +140,7 @@ function setupConsentModal() {
 
     cancelBtn.addEventListener("click", () => {
         modal.style.display = "none";
-        appendMessage("⚠️ You declined consent. Image generation is disabled.", "ai");
+        appendMessage("You declined consent. Image generation is disabled.", "ai");
         disableEditor("Image editing disabled due to declined consent.");
     });
 }
@@ -186,7 +219,7 @@ function handleUserInput() {
     console.log("▶ handleUserInput called. aiConsentGiven:", aiConsentGiven, "uploadedBase64?", !!uploadedBase64);
 
     if (!aiConsentGiven) {
-        appendMessage("⚠️ Please accept the consent notice before continuing.", "ai");
+        appendMessage("Please accept the consent notice before continuing.", "ai");
         return;
     }
 
@@ -194,12 +227,12 @@ function handleUserInput() {
     const hasImage = !!uploadedBase64;
 
     if (!text && !hasImage) {
-        appendMessage("🖼️ Please upload your drawing or collage first.", "ai");
+        appendMessage("Please upload your drawing or collage first.", "ai");
         return;
     }
 
     if (hasImage && !text) {
-        appendMessage("💬 Great — image uploaded! Now please describe how you'd like it edited (then press ▶).", "ai");
+        appendMessage("Great — image uploaded! Now please describe how you'd like it edited (then press ▶).", "ai");
         return;
     }
 
@@ -211,7 +244,7 @@ function handleUserInput() {
         if (hasImage) {
             sendToAI(uploadedBase64, text);
         } else {
-            appendMessage("🖼️ Please upload your drawing or collage first.", "ai");
+            appendMessage("Please upload your drawing or collage first.", "ai");
         }
     }
 }
@@ -236,7 +269,7 @@ function showImagePreview(base64) {
 // Backend Call + Guided Flow
 // ===============================
 async function sendToAI(imageBase64, prompt) {
-    const typing = appendMessage("🎨 AI editing in progress...", "ai");
+    showTyping();
 
     try {
         const res = await fetch("/edit-magazine", {
@@ -246,7 +279,7 @@ async function sendToAI(imageBase64, prompt) {
         });
 
         const data = await res.json();
-        typing.remove();
+        hideTyping();
 
         if (data?.image) {
             // Show AI-edited result
@@ -260,7 +293,7 @@ async function sendToAI(imageBase64, prompt) {
 
             // Download button
             const dlBtn = document.createElement("button");
-            dlBtn.textContent = "⬇️ Download edited image";
+            dlBtn.textContent = "Download edited image";
             dlBtn.style.marginTop = "8px";
             dlBtn.style.cursor = "pointer";
             dlBtn.style.border = "none";
@@ -276,11 +309,11 @@ async function sendToAI(imageBase64, prompt) {
             // Guided responses
             if (stage === 1) {
                 appendMessage(
-                    "✨ Great! Now take your printed drawing, layer it with magazine cutouts, and take a photo of your collage.",
+                    " Great! Now take your printed drawing, layer it with magazine cutouts, and take a photo of your collage.",
                     "ai"
                 );
                 appendMessage(
-                    "🖼️ When ready, upload your collage photo to begin Step 2. I’ll help you edit it again with AI.",
+                    "When ready, upload your collage photo to begin Step 2. I’ll help you edit it again with AI.",
                     "ai"
                 );
 
@@ -289,7 +322,7 @@ async function sendToAI(imageBase64, prompt) {
                 disableEditor("Please upload your collage image for Step 2...");
             } else if (stage === 2) {
                 appendMessage(
-                    "✅ Both edits completed! 🎉 You now have four artworks — your original, AI-edited, collage, and final AI remix.",
+                    "Both edits completed!  You now have four artworks — your original, AI-edited, collage, and final AI remix.",
                     "ai"
                 );
 
@@ -297,11 +330,11 @@ async function sendToAI(imageBase64, prompt) {
                 disableEditor("Activity complete! You can still explore by uploading new images.");
             }
         } else {
-            appendMessage("❌ No image returned from AI.", "ai");
+            appendMessage("No image returned from AI.", "ai");
         }
     } catch (err) {
-        typing.remove();
-        appendMessage(`❌ Error: ${err.message}`, "ai");
+        hideTyping();
+        appendMessage(`Error: ${err.message}`, "ai");
     }
 }
 

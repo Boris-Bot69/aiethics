@@ -14,11 +14,11 @@ window.addEventListener("DOMContentLoaded", () => {
     imageUpload = document.getElementById("imageUpload");
 
     addBotMessage(`
-👋 Welcome to <em>Expanded Frames</em>!<br/>
+Welcome to <em>Expanded Frames</em>.<br/>
 Upload your <b>A8</b> image to begin.<br/>
-Then click “✨ Expand” to let AI extend your artwork step by step (A8→A7→A6→A5→A4).<br/>
-After A4, you can start again with a new image!
-  `);
+Then click “Expand” to let AI extend your artwork step by step (A8 → A7 → A6 → A5 → A4).<br/>
+After A4, you can start again with a new image.
+    `);
 
     const uploadBtn = document.getElementById("uploadBtn");
     uploadBtn?.addEventListener("click", () => imageUpload.click());
@@ -31,16 +31,21 @@ After A4, you can start again with a new image!
 function addMessage(text, sender = "bot", node = null) {
     const msg = document.createElement("div");
     msg.className = `message ${sender === "user" ? "user-align" : ""}`;
+
     const avatar = document.createElement("div");
     avatar.classList.add("avatar");
+
     const content = document.createElement("div");
     content.classList.add("text");
+
     if (node) content.appendChild(node);
+
     if (text) {
         const p = document.createElement("p");
         p.innerHTML = text;
         content.appendChild(p);
     }
+
     msg.appendChild(avatar);
     msg.appendChild(content);
     chatMessages.appendChild(msg);
@@ -63,6 +68,41 @@ function addImageBubble(src, extraBelow = null) {
 }
 
 // ===============================
+// TYPING INDICATOR
+// ===============================
+function showTyping() {
+    if (!chatMessages) return;
+
+    const existing = chatMessages.querySelector(".message.typing");
+    if (existing) return;
+
+    const msg = document.createElement("div");
+    msg.className = "message typing";
+
+    const avatar = document.createElement("div");
+    avatar.classList.add("avatar");
+
+    const bubble = document.createElement("div");
+    bubble.classList.add("typing-indicator");
+    bubble.innerHTML = `
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+    `;
+
+    msg.appendChild(avatar);
+    msg.appendChild(bubble);
+    chatMessages.appendChild(msg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function hideTyping() {
+    if (!chatMessages) return;
+    const bubble = chatMessages.querySelector(".message.typing");
+    if (bubble) bubble.remove();
+}
+
+// ===============================
 // IMAGE UPLOAD
 // ===============================
 async function handleImageUpload(e) {
@@ -74,7 +114,7 @@ async function handleImageUpload(e) {
         uploadedBase64 = ev.target.result;
         lastHumanUploadBase64 = ev.target.result;
         stage = "A8";
-        addBotMessage("📸 Image uploaded (A8).");
+        addBotMessage("Image uploaded as A8.");
         appendExpandButton();
     };
     reader.readAsDataURL(file);
@@ -85,12 +125,14 @@ async function handleImageUpload(e) {
 // ===============================
 function appendExpandButton() {
     const nextStage = getNextStage();
+    if (!nextStage) return;
+
     const expandBtn = document.createElement("button");
     expandBtn.className = "expand-btn";
-    expandBtn.textContent = `✨ Expand to ${nextStage}`;
+    expandBtn.textContent = `Expand to ${nextStage}`;
     expandBtn.onclick = async () => {
         expandBtn.disabled = true;
-        expandBtn.textContent = "🧠 Expanding...";
+        expandBtn.textContent = "Expanding …";
         await expandWithAI(nextStage, expandBtn);
     };
     addMessage(null, "bot", expandBtn);
@@ -102,21 +144,26 @@ function getNextStage() {
 }
 
 async function expandWithAI(nextStage, btnEl) {
-    addBotMessage(`🧠 Expanding to <b>${nextStage}</b>…`);
+    addBotMessage(`Expanding to <b>${nextStage}</b> …`);
+    showTyping();
+
     try {
         const resp = await fetch("http://localhost:3000/expand_canvas", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ image: uploadedBase64 }),
         });
+
         if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
+
         const { image_url } = await resp.json();
+        hideTyping();
 
         const { wrap } = addImageBubble(image_url);
 
         const dl = document.createElement("button");
         dl.className = "download-btn";
-        dl.textContent = "⬇️ Download image";
+        dl.textContent = "Download image";
         dl.onclick = () => {
             const a = document.createElement("a");
             a.href = image_url;
@@ -134,23 +181,24 @@ async function expandWithAI(nextStage, btnEl) {
         if (next) {
             appendExpandButton();
         } else {
-            addBotMessage("🎉 Expansion completed (A4 reached).");
+            addBotMessage("Expansion completed. A4 frame reached.");
             const newRoundBtn = document.createElement("button");
             newRoundBtn.className = "expand-btn";
-            newRoundBtn.textContent = "🔄 Start new round (upload new image)";
+            newRoundBtn.textContent = "Start new round (upload new image)";
             newRoundBtn.onclick = () => {
                 stage = "A8";
                 uploadedBase64 = null;
-                addBotMessage("Upload a new A8 image to begin again!");
+                addBotMessage("Upload a new A8 image to begin again.");
             };
             addMessage(null, "bot", newRoundBtn);
         }
     } catch (err) {
         console.error(err);
-        addBotMessage("⚠️ Expansion failed. Check the server logs.");
+        hideTyping();
+        addBotMessage("Expansion failed. Please check the server logs.");
         if (btnEl) {
             btnEl.disabled = false;
-            btnEl.textContent = `✨ Expand again`;
+            btnEl.textContent = `Expand again`;
         }
     }
 }
