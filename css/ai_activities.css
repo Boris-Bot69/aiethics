@@ -266,7 +266,6 @@ h1 {
 
     border: 1px solid transparent;
     border-image-source: url("../images/ai_activities_border.svg");
-    border-image-slice: 100 fill;
     border-image-repeat: stretch;
     border-image-width: 10;
 
