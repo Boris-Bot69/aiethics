@@ -244,51 +244,88 @@ h1 {
     /* This is the main grid container */
 .cards-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 3rem;
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
+    gap: 1.75rem 2.5rem;
+    margin-top: 1rem;
 }
 
 .activity-card-link {
     text-decoration: none;
     color: inherit;
+    display: block;
 }
 
-.activity-item {
+/* Horizontal card */
+.activity-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+
+    padding: 1.25rem 1.5rem;
+
+    border: 1px solid transparent;
+    border-image-source: url("../images/ai_activities_border.svg");
+    border-image-slice: 100 fill;
+    border-image-repeat: stretch;
+    border-image-width: 10;
+
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
+    transition: transform 0.15s ease-out,
+    box-shadow 0.15s ease-out;
+}
+
+.activity-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
+/* Thumbnail */
+.activity-img-wrapper {
+    flex: 0 0 96px;
+    max-width: 96px;
+}
+
+.activity-img-wrapper img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Text area */
+.activity-content {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    text-align: center;
-    gap: 1rem;
 }
 
-.activity-image-box:hover {
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-}
-
-.activity-image-box img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    margin: auto;
-    gap: 2rem;
-}
-
-/* Styles for the title and description */
-.activity-item h4 {
-    font-family: 'Inter', sans-serif;
+/* Duration pill */
+.activity-duration {
+    align-self: flex-start;
+    display: inline-block;
+    padding: 0.1rem 0.6rem;
+    border-radius: 999px;
+    background-color: #78A564;
+    color: #ffffff;
+    font-size: 0.7rem;
     font-weight: 600;
-    font-size: 1rem;
-    color: #333;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.25rem;
 }
 
-.activity-item p {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.875rem;
+.activity-title {
+    font-size: 0.98rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+    color: #333333;
+}
+
+.activity-description {
+    font-size: 0.86rem;
     line-height: 1.5;
-    color: #828282;
+    color: #5f5f5f;
 }
-
 
 
 

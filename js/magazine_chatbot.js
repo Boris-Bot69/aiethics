@@ -42,7 +42,7 @@ window.addEventListener("DOMContentLoaded", () => {
         const reader = new FileReader();
         reader.onload = ev => {
             uploadedBase64 = ev.target.result;
-            console.log("✅ Image uploaded successfully, length:", uploadedBase64?.length);
+            console.log("Image uploaded successfully, length:", uploadedBase64?.length);
 
             // 🧹 Remove previous "upload" or "instruction" messages to avoid duplicates
             const existingMsgs = chatMessages.querySelectorAll(".ai-message .text");
