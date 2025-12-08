@@ -247,12 +247,14 @@ h1 {
     grid-template-columns: repeat(2, minmax(280px, 1fr));
     gap: 1.75rem 2.5rem;
     margin-top: 1rem;
+    grid-auto-rows: 1fr;
 }
 
 .activity-card-link {
     text-decoration: none;
     color: inherit;
     display: block;
+    height: 100%;
 }
 
 /* Horizontal card */
@@ -273,6 +275,7 @@ h1 {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
     transition: transform 0.15s ease-out,
     box-shadow 0.15s ease-out;
+    height: 100%;
 }
 
 .activity-card:hover {
