@@ -280,12 +280,13 @@ h1 {
     background-color: transparent;
 
 }
+
 .activity-image-box {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: transparent;
-    border: none;
+    height: 420px;
+    overflow: hidden;
 }
 
 .activity-image-box:hover {
@@ -294,10 +295,9 @@ h1 {
 
 
 .activity-image-box img {
-    width: auto;
-    height: auto;
-    display: inline;
-    background-color: transparent;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 
 }
 

@@ -481,6 +481,7 @@ body.no-scroll {
 
 .message.user-align {
     justify-content: flex-end;
+    margin-left: auto;
 }
 
 .message.user-align .text {
