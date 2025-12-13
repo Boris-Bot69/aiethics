@@ -350,8 +350,8 @@ h1 {
 @media (max-width: 768px) {
     .navbar {
         flex-wrap: wrap;
-        height: auto;
         padding: 1rem;
+        height: 105px;
     }
 
     body {
@@ -454,8 +454,8 @@ body.no-scroll {
         background-color: #78A564;
         justify-content: space-between;
         padding: 0 1rem;
-        height: 4.5rem;
         flex-wrap: nowrap;
+        height: 105px;
     }
     .navbar .nav-link {
         color: #ffffff;
@@ -471,7 +471,7 @@ body.no-scroll {
     }
 
     body {
-        padding-top: 4.5rem; /* Match the navbar height */
+        padding-top: 4.5rem;
         background-image: none;
     }
 
@@ -558,18 +558,20 @@ body.no-scroll {
     }
 
 
-    /* push central content away from the fixed sidebars */
     .main-content,
     .navbar {
+        height: 105px;
+        padding-inline: 2rem; /* same as your default navbar padding */
+    }
+
+    .main-content{
         padding-inline: calc(var(--sidebar-w) + var(--page-pad));
     }
 
-    /* turn the 3-col wrapper into a single centered rail on wide screens */
     .three-column-layout{
-        display: block;       /* no grid for outer frame when sidebars are fixed */
+        display: block;
     }
 
-    /* the real center rail */
     .main-content-area{
         max-width: var(--content-max);
         margin-inline: auto;  /* always centered */
@@ -597,7 +599,7 @@ body.no-scroll {
 
     /* base boost for desktop */
     .navbar{
-        height: clamp(100px, 8vw, 140px);
+        height: 105px;
         background-position: center bottom;
     }
 
@@ -618,12 +620,12 @@ body.no-scroll {
 }
 
 /* very large displays */
-@media (min-width: 2000px){
+@media (min-width: 2200px){
     :root { --sidebar-w: clamp(100px, 12vw, 280px); }
 
-    .navbar{
-        height: clamp(120px, 6.5vw, 160px);
-        padding-inline: calc(var(--sidebar-w) + var(--page-pad));
+    .navbar {
+        height: 105px;
+        padding-inline: 2rem;
     }
 
     .main-content-area{ max-width: 1600px; }

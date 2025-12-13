@@ -806,9 +806,8 @@ body.no-scroll {
 
 /* Hide sidebars and rebalance content */
 @media (min-width: 2200px) {
-    .sidebar {
-        display: none; /* Hide decorative sidebars */
-    }
+    :root { --sidebar-w: clamp(100px, 12vw, 280px); }
+
 
     .three-column-layout {
         display: flex;
