@@ -266,10 +266,12 @@ h1 {
 
     padding: 1.25rem 1.5rem;
 
-    border: 1px solid transparent;
+    border: 2px solid transparent;
     border-image-source: url("../images/ai_activities_border.svg");
     border-image-repeat: stretch;
-    border-image-width: 10;
+    border-image-width: 18;
+    border-image-slice: 30;
+    background-clip: padding-box;
 
     background-color: #ffffff;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
