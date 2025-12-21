@@ -693,16 +693,14 @@ h1 {
 }
 
 
-
-/*Copied from ai activities*/
 * {
     box-sizing: border-box;
 }
 
+/* --- Slider --- */
 .slider-wrapper {
     position: relative;
-    width: 90%;
-    max-width: 1200px;
+    width: min(1200px, 92vw);
     margin: 2rem auto;
 }
 
@@ -712,91 +710,129 @@ h1 {
 
 .slider-track {
     display: flex;
+    gap: 1.25rem;
     transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+    will-change: transform;
 }
 
 .slide-item {
-    flex: 0 0 calc(100% / 3);
-    padding: 0 1rem;
+    flex: 0 0 auto;
 }
 
-.activity-card-link {
-    text-decoration: none;
-    color: inherit;
+/* --- Card frame defined by Figma border --- */
+.card-frame {
+    position: relative;
+    width: 163px;
+    height: 268px;
+    flex-shrink: 0;
 }
 
-.activity-item {
+.card-border {
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* --- Content inside the border --- */
+.card-content {
+    position: absolute;
+    inset: 12px; /* perfectly safe for hand-drawn border */
     display: flex;
     flex-direction: column;
-    text-align: center;
-    gap: 1rem;
-    height: 100%; /* Ensures cards in a row are same height */
+    gap: 0.55rem;
 }
 
-.activity-image-box:hover {
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+/* --- Title --- */
+.card-content h4 {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0;
+    color: #222;
+    text-align: left;
+
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+
+    min-height: calc(0.82rem * 1.2 * 2);
+}
+
+.activity-image-box {
+    width: 100%;
+    height: 110px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f5f5f5;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .activity-image-box img {
     width: 100%;
-    height: auto;
+    height: 100%;
+    object-fit: contain;
     display: block;
 }
 
-.activity-item h4 {
+/* --- Description text --- */
+.card-content p {
     font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-size: 1rem;
-    color: #333;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-size: 0.72rem;
+    line-height: 1.45;
+    color: #777;
     margin: 0;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-.activity-item p {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.875rem;
-    line-height: 1.5;
-    color: #828282;
-    margin: 0;
+/* --- Link reset --- */
+.activity-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
 }
 
-/* Next & previous buttons */
-.prev, .next {
+/* --- Subtle hover --- */
+.activity-card-link:hover .card-frame {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease;
+}
+
+/* --- Arrows --- */
+.prev,
+.next {
     cursor: pointer;
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    width: auto;
-    padding: 16px;
-    color: #333;
-    font-weight: bold;
+    padding: 12px 14px;
     font-size: 18px;
-    transition: 0.3s ease;
-    border-radius: 50%;
+    border-radius: 999px;
     border: none;
-    background-color: rgba(255, 255, 255, 0.7);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    background-color: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
     z-index: 10;
 }
 
-.prev {
-    left: -20px;
-}
+.prev { left: -10px; }
+.next { right: -10px; }
 
-.next {
-    right: -20px;
-}
-
-.prev:hover, .next:hover {
-    background-color: white;
-}
-
-/* Style for disabled buttons at the start/end */
-.prev:disabled, .next:disabled {
-    cursor: not-allowed;
+.prev:disabled,
+.next:disabled {
     opacity: 0.4;
+    cursor: not-allowed;
 }
+
 
 .menu-toggle {
     background-color: transparent;
