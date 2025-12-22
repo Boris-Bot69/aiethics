@@ -237,7 +237,49 @@ h1 {
     background-size: contain;
 }
 
-.image-spacer1 { height: 4rem; }
+/* ============================================= */
+/* SPACER UTILITIES                              */
+/* ============================================= */
+
+/* No spacing (removes the gap completely) */
+.image-spacer0 {
+    display: none;
+}
+
+/* 1. Smallest Gap (approx 16px) */
+.image-spacer1 {
+    height: 1rem;
+    width: 100%;
+    display: block;
+}
+
+/* 2. Small Gap (approx 32px) */
+.image-spacer2 {
+    height: 2rem;
+    width: 100%;
+    display: block;
+}
+
+/* 3. Medium Gap (approx 64px - YOUR CURRENT SIZE) */
+.image-spacer3 {
+    height: 4rem;
+    width: 100%;
+    display: block;
+}
+
+/* 4. Large Gap (approx 96px) */
+.image-spacer4 {
+    height: 6rem;
+    width: 100%;
+    display: block;
+}
+
+/* 5. Extra Large Gap (approx 128px) */
+.image-spacer5 {
+    height: 8rem;
+    width: 100%;
+    display: block;
+}
 
 
 
