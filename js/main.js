@@ -34,21 +34,23 @@
         });
     }
 
+    // --- ✅ MOBILE MENU ---
     function setupMobileMenu() {
         const menuButton = document.querySelector('.menu-toggle');
         const mobileMenu = document.querySelector('.mobile-nav-menu');
+        if (!menuButton || !mobileMenu) return;
 
-        // If the button or menu doesn't exist, do nothing.
-        if (!menuButton || !mobileMenu) {
-            return;
-        }
-
-        menuButton.addEventListener('click', function() {
-            // Toggle the 'is-open' class on the menu to slide it in/out
+        menuButton.addEventListener('click', () => {
             mobileMenu.classList.toggle('is-open');
-
-            // Toggle a class on the body to prevent scrolling when the menu is open
             document.body.classList.toggle('no-scroll');
+        });
+
+        // 🔸 Close when clicking any link
+        mobileMenu.querySelectorAll('.mobile-nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('is-open');
+                document.body.classList.remove('no-scroll');
+            });
         });
     }
 
@@ -59,11 +61,9 @@
         anchorLinks.forEach(link => {
             link.addEventListener('click', function(event) {
                 const href = this.getAttribute('href');
-
                 if (href === '#') return;
 
                 const targetElement = document.querySelector(href);
-
                 if (targetElement) {
                     event.preventDefault();
 
@@ -75,10 +75,7 @@
                         behavior: 'smooth'
                     });
 
-                    // Update URL without page jump
                     history.pushState(null, null, href);
-
-                    // Focus on target element for accessibility
                     targetElement.focus();
                 }
             });
@@ -87,37 +84,19 @@
 
     // Accessibility Enhancements
     function setupAccessibility() {
-
-        // Keyboard navigation
         setupKeyboardNavigation();
-
-        // Focus management
         setupFocusManagement();
     }
 
-
-    // Focus management
     function setupFocusManagement() {
-        // Ensure proper focus order
-        const focusableElements = document.querySelectorAll(
-            'a[href], button, input, textarea, select, [tabindex]:not([tabindex="-1"])'
-        );
-
-        // Handle tab navigation
         document.addEventListener('keydown', function(event) {
-            if (event.key === 'Tab') {
-                // Allow normal tab behavior
-                return;
-            }
+            if (event.key === 'Tab') return;
         });
     }
 
-    // Keyboard navigation
     function setupKeyboardNavigation() {
-        // Escape key functionality
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
-                // Close any open modals or dropdowns here if needed
                 console.log('Escape key pressed');
             }
         });
@@ -125,22 +104,14 @@
 
     // Responsive behavior
     function setupResponsiveBehavior() {
-        // Handle window resize
-        window.addEventListener('resize', function() {
-            handleResize();
-        });
-
-        // Initial call
+        window.addEventListener('resize', handleResize);
         handleResize();
     }
 
-    // Handle resize events
     function handleResize() {
         const width = window.innerWidth;
         const mobileMenu = document.querySelector('.mobile-nav-menu');
-
-        // If we are on a desktop view AND the mobile menu is open, close it.
-        if (width > 960 && mobileMenu.classList.contains('is-open')) {
+        if (width > 960 && mobileMenu && mobileMenu.classList.contains('is-open')) {
             mobileMenu.classList.remove('is-open');
             document.body.classList.remove('no-scroll');
         }
@@ -148,7 +119,6 @@
 
     // Utility Functions
     const utils = {
-        // Debounce function
         debounce: function(func, wait, immediate) {
             let timeout;
             return function executedFunction() {
@@ -164,8 +134,6 @@
                 if (callNow) func.apply(context, args);
             };
         },
-
-        // Throttle function
         throttle: function(func, limit) {
             let inThrottle;
             return function() {
@@ -178,8 +146,6 @@
                 }
             };
         },
-
-        // Check if element is in viewport
         isInViewport: function(element) {
             const rect = element.getBoundingClientRect();
             return (
@@ -189,8 +155,6 @@
                 rect.right <= (window.innerWidth || document.documentElement.clientWidth)
             );
         },
-
-        // Smooth scroll to element
         scrollToElement: function(element, offset = 0) {
             const headerHeight = document.querySelector('.navbar')?.offsetHeight || 0;
             const targetPosition = element.offsetTop - headerHeight - offset;
@@ -202,22 +166,16 @@
         }
     };
 
-    // Expose utils globally if needed
     window.utils = utils;
 
-    // Error handling
     window.addEventListener('error', function(event) {
         console.error('JavaScript error:', event.error);
-        // You can add error reporting here
     });
 
-    // Unhandled promise rejection
     window.addEventListener('unhandledrejection', function(event) {
         console.error('Unhandled promise rejection:', event.reason);
-        // You can add error reporting here
     });
 
-    // Performance monitoring
     if ('performance' in window) {
         window.addEventListener('load', function() {
             setTimeout(function() {
@@ -231,49 +189,37 @@
 
 })();
 
-let lastScrollTop = 0;
-const navbar = document.querySelector('.navbar');
+// --- ✅ Safe scroll hide/show logic ---
+document.addEventListener('DOMContentLoaded', () => {
+    let lastScrollTop = 0;
+    const navbar = document.querySelector('.navbar');
+    if (!navbar) return;
 
-window.addEventListener('scroll', function() {
-    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-    // NEW LOGIC: Check if the user has scrolled to the very top of the page.
-    if (scrollTop === 0) {
-        // If at the top, always show the navbar.
-        navbar.classList.remove('navbar--hidden');
-    }
-    // Only hide the navbar if scrolling down AND past the navbar's height.
-    else if (scrollTop > lastScrollTop && scrollTop > navbar.offsetHeight) {
-        // Scrolling Down
-        navbar.classList.add('navbar--hidden');
-    }
-    // If scrolling up but not at the top, do nothing. The bar remains hidden.
+        if (scrollTop === 0) {
+            navbar.classList.remove('navbar--hidden');
+        } else if (scrollTop > lastScrollTop && scrollTop > navbar.offsetHeight) {
+            navbar.classList.add('navbar--hidden');
+        }
 
-    lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
-}, false);
+        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+    });
+});
 
-
+// --- Button hover effect ---
 function setupButtonHoverEffect() {
-    // Find all buttons that contain an image with a data-hover-src attribute
     const imageButtons = document.querySelectorAll('.btn img[data-hover-src], .custom-button img[data-hover-src]');
-
     imageButtons.forEach(img => {
         const originalSrc = img.src;
         const hoverSrc = img.dataset.hoverSrc;
         const parentLink = img.parentElement;
 
-        // Preload the hover image to prevent flickering on first hover
         const hoverImage = new Image();
         hoverImage.src = hoverSrc;
 
-        // Event listener for when the mouse enters the link area
-        parentLink.addEventListener('mouseenter', () => {
-            img.src = hoverSrc;
-        });
-
-        // Event listener for when the mouse leaves the link area
-        parentLink.addEventListener('mouseleave', () => {
-            img.src = originalSrc;
-        });
+        parentLink.addEventListener('mouseenter', () => (img.src = hoverSrc));
+        parentLink.addEventListener('mouseleave', () => (img.src = originalSrc));
     });
 }

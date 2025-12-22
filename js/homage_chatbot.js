@@ -1,15 +1,129 @@
-// ../../js/homage_chatbot.js
+// ===============================
+// Homage Chatbot Script
+// ===============================
 
-const chatPanel = document.querySelector(".chat-panel");
-const chatMessages = chatPanel.querySelector(".chat-messages");
-const chatInput = chatPanel.querySelector("#chatInput");
-const sendButton = chatPanel.querySelector(".send-btn");
+// Global variables (initialized later)
+let chatPanel;
+let chatMessages;
+let editor;
+let sendBtn;
 
 let collectedPrompts = [];
 let generated = []; // [{ prompt, base64 }]
 let awaitingRestartChoice = false;
 
-// --- UI helpers ---
+// ===============================
+// DOM READY
+// ===============================
+window.addEventListener("DOMContentLoaded", () => {
+    chatPanel = document.querySelector(".chat-panel");
+    chatMessages = chatPanel?.querySelector(".chat-messages");
+    editor = document.getElementById("chatEditor");
+    sendBtn = chatPanel.querySelector(".send-btn");
+
+    if (!chatMessages) {
+        console.error("Chat messages container not found.");
+        return;
+    }
+
+    // --- Paste plain text only ---
+    editor.addEventListener("paste", e => {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData("text");
+        document.execCommand("insertText", false, text);
+    });
+
+    // --- Enter = send, Shift+Enter = newline ---
+    editor.addEventListener("keydown", e => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleUserInput();
+        }
+    });
+
+    // --- Send button ---
+    sendBtn.addEventListener("click", handleUserInput);
+
+    // --- Focus editor when clicking red bar ---
+    document.getElementById("chatBar")?.addEventListener("click", e => {
+        if (e.target === e.currentTarget) editor.focus();
+    });
+
+    // --- Intro messages ---
+    appendMessage(
+        "Hello and welcome to 'Homage to a Local Artist'. In this activity, you describe artworks inspired by Tania Sívertsen’s style, and the AI will turn your descriptions into images.",
+        "ai"
+    );
+    appendMessage(
+        "You will create three artworks in total. After each prompt, I will generate one image for you, and you can download them all at the end as a ZIP file.",
+        "ai"
+    );
+    appendMessage(
+        "Let us begin. Please describe your first artwork (1/3) below.",
+        "ai"
+    );
+});
+
+// ===============================
+// Typing Indicator Helpers
+// ===============================
+function showTyping() {
+    if (!chatMessages) return;
+
+    // Avoid duplicates
+    const existing = chatMessages.querySelector(".message.ai-message.typing");
+    if (existing) return;
+
+    const msg = document.createElement("div");
+    msg.classList.add("message", "ai-message", "typing");
+
+    const avatar = document.createElement("div");
+    avatar.classList.add("avatar");
+
+    const bubble = document.createElement("div");
+    bubble.classList.add("typing-indicator");
+    bubble.innerHTML = `
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+    `;
+
+    msg.appendChild(avatar);
+    msg.appendChild(bubble);
+    chatMessages.appendChild(msg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function hideTyping() {
+    if (!chatMessages) return;
+    const bubble = chatMessages.querySelector(".message.ai-message.typing");
+    if (bubble) bubble.remove();
+}
+
+// ===============================
+// Input handling
+// ===============================
+function handleUserInput() {
+    const text = editor.innerText.trim();
+    if (!text) return;
+
+    if (awaitingRestartChoice) {
+        awaitingRestartChoice = false;
+        startNewRound();
+        return;
+    }
+
+    appendMessage(text, "user");
+    collectedPrompts.push(text);
+    editor.innerHTML = "";
+    editor.focus();
+
+    sendPrompt(text);
+}
+
+// ===============================
+// UI Helpers
+// ===============================
 function appendMessage(text, sender = "ai") {
     const msg = document.createElement("div");
     msg.classList.add("message", `${sender}-message`);
@@ -25,7 +139,7 @@ function appendMessage(text, sender = "ai") {
     msg.appendChild(textDiv);
     chatMessages.appendChild(msg);
     chatMessages.scrollTop = chatMessages.scrollHeight;
-    return msg; // return for later removal if needed
+    return msg;
 }
 
 function appendAIContainer() {
@@ -43,13 +157,15 @@ function appendAIContainer() {
     chatMessages.appendChild(msg);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
-    return container; // the bubble ".text"
+    return container;
 }
 
-function appendGeneratedImage(base64, promptText) {
+// ===============================
+// Image Display
+// ===============================
+function appendGeneratedImage(base64, promptText, index) {
     const container = appendAIContainer();
 
-    // image
     const img = document.createElement("img");
     img.src = `data:image/png;base64,${base64}`;
     img.alt = "Generated image";
@@ -57,18 +173,49 @@ function appendGeneratedImage(base64, promptText) {
     img.style.borderRadius = "10px";
     img.style.marginTop = "8px";
 
-    // caption with the prompt
     const caption = document.createElement("div");
     caption.style.marginTop = "6px";
     caption.style.fontSize = "0.95rem";
     caption.style.lineHeight = "1.4";
     caption.style.opacity = "0.9";
-    caption.textContent = `Prompt: “${promptText}”`;
+    caption.textContent = `Prompt: "${promptText}"`;
+
+    const dlBtn = document.createElement("button");
+    dlBtn.textContent = "Download PNG";
+    dlBtn.style.marginTop = "8px";
+    dlBtn.style.cursor = "pointer";
+    dlBtn.style.border = "none";
+    dlBtn.style.padding = "6px 10px";
+    dlBtn.style.borderRadius = "6px";
+    dlBtn.style.background = "#fff0e6";
+    dlBtn.style.color = "#d9534f";
+    dlBtn.addEventListener("click", () =>
+        downloadSingle(`image-${index}.png`, base64)
+    );
 
     container.appendChild(img);
     container.appendChild(caption);
+    container.appendChild(dlBtn);
+
+    // Progress info
+    const progress = document.createElement("div");
+    progress.style.marginTop = "10px";
+    progress.style.fontWeight = "600";
+    progress.textContent = `Image ${index}/3 generated.`;
+    container.appendChild(progress);
+
+    // Ask for next step
+    if (index < 3) {
+        const nextMsg = document.createElement("div");
+        nextMsg.style.marginTop = "6px";
+        nextMsg.textContent = `Now describe your next artwork (${index + 1}/3).`;
+        container.appendChild(nextMsg);
+    }
 }
 
+// ===============================
+// Downloads
+// ===============================
 function downloadSingle(filename, base64) {
     const a = document.createElement("a");
     a.href = `data:image/png;base64,${base64}`;
@@ -78,7 +225,6 @@ function downloadSingle(filename, base64) {
     a.remove();
 }
 
-// Optional lazy loader for JSZip (for "Download all")
 function loadJSZip() {
     return new Promise((resolve, reject) => {
         if (window.JSZip) return resolve(window.JSZip);
@@ -119,14 +265,16 @@ async function downloadAllZip(items) {
     }
 }
 
-// --- Summary panel after 3 images ---
+// ===============================
+// Summary
+// ===============================
 function showSummary() {
     const container = appendAIContainer();
 
     const title = document.createElement("div");
     title.style.fontWeight = "600";
     title.style.marginBottom = "8px";
-    title.textContent = "📦 Summary of your 3 images";
+    title.textContent = "Summary of your three images";
     container.appendChild(title);
 
     const grid = document.createElement("div");
@@ -192,16 +340,17 @@ function showSummary() {
     zipBtn.addEventListener("click", () => downloadAllZip(generated));
     actions.appendChild(zipBtn);
 
-    // Ask to restart
     askToRestart();
 }
 
-// --- Ask to start another round ---
+// ===============================
+// Restart Logic
+// ===============================
 function askToRestart() {
     const container = appendAIContainer();
 
     const question = document.createElement("div");
-    question.textContent = "Do you want to do another set of 3 images?";
+    question.textContent = "Do you want to create another set of three images?";
     question.style.marginBottom = "8px";
     container.appendChild(question);
 
@@ -240,19 +389,27 @@ function askToRestart() {
 
     noBtn.addEventListener("click", () => {
         awaitingRestartChoice = false;
-        appendMessage("Okay. You can still type a new prompt any time to start another set.", "ai");
+        appendMessage(
+            "Okay. You can still type a new prompt anytime to start again.",
+            "ai"
+        );
     });
 }
 
 function startNewRound() {
     collectedPrompts = [];
     generated = [];
-    appendMessage("New round! Describe the first artwork.", "ai");
+    appendMessage("Let us start fresh. Please describe your first artwork (1/3).", "ai");
 }
 
-// --- Backend call: one image per prompt ---
+// ===============================
+// Backend Call
+// ===============================
 async function sendPrompt(prompt) {
-    const typing = appendMessage("🎨 Generating image...", "ai");
+    const index = generated.length + 1;
+
+    showTyping();
+
     try {
         const res = await fetch("/generate", {
             method: "POST",
@@ -260,13 +417,12 @@ async function sendPrompt(prompt) {
             body: JSON.stringify({ prompt }),
         });
         const data = await res.json();
-        typing.remove();
+        hideTyping();
 
         if (data?.image) {
-            appendGeneratedImage(data.image, prompt);
+            appendGeneratedImage(data.image, prompt, index);
             generated.push({ prompt, base64: data.image });
 
-            // After 3 images, show summary and ask to restart
             if (generated.length === 3) {
                 showSummary();
             }
@@ -274,33 +430,40 @@ async function sendPrompt(prompt) {
             appendMessage("No image returned from the model.", "ai");
         }
     } catch (err) {
-        typing.remove();
-        appendMessage(`❌ Error: ${err.message}`, "ai");
+        hideTyping();
+        appendMessage(`Error: ${err.message}`, "ai");
     }
 }
 
-// --- Input handling ---
-function handleUserInput() {
-    const text = chatInput.value.trim();
-    if (!text) return;
 
-    // When awaiting restart choice, a user message should dismiss that state and start new
-    if (awaitingRestartChoice) {
-        awaitingRestartChoice = false;
-        startNewRound();
-    }
+// ===============================
+// Consent Modal Logic
+// ===============================
+window.addEventListener("DOMContentLoaded", () => {
+    const modal = document.getElementById("consentModal");
+    const agreeBtn = document.getElementById("agreeBtn");
+    const cancelBtn = document.getElementById("cancelBtn");
+    const editor = document.getElementById("chatEditor");
 
-    appendMessage(text, "user");
-    collectedPrompts.push(text);
-    chatInput.value = "";
+    // disable input until consent
+    editor.setAttribute("contenteditable", "false");
+    editor.setAttribute("data-placeholder", "Send the message");
+    editor.style.opacity = "0.5";
+    editor.style.pointerEvents = "none";
 
-    // Generate right away
-    sendPrompt(text);
-}
+    agreeBtn.addEventListener("click", () => {
+        modal.style.display = "none";
+        editor.setAttribute("contenteditable", "true");
+        editor.style.opacity = "1";
+        editor.style.pointerEvents = "auto";
+        editor.focus();
+    });
 
-sendButton.addEventListener("click", handleUserInput);
-chatInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") handleUserInput();
+    cancelBtn.addEventListener("click", () => {
+        modal.style.display = "none";
+        appendMessage(
+            "You have declined consent. Image generation is disabled.",
+            "ai"
+        );
+    });
 });
-
-
