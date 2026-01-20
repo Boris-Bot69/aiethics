@@ -275,22 +275,21 @@ body.no-scroll {
 
 
 .sidebar-left {
-    margin-left: -8vw;
-    width: calc(100% + 8vw);
+    margin-left: -12vw;
+    width: calc(100% + 12vw);
 }
 
 .sidebar-right {
-    margin-right: -8vw;
-    width: calc(100% + 8vw);
+    margin-right: 12vw;
+    width: calc(100% + 12vw);
 }
 
 .sidebar-image {
     width: 100%;
     height: auto;
-    max-height: 700px;
+    max-height: 1200px;
     object-fit: contain;
 }
-
 
 /* Spacers & headings */
 
