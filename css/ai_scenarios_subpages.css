@@ -245,13 +245,14 @@ body.no-scroll {
 
 /* Sidebars */
 .sidebar {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    min-height: 100vh;
-    position: relative;
+    position: sticky;
+    top: 105px;
+    align-self: start;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
 }
+
 
 .sidebar-left {
     margin-left: -8vw;
@@ -264,10 +265,12 @@ body.no-scroll {
 }
 
 .sidebar-image {
-    max-height: 1600px;
-    width: auto;
-    margin: 0 auto;
+    width: 100%;
+    height: auto;
+    max-height: 700px;
+    object-fit: contain;
 }
+
 
 /* Simple spacing block used in HTML */
 .image-spacer { height: 4rem; }
@@ -346,6 +349,101 @@ body.no-scroll {
     color: #444;
 }
 
+.bottom-bar {
+    min-height: 20rem;
+    background-image: url('../images/bottom.svg');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: flex-start;
+    padding: 4rem 2rem;
+}
+
+.section-title {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    color: #333;
+}
+
+.logo-grid {
+    display: flex;
+    gap: 3rem;
+}
+
+.logo-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 180px;
+}
+
+.logo-item img {
+    height: 5rem;
+    width: auto;
+    margin-bottom: 1rem;
+}
+
+.logo-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #444;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+
+.footer-sidebar {
+    display: flex;
+    gap: 4rem;
+}
+
+.section-title {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 0.5rem;
+}
+
+.footer-links a, .contact-item a {
+    text-decoration: none;
+    color: #444;
+    font-size: 0.9rem;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+}
+
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.email-icon {
+    font-size: 1rem;
+}
 
 /* ========== Post-activity section (materials + questions) ========== */
 
@@ -580,6 +678,26 @@ body.no-scroll {
     p, li { font-size: 0.95rem; line-height: 1.55; }
 
     /* Navbar becomes solid + mobile menu enabled */
+
+    .bottom-bar {
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        height: auto;
+        background-size: contain;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .footer-sidebar {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
     .navbar {
         background-image: none;
         background-color: #78A564;

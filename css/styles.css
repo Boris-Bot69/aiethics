@@ -147,29 +147,32 @@ p {
 
 /* Sidebar Styles */
 .sidebar {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    min-height: 100vh;
-    position: relative;
+    position: sticky;
+    top: 105px;
+    align-self: start;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
 }
 
+
 .sidebar-left {
-    margin-left: -8vw;
-    width: calc(100% + 8vw);
+    margin-left: -12vw;
+    width: calc(100% + 12vw);
 }
 
 .sidebar-right {
-    margin-right: -8vw;
-    width: calc(100% + 8vw);
+    margin-right: 12vw;
+    width: calc(100% + 12vw);
 }
 
 .sidebar-image {
-    max-height: 1800px;
     width: 100%;
-    display: block;
+    height: auto;
+    max-height: 1200px;
+    object-fit: contain;
 }
+
 
 /* Main Content Area */
 .main-content-area {

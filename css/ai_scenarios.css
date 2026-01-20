@@ -525,6 +525,25 @@ body.no-scroll {
         background-image: none;
     }
 
+    .bottom-bar {
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        height: auto;
+        background-size: contain;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .footer-sidebar {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
     .main-content {
         padding-top: 0;
     }
