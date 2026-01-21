@@ -264,61 +264,65 @@ h1 {
 /* This is the main grid container */
 .cards-container {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr 1fr; /* Forces 2 Columns */
     gap: 3rem;
+    padding: 2rem 0;
+    align-items: stretch;
 }
 
 .activity-card-link {
     text-decoration: none;
-    background-color: transparent;
+    color: inherit;
+    display: block;
+    height: 100%;
 }
 
 .activity-item {
     display: flex;
     flex-direction: column;
-    text-align: center;
-    gap: 1rem;
-    background-color: transparent;
-
-}
-
-.activity-image-box {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 420px;
-    overflow: hidden;
-}
-
-.activity-image-box:hover {
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-}
-
-
-.activity-image-box img {
-    width: 100%;
     height: 100%;
-    object-fit: cover;
-
+    text-align: center;
 }
 
-/* Styles for the title and description */
+/* Uniform Header height to align images below */
 .activity-item h4 {
-    font-family: 'Inter', sans-serif;
     font-weight: 600;
     font-size: 1rem;
     color: #333;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    margin: 0 0 1rem 0;
+
+    /* Lock the height */
+    min-height: 4.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.activity-item p {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.875rem;
+/* Uniform Image Box */
+.activity-image-box {
+    height: 250px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+}
+
+.activity-image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Crops images to fit perfectly */
+}
+
+.activity-info {
+    flex-grow: 1; /* Makes the text area expand evenly */
+}
+
+.activity-info p {
+    font-size: 0.9rem;
     line-height: 1.5;
     color: #828282;
 }
-
 
 
 .bottom-bar {
