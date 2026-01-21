@@ -284,52 +284,39 @@ body.no-scroll {
 }
 
 /* ========== Homage strip (3 panels) ========== */
-/* ===== Frame wrapper (controls size of the SVG border) ===== */
+/* ========== Homage strip (3 panels) ========== */
+
+/* The outer frame that holds the SVG border */
 .homage-frame {
     position: relative;
     max-width: 1200px;
     margin: 3rem auto;
-    padding: 2.5rem;
+
+    border: 40px solid transparent;
+    border-image-source: url("/images/green_border_ai_scenarios.svg");
+    border-image-slice: 40;
+    border-image-repeat: stretch;
+
+    padding: 2rem; /* Inner space between border and content */
+    background-color: #fff;
 }
 
 .homage-frame::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: url("/images/green_border_ai_scenarios.svg") no-repeat;
-    background-size: 100% 100%;
-    pointer-events: none;
-    z-index: 0;
+    display: none;
 }
-
-/* inner content area */
-.scenario-strip {
-    position: relative;
-    z-index: 1;
-}
-
-/* ===== Content layout (3 panels) ===== */
-
 
 .homage-strip {
     position: relative;
     z-index: 1;
-
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 3rem;
-
     background: transparent;
     border: none;
     padding: 0;
+    align-items: start;
 }
 
-.homage-strip > * {
-    position: relative;
-    z-index: 1;
-}
-
-/* Panel styling */
 .homage-panel {
     display: flex;
     flex-direction: column;
@@ -339,7 +326,7 @@ body.no-scroll {
 
 .homage-image {
     display: block;
-    max-width: 70%;
+    max-width: 100%;
     border-radius: 6px;
     margin-bottom: 1.5rem;
 }
@@ -493,9 +480,9 @@ body.no-scroll {
     display: grid;
     grid-template-columns: 1fr 2fr; /* 1:2 ratio */
     gap: 3rem;
-    padding: 3rem 2rem;
-    max-width: 1400px;
-    margin: 2rem auto;
+    padding: 3rem 0;
+    width: 100%;
+    margin: 2rem 0;
 }
 
 /* Left column */

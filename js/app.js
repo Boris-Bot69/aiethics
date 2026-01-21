@@ -59,29 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     //======================================================================
-    // 4. TEACHER/LEARNER MODE TOGGLE
-    //======================================================================
-    const teacherModeBtn = document.getElementById('teacher-mode-btn');
-    const learnerModeBtn = document.getElementById('learner-mode-btn');
-    if (teacherModeBtn && learnerModeBtn) {
-        teacherModeBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            document.body.classList.remove('learner-mode');
-            teacherModeBtn.classList.add('active-mode');
-            learnerModeBtn.classList.remove('active-mode');
-        });
-        learnerModeBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            document.body.classList.add('learner-mode');
-            learnerModeBtn.classList.add('active-mode');
-            teacherModeBtn.classList.remove('active-mode');
-        });
-
-        // Set an initial mode
-        teacherModeBtn.classList.add('active-mode');
-    }
-
-    //======================================================================
 // 5. AI CHAT PANEL FUNCTIONALITY (FINAL AUTOMATIC SAVE VERSION)
 //======================================================================
     const chatPanel = document.querySelector('.chat-panel');
@@ -236,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     //======================================================================
-// 5. AI TEXTURE MIXER FUNCTIONALITY (UPDATED FOR STABILITY AI BACKEND)
+// 5. AI TEXTURE MIXER FUNCTIONALITY
 //======================================================================
     const mixerPanel = document.querySelector('.texture-mixer-panel');
     if (mixerPanel) {

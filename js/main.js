@@ -34,7 +34,6 @@
         });
     }
 
-    // --- ✅ MOBILE MENU ---
     function setupMobileMenu() {
         const menuButton = document.querySelector('.menu-toggle');
         const mobileMenu = document.querySelector('.mobile-nav-menu');
@@ -189,7 +188,7 @@
 
 })();
 
-// --- ✅ Safe scroll hide/show logic ---
+// --- Safe scroll hide/show logic ---
 document.addEventListener('DOMContentLoaded', () => {
     let lastScrollTop = 0;
     const navbar = document.querySelector('.navbar');
