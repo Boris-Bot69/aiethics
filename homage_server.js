@@ -12,6 +12,37 @@ import fs from "node:fs";
 
 
 dotenv.config();
+const BASIC_USER = process.env.BASIC_USER;
+const BASIC_PASS = process.env.BASIC_PASS;
+
+function unauthorized(res) {
+    res.set("WWW-Authenticate", 'Basic realm="AI Ethics Site"');
+    return res.status(401).send("Authentication required.");
+}
+
+function basicAuth(req, res, next) {
+    if (req.method === "OPTIONS") return next();   // <--- add this
+    if (req.path === "/healthz") return res.status(200).send("ok");
+
+    if (!BASIC_USER || !BASIC_PASS) return res.status(500).send("Auth not configured.");
+
+    const header = req.headers.authorization || "";
+    const [scheme, encoded] = header.split(" ");
+
+    if (scheme !== "Basic" || !encoded) return unauthorized(res);
+
+    const decoded = Buffer.from(encoded, "base64").toString("utf8");
+    const idx = decoded.indexOf(":");
+    if (idx === -1) return unauthorized(res);
+
+    const user = decoded.slice(0, idx);
+    const pass = decoded.slice(idx + 1);
+
+    if (user !== BASIC_USER || pass !== BASIC_PASS) return unauthorized(res);
+
+    next();
+}
+
 
 const toRaw = (dataUrl) => {
     try {
@@ -38,22 +69,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3000;
-
-app.use(bodyParser.json({ limit: "1000mb" }));
-app.use(bodyParser.urlencoded({ limit: "1000mb", extended: true }));
-
-const HTML_BASE = path.join(__dirname, "html", "ai_activities_webpages");
-
-const HOMAGE_HTML = path.join(HTML_BASE, "homage.html");
-const MAGAZINE_HTML = path.join(HTML_BASE, "magazine_cutouts.html");
-const EXPANDED_HTML = path.join(HTML_BASE, "expanded_frames.html");
-const TEXTURE_HTML = path.join(HTML_BASE, "drawing_texture.html");
-
-app.use(express.static(__dirname));
-app.use(express.static(path.join(__dirname, "js")));
-
-
+const PORT = process.env.PORT || 3000;
 
 const allowedOrigins = [
     "http://localhost:3000",
@@ -63,16 +79,29 @@ const allowedOrigins = [
 app.use(
     cors({
         origin: function (origin, callback) {
-            if (!origin || allowedOrigins.includes(origin)) {
-                callback(null, true);
-            } else {
-                console.warn("Blocked CORS request from:", origin);
-                callback(new Error("Not allowed by CORS"));
-            }
+            if (!origin || allowedOrigins.includes(origin)) callback(null, true);
+            else callback(new Error("Not allowed by CORS"));
         },
         credentials: true,
     })
 );
+
+app.options("*", cors());
+
+app.use(basicAuth);
+
+app.use(express.static(__dirname));
+app.use(bodyParser.json({ limit: "1000mb" }));
+app.use(bodyParser.urlencoded({ limit: "1000mb", extended: true }));
+
+const HTML_BASE = path.join(__dirname, "html", "ai_activities_webpages");
+
+app.get("/homage", (_req, res) => res.sendFile(path.join(HTML_BASE, "homage.html")));
+app.get("/magazine", (_req, res) => res.sendFile(path.join(HTML_BASE, "magazine_cutouts.html")));
+app.get("/expanded", (_req, res) => res.sendFile(path.join(HTML_BASE, "expanded_frames.html")));
+app.get("/texture", (_req, res) => res.sendFile(path.join(HTML_BASE, "drawing_texture.html")));
+
+app.get("/", (_req, res) => res.redirect("/homage"));
 
 
 // GenAI client
@@ -968,13 +997,8 @@ app.post("/generate-capsule-pdf", async (req, res) => {
 /* ============================================================
    ROUTES – HTML Pages
 ============================================================ */
-app.get("/", (_req, res) => {
-    res.sendFile(HOMAGE_HTML);
-    res.sendFile(MAGAZINE_HTML);
-    res.sendFile(EXPANDED_HTML);
-    res.sendFile(TEXTURE_HTML);
+app.get("/", (_req, res) => res.redirect("/homage"));
 
-});
 
 /* ============================================================
    START SERVER
