@@ -76,21 +76,18 @@ const allowedOrigins = [
     "https://aiethics-5ncx.onrender.com",
 ];
 
-app.use(
-    cors({
-        origin: function (origin, callback) {
-            if (!origin || allowedOrigins.includes(origin)) callback(null, true);
-            else callback(new Error("Not allowed by CORS"));
-        },
-        credentials: true,
-    })
-);
+app.use(cors({
+    origin(origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+        return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+}));
 
-app.options("*", cors());
 
 app.use(basicAuth);
 
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, "html")));
 app.use(bodyParser.json({ limit: "1000mb" }));
 app.use(bodyParser.urlencoded({ limit: "1000mb", extended: true }));
 
@@ -990,14 +987,6 @@ app.post("/generate-capsule-pdf", async (req, res) => {
 });
 
 
-
-
-
-
-/* ============================================================
-   ROUTES – HTML Pages
-============================================================ */
-app.get("/", (_req, res) => res.redirect("/homage"));
 
 
 /* ============================================================
