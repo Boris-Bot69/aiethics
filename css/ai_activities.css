@@ -387,13 +387,15 @@ h1 {
 .bottom-bar {
     min-height: 20rem;
     background-image: url('../images/bottom.svg');
-    background-size: cover;
-    background-position: center;
+    background-repeat: no-repeat;
+
+    background-position: top center;
+    background-size: 100% auto;
+
     display: flex;
     align-items: flex-start;
     padding: 4rem 2rem;
 }
-
 .section-title {
     font-weight: bold;
     font-size: 1.2rem;

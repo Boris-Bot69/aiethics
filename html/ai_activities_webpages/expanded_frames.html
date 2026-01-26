@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Ethics Activities - TUM</title>
-    <link rel="stylesheet" href="../../css/ai_expanded_frame.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/ai_expanded_frame.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet" />
 </head>
+
 <body>
 <nav class="navbar">
     <a href="../../index.html" class="nav-link active">Co-Creating AI Ethics</a>
@@ -19,14 +20,15 @@
         <a href="../../oecd_principles.html" class="nav-link">Recognizing AI Ethics</a>
         <span class="nav-divider"></span>
         <a href="../../research.html" class="nav-link">Research</a>
-        <img src="../../images/tum.svg" alt="tum logo">
-
+        <img src="../../images/tum.svg" alt="tum logo" />
     </div>
+
     <button class="menu-toggle" aria-label="Open main menu">
         <span class="hamburger-icon"></span>
         Menu
     </button>
 </nav>
+
 <div class="mobile-nav-menu">
     <a href="../../ai_ethics_activities.html" class="mobile-nav-link">AI Ethics Activities</a>
     <a href="../../ai_ethics_scenarios.html" class="mobile-nav-link">AI Ethics Scenarios</a>
@@ -42,40 +44,45 @@
     </ol>
 </nav>
 
+<!-- Only one <main> per page -->
 <main class="main-content">
-
     <div class="three-column-layout">
         <aside class="sidebar sidebar-left">
-            <img src="../../images/leftsidebar.svg" alt="Left sidebar ai activities" class="sidebar-image">
-            <img src="../../images/leftsidebar_down.svg" alt="Left sidebar down ai activities" class="sidebar-image">
-
+            <img src="../../images/leftsidebar.svg" alt="Left sidebar ai activities" class="sidebar-image" />
+            <img src="../../images/leftsidebar_down.svg" alt="Left sidebar down ai activities" class="sidebar-image" />
         </aside>
 
         <section class="main-content-area">
             <h1 class="custom-header">Expanded frames</h1>
-            <div class="aspect-ratio-box">
-            <img src="../../images/activities/activity4_banner.svg" alt="green pic activity">
-            <div class="mini-image-spacer"></div>
 
-            <p>In this activity, you will create artwork and expand its frame with AI. You will iterate through co-creation with AI to make the artwork larger. In the activity you will expand an A8 artwork into an A4, but you can expand as much as you want. By observing how AI fills the artwork beyond its borders, you will engage with ethics principles. You can do this alone, with a partner, or in a small group.
-            </p>
+            <!-- FIX: close aspect-ratio-box properly -->
+            <div class="aspect-ratio-box">
+                <img src="../../images/activities/activity4_banner.svg" alt="green pic activity" />
+                <div class="mini-image-spacer"></div>
+
+                <p>
+                    In this activity, you will create artwork and expand its frame with AI. You will iterate through
+                    co-creation with AI to make the artwork larger. In the activity you will expand an A8 artwork into
+                    an A4, but you can expand as much as you want. By observing how AI fills the artwork beyond its
+                    borders, you will engage with ethics principles. You can do this alone, with a partner, or in a
+                    small group.
+                </p>
+            </div>
 
             <div class="image-spacer"></div>
 
             <h2>Activity Instructions</h2>
-
-
             <div class="mini-image-spacer"></div>
 
             <div class="activity-container">
-
-
                 <aside class="instructions-panel">
                     <div class="instructions-content">
-
                         <div class="step-content is-active" data-step="1">
                             <h3>1. Create an artwork:</h3>
-                            <p>Create an original artwork using the materials available on an A8-sized paper. It could be anything; don’t limit yourself! Once you are done, take a picture of it.</p>
+                            <p>
+                                Create an original artwork using the materials available on an A8-sized paper. It could be
+                                anything; don’t limit yourself! Once you are done, take a picture of it.
+                            </p>
                         </div>
 
                         <div class="step-content" data-step="2">
@@ -87,49 +94,50 @@
                             <h3>3. Expand with materials:</h3>
                             <p>Now you expand it to an A6 size.</p>
                         </div>
+
                         <div class="step-content" data-step="4">
                             <h3>4. Repeat steps 2 and 3 until you reach A4 size</h3>
                             <p></p>
                         </div>
+
                         <div class="step-content" data-step="5">
                             <h3>5. Share:</h3>
-                            <p>Present your finalized A4 artwork and share the different frame iterations in an art exhibition that details the progress of the original artwork to the expanded ones.Present your finalized A4 artwork and share the different frame iterations in an art exhibition that details the progress of the original artwork to the expanded ones.</p>
+                            <p>
+                                Present your finalized A4 artwork and share the different frame iterations in an art exhibition
+                                that details the progress of the original artwork to the expanded ones.
+                            </p>
                         </div>
+
                         <div class="step-content" data-step="6">
                             <h3>6. Reflect:</h3>
                             <p>Use the discussion prompts to guide the conversation about ethics.</p>
                         </div>
-
                     </div>
+
                     <div class="step-counter">
                         <div class="progress-bar-container">
                             <div id="progressBarFill" class="progress-bar-fill"></div>
                         </div>
                         <div class="step-controls">
-                            <button id="prev-step-btn">&lt;</button>
+                            <button id="prev-step-btn" type="button">&lt;</button>
                             <span id="step-display">STEP 1 OF 7</span>
-                            <button id="next-step-btn">&gt;</button>
+                            <button id="next-step-btn" type="button">&gt;</button>
                         </div>
                     </div>
                 </aside>
 
-                <main class="chat-panel">
-                    <div class="chat-messages">
-                    </div>
+                <!-- FIX: was <main>, must not be another main -->
+                <section class="chat-panel">
+                    <div class="chat-messages"></div>
                     <div class="chat-input-bar">
-                        <input type="file" id="imageUpload" accept="image/*" style="display:none;">
-                        <button id="uploadBtn" class="upload-btn">📷 Upload Artwork</button>
+                        <input type="file" id="imageUpload" accept="image/*" style="display:none;" />
+                        <button id="uploadBtn" class="upload-btn" type="button">📷 Upload Artwork</button>
                         <div id="chatEditor" class="chat-editor" contenteditable="true" placeholder="Describe your scene..."></div>
                     </div>
-
-
-
-                </main>
-
+                </section>
             </div>
 
             <section class="post-activity-section">
-
                 <div class="materials-list">
                     <h3>Materials</h3>
                     <ul>
@@ -141,6 +149,7 @@
 
                 <div class="guiding-questions">
                     <h3>Guiding Questions for AI Ethics Literacy</h3>
+
                     <details class="accordion-item" open>
                         <summary>Creativity and human capabilities</summary>
                         <div class="accordion-content">
@@ -155,9 +164,10 @@
                         <summary>Fairness and agency</summary>
                         <div class="accordion-content">
                             <ul>
-                                <li><strong>Agency:</strong> Who is the final author of the A4 artwork? How much of the final piece was guided by human decisions versus AI decisions? At what point, if any, did it stop feeling like your artwork?
+                                <li>
+                                    <strong>Agency:</strong> Who is the final author of the A4 artwork? How much of the final piece was guided by
+                                    human decisions versus AI decisions? At what point, if any, did it stop feeling like your artwork?
                                 </li>
-                                <li>At what point, if any, did it stop feeling like your artwork?</li>
                                 <li><strong>Data:</strong> Is the AI good at expanding your style? What does this say about its training data?</li>
                             </ul>
                         </div>
@@ -177,7 +187,7 @@
                         <summary>Robustness and safety</summary>
                         <div class="accordion-content">
                             <ul>
-                                <li><strong>Robustness:</strong> THow well did the AI handle your inputs? Did it produce glitches or errors in the expansions?</li>
+                                <li><strong>Robustness:</strong> How well did the AI handle your inputs? Did it produce glitches or errors in the expansions?</li>
                             </ul>
                         </div>
                     </details>
@@ -186,34 +196,29 @@
                         <summary>Accountability</summary>
                         <div class="accordion-content">
                             <ul>
-                                <li><strong>Responsibility:</strong>What responsibility do the creators of the AI tool have for the images it generates? What features could they build to ensure accountability?</li>
+                                <li><strong>Responsibility:</strong> What responsibility do the creators of the AI tool have for the images it generates? What features could they build to ensure accountability?</li>
                             </ul>
                         </div>
                     </details>
                 </div>
-
             </section>
 
-            <h2>Explorer other activities</h2>
+            <h2>Explore other activities</h2>
+
             <div class="slider-wrapper">
                 <div class="slider-container">
                     <div class="slider-track" id="activityTrack">
-
-
 
                         <!-- Slide 1 -->
                         <div class="slide-item">
                             <a href="ai_superhero.html" class="activity-card-link">
                                 <div class="card-frame">
-                                    <img class="card-border" src="../../images/border_slide_view.svg" alt="" aria-hidden="true">
-
+                                    <img class="card-border" src="../../images/border_slide_view.svg" alt="" aria-hidden="true" />
                                     <div class="card-content">
                                         <h4>AI SUPER HERO</h4>
-
                                         <div class="activity-image-box">
-                                            <img src="../../images/activities_main_page/Mask%20group%20(4).svg" alt="AI Super Hero activity">
+                                            <img src="../../images/activities_main_page/Mask%20group%20(4).svg" alt="AI Super Hero activity" />
                                         </div>
-
                                         <p>
                                             Develop an AI super hero and create stories using image-generative AI and art materials.
                                             Print it in a comic book style.
@@ -227,15 +232,12 @@
                         <div class="slide-item">
                             <a href="prototype_pitch_ai.html" class="activity-card-link">
                                 <div class="card-frame">
-                                    <img class="card-border" src="../../images/border_slide_view.svg" alt="" aria-hidden="true">
-
+                                    <img class="card-border" src="../../images/border_slide_view.svg" alt="" aria-hidden="true" />
                                     <div class="card-content">
                                         <h4>PROTOTYPING AND PITCHING AI</h4>
-
                                         <div class="activity-image-box">
-                                            <img src="../../images/activities_main_page/Mask%20group%20(5).svg" alt="Prototyping and Pitching AI activity">
+                                            <img src="../../images/activities_main_page/Mask%20group%20(5).svg" alt="Prototyping and Pitching AI activity" />
                                         </div>
-
                                         <p>
                                             Design an AI product to help your school reach Sustainable Development Goals,
                                             and use AI to create a pitch and illustrate its use case.
@@ -249,15 +251,12 @@
                         <div class="slide-item">
                             <a href="time_capsule.html" class="activity-card-link">
                                 <div class="card-frame">
-                                    <img class="card-border" src="../../images/border_slide_view.svg" alt="" aria-hidden="true">
-
+                                    <img class="card-border" src="../../images/border_slide_view.svg" alt="" aria-hidden="true" />
                                     <div class="card-content">
                                         <h4>THE TIME CAPSULE</h4>
-
                                         <div class="activity-image-box">
-                                            <img src="../../images/activities_main_page/Mask%20group%20(6).svg" alt="Time Capsule activity">
+                                            <img src="../../images/activities_main_page/Mask%20group%20(6).svg" alt="Time Capsule activity" />
                                         </div>
-
                                         <p>
                                             Use image-generative AI and materials to craft a message explaining AI and its ethical
                                             considerations to a future civilization.
@@ -271,15 +270,12 @@
                         <div class="slide-item">
                             <a href="train_ai_charachter.html" class="activity-card-link">
                                 <div class="card-frame">
-                                    <img class="card-border" src="../../images/border_slide_view.svg" alt="" aria-hidden="true">
-
+                                    <img class="card-border" src="../../images/border_slide_view.svg" alt="" aria-hidden="true" />
                                     <div class="card-content">
                                         <h4>TRAIN AI WITH CAREER CHARACTERS</h4>
-
                                         <div class="activity-image-box">
-                                            <img src="../../images/activities_main_page/Mask%20group%20(7).svg" alt="Train AI with career characters activity">
+                                            <img src="../../images/activities_main_page/Mask%20group%20(7).svg" alt="Train AI with career characters activity" />
                                         </div>
-
                                         <p>
                                             Create different career characters with art materials and train personal reorganization AI
                                             with Google Teachable Machine.
@@ -293,15 +289,12 @@
                         <div class="slide-item">
                             <a href="craft_playdough_storyboard.html" class="activity-card-link">
                                 <div class="card-frame">
-                                    <img class="card-border" src="../../images/border_slide_view.svg" alt="" aria-hidden="true">
-
+                                    <img class="card-border" src="../../images/border_slide_view.svg" alt="" aria-hidden="true" />
                                     <div class="card-content">
                                         <h4>CRAFT PLAYDOUGH STORYBOARDS</h4>
-
                                         <div class="activity-image-box">
-                                            <img src="../../images/activities_main_page/Mask%20group%20(8).svg" alt="Craft playdough storyboards activity">
+                                            <img src="../../images/activities_main_page/Mask%20group%20(8).svg" alt="Craft playdough storyboards activity" />
                                         </div>
-
                                         <p>
                                             Craft and iterate physical settings and storyboard an adventure story with image-generative AI
                                             and playdough.
@@ -315,18 +308,14 @@
                         <div class="slide-item">
                             <a href="homage.html" class="activity-card-link">
                                 <div class="card-frame">
-                                    <img class="card-border" src="../../images/border_slide_view.svg" alt="" aria-hidden="true">
-
+                                    <img class="card-border" src="../../images/border_slide_view.svg" alt="" aria-hidden="true" />
                                     <div class="card-content">
                                         <h4>HOMAGE TO LOCAL ARTIST</h4>
-
                                         <div class="activity-image-box">
-                                            <img src="../../images/activities_main_page/Mask%20group.svg" alt="Homage to local artist activity">
+                                            <img src="../../images/activities_main_page/Mask%20group.svg" alt="Homage to local artist activity" />
                                         </div>
-
                                         <p>
                                             Replicate a local artist's drawing through several rounds of text-to-image AI prompting.
-
                                         </p>
                                     </div>
                                 </div>
@@ -337,15 +326,12 @@
                         <div class="slide-item">
                             <a href="magazine.html" class="activity-card-link">
                                 <div class="card-frame">
-                                    <img class="card-border" src="../../images/border_slide_view.svg" alt="" aria-hidden="true">
-
+                                    <img class="card-border" src="../../images/border_slide_view.svg" alt="" aria-hidden="true" />
                                     <div class="card-content">
                                         <h4>MAGAZINE CUT-OUTS</h4>
-
                                         <div class="activity-image-box">
-                                            <img src="../../images/activities_main_page/Mask%20group%20(1).svg" alt="Magazine cut-outs activity">
+                                            <img src="../../images/activities_main_page/Mask%20group%20(1).svg" alt="Magazine cut-outs activity" />
                                         </div>
-
                                         <p>
                                             Draw a picture. Scan and copy it. Change the scan with AI. Change the copy with magazine cut-outs. Repeat several times.
                                         </p>
@@ -354,20 +340,16 @@
                             </a>
                         </div>
 
-
-
+                        <!-- Slide 8 -->
                         <div class="slide-item">
                             <a href="drawing_texture.html" class="activity-card-link">
                                 <div class="card-frame">
-                                    <img class="card-border" src="../../images/border_slide_view.svg" alt="" aria-hidden="true">
-
+                                    <img class="card-border" src="../../images/border_slide_view.svg" alt="" aria-hidden="true" />
                                     <div class="card-content">
                                         <h4>DRAWING PLUS TEXTURES</h4>
-
                                         <div class="activity-image-box">
-                                            <img src="../../images/activities_main_page/Mask%20group%20(2).svg" alt="Drawing plus textures activity">
+                                            <img src="../../images/activities_main_page/Mask%20group%20(2).svg" alt="Drawing plus textures activity" />
                                         </div>
-
                                         <p>
                                             Draw a picture and lay a tangible texture. Merge both using AI. Create another texture. Merge it with your AI-generated art.
                                         </p>
@@ -376,46 +358,39 @@
                             </a>
                         </div>
 
-
-
-
-
-
-
                     </div>
                 </div>
 
-                <button class="prev" aria-label="Previous slide">&#10094;</button>
-                <button class="next" aria-label="Next slide">&#10095;</button>
+                <button class="prev" aria-label="Previous slide" type="button">&#10094;</button>
+                <button class="next" aria-label="Next slide" type="button">&#10095;</button>
             </div>
-            <br>
 
-
-
+            <br />
         </section>
+
         <aside class="sidebar sidebar-right">
-            <img src="../../images/rightsidebar.svg" alt="right sidebar ai activities" class="sidebar-image">
-            <img src="../../images/rightsidebar_down.svg" alt="right sidebar down ai activities" class="sidebar-image">
-
+            <img src="../../images/rightsidebar.svg" alt="right sidebar ai activities" class="sidebar-image" />
+            <img src="../../images/rightsidebar_down.svg" alt="right sidebar down ai activities" class="sidebar-image" />
         </aside>
-
     </div>
 </main>
+
 <div class="bottom-bar">
     <div class="footer-content">
         <div class="funding-section">
             <p class="section-title">Supported by</p>
+
             <div class="logo-grid">
                 <div class="logo-item">
-                    <img src="../../images/IEAI%20Logo_blue_transparent.svg" alt="IEAI">
-                    <p class="logo-label">Institute for Ethics in <br> Artificial Intelligence</p>
+                    <img src="../../images/IEAI%20Logo_blue_transparent.svg" alt="IEAI" />
+                    <p class="logo-label">Institute for Ethics in <br /> Artificial Intelligence</p>
                 </div>
                 <div class="logo-item">
-                    <img src="../../images/alignAI.svg" alt="align AI">
-                    <p class="logo-label">Aligning LLM Technologies <br> with Societal Values</p>
+                    <img src="../../images/alignAI.svg" alt="align AI" />
+                    <p class="logo-label">Aligning LLM Technologies <br /> with Societal Values</p>
                 </div>
                 <div class="logo-item">
-                    <img src="../../images/EU.svg" alt="EU">
+                    <img src="../../images/EU.svg" alt="EU" />
                     <p class="logo-label">European Union</p>
                 </div>
             </div>
@@ -441,10 +416,11 @@
     </div>
 </div>
 
-
 <script src="../../js/main.js"></script>
 <script src="../../js/app.js"></script>
 <script src="../../js/expanded_frame_chatbot.js"></script>
+
+<!-- Your slider JS (unchanged) -->
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const wrapper = document.querySelector(".slider-wrapper");
@@ -524,9 +500,5 @@
         setTransform(false);
     });
 </script>
-
-
-
-
 </body>
 </html>
