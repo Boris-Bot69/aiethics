@@ -93,8 +93,7 @@
 
             <img src="images/tum.svg" alt="tum logo">
 
-            <!-- ✅ logout button -->
-            <button id="logoutBtn" class="logout-btn" type="button">Logout</button>
+
         </div>
 
         <button class="menu-toggle" aria-label="Open main menu">
@@ -311,13 +310,19 @@
     const logoutBtn = document.getElementById("logoutBtn");
 
     async function refreshAuthUI() {
-        const r = await fetch("/me", { credentials: "include" });
-        const data = await r.json();
+        try {
+            const r = await fetch("/me", { credentials: "include" });
+            if (!r.ok) throw new Error("not authed");
+            const data = await r.json();
 
-        if (data.authed) {
-            loginView.classList.add("hidden");
-            homeView.classList.remove("hidden");
-        } else {
+            if (data.authed) {
+                loginView.classList.add("hidden");
+                homeView.classList.remove("hidden");
+            } else {
+                homeView.classList.add("hidden");
+                loginView.classList.remove("hidden");
+            }
+        } catch {
             homeView.classList.add("hidden");
             loginView.classList.remove("hidden");
         }

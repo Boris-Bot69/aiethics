@@ -71,8 +71,10 @@ function isAuthed(req) {
 
 function requireLogin(req, res, next) {
     // index + login endpoints are public
-    if (req.path === "/login" || req.path === "/logout") return next();
+    if (req.path === "/login" || req.path === "/logout" || req.path === "/me") return next();
     if (req.path === "/healthz") return next();
+    if (req.method === "OPTIONS") return next();
+
 
     if (req.path.startsWith("/css/")) return next();
     if (req.path.startsWith("/js/")) return next();
