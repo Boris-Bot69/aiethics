@@ -70,22 +70,20 @@ function isAuthed(req) {
 }
 
 function requireLogin(req, res, next) {
-    // index + login endpoints are public
+    if (req.method === "OPTIONS") return next();
     if (req.path === "/login" || req.path === "/logout" || req.path === "/me") return next();
     if (req.path === "/healthz") return next();
-    if (req.method === "OPTIONS") return next();
-
 
     if (req.path.startsWith("/css/")) return next();
     if (req.path.startsWith("/js/")) return next();
     if (req.path.startsWith("/images/")) return next();
 
-    // allow index.html itself to load always:
     if (req.path === "/" || req.path === "/index.html") return next();
 
     if (isAuthed(req)) return next();
     return res.status(401).send("Please login first.");
 }
+
 
 app.post("/login", (req, res) => {
     const { username, password } = req.body || {};

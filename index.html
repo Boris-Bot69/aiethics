@@ -322,13 +322,13 @@
                 homeView.classList.add("hidden");
                 loginView.classList.remove("hidden");
             }
-        } catch {
+        } catch (e) {
             homeView.classList.add("hidden");
             loginView.classList.remove("hidden");
         }
     }
 
-    form.addEventListener("submit", async (e) => {
+    form?.addEventListener("submit", async (e) => {
         e.preventDefault();
         err.classList.add("hidden");
 
@@ -345,18 +345,22 @@
         if (r.ok) {
             await refreshAuthUI();
         } else {
-            err.textContent = "Wrong username or password.";
+            const msg = await r.text().catch(() => "");
+            err.textContent = msg.includes("Auth not configured")
+                ? "Server auth not configured (BASIC_USER/BASIC_PASS missing)."
+                : "Wrong username or password.";
             err.classList.remove("hidden");
         }
     });
 
-    logoutBtn.addEventListener("click", async () => {
+    logoutBtn?.addEventListener("click", async () => {
         await fetch("/logout", { method: "POST", credentials: "include" });
         await refreshAuthUI();
     });
 
     refreshAuthUI();
 </script>
+
 
 </body>
 </html>
