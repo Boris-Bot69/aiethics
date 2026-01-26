@@ -435,35 +435,3 @@ async function sendPrompt(prompt) {
     }
 }
 
-
-// ===============================
-// Consent Modal Logic
-// ===============================
-window.addEventListener("DOMContentLoaded", () => {
-    const modal = document.getElementById("consentModal");
-    const agreeBtn = document.getElementById("agreeBtn");
-    const cancelBtn = document.getElementById("cancelBtn");
-    const editor = document.getElementById("chatEditor");
-
-    // disable input until consent
-    editor.setAttribute("contenteditable", "false");
-    editor.setAttribute("data-placeholder", "Send the message");
-    editor.style.opacity = "0.5";
-    editor.style.pointerEvents = "none";
-
-    agreeBtn.addEventListener("click", () => {
-        modal.style.display = "none";
-        editor.setAttribute("contenteditable", "true");
-        editor.style.opacity = "1";
-        editor.style.pointerEvents = "auto";
-        editor.focus();
-    });
-
-    cancelBtn.addEventListener("click", () => {
-        modal.style.display = "none";
-        appendMessage(
-            "You have declined consent. Image generation is disabled.",
-            "ai"
-        );
-    });
-});

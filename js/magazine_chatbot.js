@@ -72,7 +72,6 @@ window.addEventListener("DOMContentLoaded", () => {
         reader.readAsDataURL(file);
     });
 
-    setupConsentModal();
     setupEditorControls();
 
     // Intro messages
@@ -121,29 +120,6 @@ function hideTyping() {
     if (bubble) bubble.remove();
 }
 
-// ===============================
-// Consent Modal
-// ===============================
-function setupConsentModal() {
-    const modal = document.getElementById("consentModal");
-    const agreeBtn = document.getElementById("agreeBtn");
-    const cancelBtn = document.getElementById("cancelBtn");
-
-    // Disable chat before consent
-    disableEditor("Please accept data consent to continue...");
-
-    agreeBtn.addEventListener("click", () => {
-        aiConsentGiven = true;
-        modal.style.display = "none";
-        enableEditor();
-    });
-
-    cancelBtn.addEventListener("click", () => {
-        modal.style.display = "none";
-        appendMessage("You declined consent. Image generation is disabled.", "ai");
-        disableEditor("Image editing disabled due to declined consent.");
-    });
-}
 
 // ===============================
 // Chat Input / Upload setup
