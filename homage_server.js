@@ -1,104 +1,157 @@
-// homage_server.js  (ESM)
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
-import fs from "node:fs";
-
 
 dotenv.config();
+
 const BASIC_USER = process.env.BASIC_USER;
 const BASIC_PASS = process.env.BASIC_PASS;
 
-function unauthorized(res) {
-    res.set("WWW-Authenticate", 'Basic realm="AI Ethics Site"');
-    return res.status(401).send("Authentication required.");
-}
-
-function basicAuth(req, res, next) {
-    if (req.method === "OPTIONS") return next();   // <--- add this
-    if (req.path === "/healthz") return res.status(200).send("ok");
-
-    if (!BASIC_USER || !BASIC_PASS) return res.status(500).send("Auth not configured.");
-
-    const header = req.headers.authorization || "";
-    const [scheme, encoded] = header.split(" ");
-
-    if (scheme !== "Basic" || !encoded) return unauthorized(res);
-
-    const decoded = Buffer.from(encoded, "base64").toString("utf8");
-    const idx = decoded.indexOf(":");
-    if (idx === -1) return unauthorized(res);
-
-    const user = decoded.slice(0, idx);
-    const pass = decoded.slice(idx + 1);
-
-    if (user !== BASIC_USER || pass !== BASIC_PASS) return unauthorized(res);
-
-    next();
-}
-
-
-const toRaw = (dataUrl) => {
-    try {
-        return dataUrl.split(",")[1] || dataUrl;
-    } catch {
-        return dataUrl;
-    }
-};
-
-const frames = { A8: null, A7: null, A6: null, A5: null, A4: null };
-
-const stageKey = (stageNum) => {
-    if (stageNum === 1) return "A8";
-    if (stageNum === 2) return "A7";
-    if (stageNum === 3) return "A6";
-    if (stageNum === 4) return "A5";
-    return null;
-};
-
-const dataUrlToBuffer = (dataUrl) => Buffer.from(toRaw(dataUrl), "base64");
-
-// --- Resolve __dirname in ESM ---
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+/* ============================================================
+   CORS (optional, but safe for localhost + render)
+============================================================ */
 const allowedOrigins = [
     "http://localhost:3000",
     "https://aiethics-5ncx.onrender.com",
 ];
 
-app.use(cors({
+const corsMiddleware = cors({
     origin(origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+        // allow same-origin calls (no Origin header) + allowed list
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
         return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
-}));
+});
 
+// IMPORTANT for Express + path-to-regexp v6: don't use "*" string
+app.use(corsMiddleware);
+app.options(/.*/, corsMiddleware);
 
-app.use(basicAuth);
-
-app.use(express.static(path.join(__dirname, "html")));
+/* ============================================================
+   Parsers
+============================================================ */
+app.use(cookieParser());
 app.use(bodyParser.json({ limit: "1000mb" }));
 app.use(bodyParser.urlencoded({ limit: "1000mb", extended: true }));
 
+/* ============================================================
+   Public static assets (CSS/JS/Images)
+   These must be public, otherwise your pages look "unstyled".
+============================================================ */
+app.use("/css", express.static(path.join(__dirname, "css")));
+app.use("/js", express.static(path.join(__dirname, "js")));
+app.use("/images", express.static(path.join(__dirname, "images")));
+
+/* ============================================================
+   Health check
+============================================================ */
+app.get("/healthz", (_req, res) => res.status(200).send("ok"));
+
+/* ============================================================
+   Cookie login
+============================================================ */
+function isAuthed(req) {
+    return req.cookies?.site_auth === "1";
+}
+
+function requireLogin(req, res, next) {
+    // index + login endpoints are public
+    if (req.path === "/login" || req.path === "/logout") return next();
+    if (req.path === "/healthz") return next();
+
+    if (req.path.startsWith("/css/")) return next();
+    if (req.path.startsWith("/js/")) return next();
+    if (req.path.startsWith("/images/")) return next();
+
+    // allow index.html itself to load always:
+    if (req.path === "/" || req.path === "/index.html") return next();
+
+    if (isAuthed(req)) return next();
+    return res.status(401).send("Please login first.");
+}
+
+app.post("/login", (req, res) => {
+    const { username, password } = req.body || {};
+
+    if (!BASIC_USER || !BASIC_PASS) {
+        return res.status(500).send("Auth not configured. Set BASIC_USER and BASIC_PASS on Render.");
+    }
+
+    if (username === BASIC_USER && password === BASIC_PASS) {
+        res.cookie("site_auth", "1", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production", // secure cookie only on HTTPS
+            sameSite: "lax",
+            maxAge: 1000 * 60 * 60 * 12, // 12h
+        });
+        return res.json({ ok: true });
+    }
+
+    return res.status(401).json({ ok: false });
+});
+
+app.post("/logout", (_req, res) => {
+    res.clearCookie("site_auth");
+    res.json({ ok: true });
+});
+
+
+app.get("/", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
+app.get("/index.html", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
+
+
+app.get("/me", (req, res) => {
+    res.json({ authed: isAuthed(req) });
+});
+
+app.use("/html", requireLogin, express.static(path.join(__dirname, "html")));
+
+const ROOT_HTML_PAGES = new Set([
+    "ai_ethics_activities.html",
+    "ai_ethics_scenarios.html",
+    "oecd_principles.html",
+    "privacy.html",
+    "research.html",
+    "imprint.html",
+]);
+
+app.get("/:page", requireLogin, (req, res, next) => {
+    const page = req.params.page;
+
+    if (!ROOT_HTML_PAGES.has(page)) return next(); // not one of your root html pages
+
+    return res.sendFile(path.join(__dirname, page));
+});
+
+/* ============================================================
+   Everything below is protected (APIs, page routes, etc.)
+============================================================ */
+app.use(requireLogin);
+
+/* ============================================================
+   Your existing routes (kept)
+============================================================ */
 const HTML_BASE = path.join(__dirname, "html", "ai_activities_webpages");
 
 app.get("/homage", (_req, res) => res.sendFile(path.join(HTML_BASE, "homage.html")));
 app.get("/magazine", (_req, res) => res.sendFile(path.join(HTML_BASE, "magazine_cutouts.html")));
 app.get("/expanded", (_req, res) => res.sendFile(path.join(HTML_BASE, "expanded_frames.html")));
 app.get("/texture", (_req, res) => res.sendFile(path.join(HTML_BASE, "drawing_texture.html")));
-
-app.get("/", (_req, res) => res.redirect("/homage"));
 
 
 // GenAI client
@@ -993,10 +1046,5 @@ app.post("/generate-capsule-pdf", async (req, res) => {
    START SERVER
 ============================================================ */
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-    console.log("📄 Serving HTML from:", HTML_BASE);
-    console.log("   /homage");
-    console.log("   /magazine");
-    console.log("   /expanded");
-    console.log("   /texture");
+    console.log(`Server running on http://localhost:${PORT}`);
 });

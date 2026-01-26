@@ -5,63 +5,130 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-    <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-
-    <!-- CSS -->
     <link rel="stylesheet" href="css/styles.css">
+
+    <style>
+        /* fallback minimal styling for login box */
+        .login-wrap { max-width: 520px; margin: 40px auto; }
+        .card { border: 1px solid #ddd; border-radius: 12px; padding: 20px; background: white; }
+        label { display:block; margin-top: 12px; font-weight: 600; }
+        input { width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #ccc; border-radius: 8px; }
+        button { margin-top: 16px; padding: 10px 14px; border: 0; border-radius: 10px; cursor:pointer; }
+        .err { margin-top: 12px; color: #b00020; }
+        .hidden { display:none; }
+
+        /* login overlay */
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 48px 16px;
+            z-index: 9999;
+        }
+
+        /* simple logout button styling (won't break your CSS) */
+        .logout-btn {
+            margin-left: 14px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.35);
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            cursor: pointer;
+        }
+    </style>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
 </head>
+
 <body>
-<nav class="navbar">
-    <a href="index.html" class="nav-link active">Co-Creating AI Ethics</a>
 
-    <div class="nav-links-right">
-        <a href="ai_ethics_activities.html" class="nav-link">AI Ethics Activities</a>
-        <span class="nav-divider"></span>
-        <a href="ai_ethics_scenarios.html" class="nav-link">AI Ethics Scenarios</a>
-        <span class="nav-divider"></span>
-        <a href="oecd_principles.html" class="nav-link">Recognizing AI Ethics</a>
-        <span class="nav-divider"></span>
-        <a href="research.html" class="nav-link">Research</a>
-        <img src="images/tum.svg" alt="tum logo">
+<!-- =========================
+     LOGIN VIEW (overlay)
+========================= -->
+<div id="loginView" class="login-overlay hidden">
+    <div class="login-wrap">
+        <div class="card">
+            <h2 style="margin-top:0;">Login</h2>
+            <p>Please enter the credentials to access the site.</p>
 
+            <form id="loginForm">
+                <label for="u">Username</label>
+                <input id="u" autocomplete="username" required>
+
+                <label for="p">Password</label>
+                <input id="p" type="password" autocomplete="current-password" required>
+
+                <button type="submit">Login</button>
+                <div id="err" class="err hidden"></div>
+            </form>
+        </div>
     </div>
-    <button class="menu-toggle" aria-label="Open main menu">
-        <span class="hamburger-icon"></span>
-        Menu
-    </button>
-</nav>
-
-<div class="mobile-nav-menu">
-    <a href="ai_ethics_activities.html" class="mobile-nav-link">AI Ethics Activities</a>
-    <a href="ai_ethics_scenarios.html" class="mobile-nav-link">AI Ethics Scenarios</a>
-    <a href="oecd_principles.html" class="mobile-nav-link">Recognizing AI Ethics</a>
-    <a href="research.html" class="mobile-nav-link">Research</a>
 </div>
 
-<div class="image-spacer1"></div>
+<!-- =========================
+     HOME VIEW (your page)
+========================= -->
+<div id="homeView" class="hidden">
 
+    <nav class="navbar">
+        <a href="index.html" class="nav-link active">Co-Creating AI Ethics</a>
 
-<main class="main-content">
-    <div class="three-column-layout">
-        <aside class="sidebar sidebar-left">
-            <img src="images/leftsidebar.svg" alt="Left sidebar decoration" class="sidebar-image">
-            <img src="images/leftsidebar_down.svg" alt="Left sidebar bottom decoration" class="sidebar-image">
-        </aside>
+        <div class="nav-links-right">
+            <a href="ai_ethics_activities.html" class="nav-link">AI Ethics Activities</a>
+            <span class="nav-divider"></span>
+            <a href="ai_ethics_scenarios.html" class="nav-link">AI Ethics Scenarios</a>
+            <span class="nav-divider"></span>
+            <a href="oecd_principles.html" class="nav-link">Recognizing AI Ethics</a>
+            <span class="nav-divider"></span>
+            <a href="research.html" class="nav-link">Research</a>
 
-        <section class="main-content-area">
-            <div class="grid-container-2col">
+            <img src="images/tum.svg" alt="tum logo">
+
+            <!-- ✅ logout button -->
+            <button id="logoutBtn" class="logout-btn" type="button">Logout</button>
+        </div>
+
+        <button class="menu-toggle" aria-label="Open main menu">
+            <span class="hamburger-icon"></span>
+            Menu
+        </button>
+    </nav>
+
+    <div class="mobile-nav-menu">
+        <a href="ai_ethics_activities.html" class="mobile-nav-link">AI Ethics Activities</a>
+        <a href="ai_ethics_scenarios.html" class="mobile-nav-link">AI Ethics Scenarios</a>
+        <a href="oecd_principles.html" class="mobile-nav-link">Recognizing AI Ethics</a>
+        <a href="research.html" class="mobile-nav-link">Research</a>
+    </div>
+
+    <div class="image-spacer1"></div>
+
+    <main class="main-content">
+        <div class="three-column-layout">
+            <aside class="sidebar sidebar-left">
+                <img src="images/leftsidebar.svg" alt="Left sidebar decoration" class="sidebar-image">
+                <img src="images/leftsidebar_down.svg" alt="Left sidebar bottom decoration" class="sidebar-image">
+            </aside>
+
+            <section class="main-content-area">
+                <div class="grid-container-2col">
                     <div class="content-grid">
                         <div class="text-and-button-content">
                             <h1 class="custom-header">Developing AI Ethics Literacy Through Co-Creation With AI</h1>
 
                             <p class="custom-text">
-                                Artificial intelligence (AI) in education promises to positively impact learning and increases the urgency for AI ethics learning.  Co-Creating AI ethics offers playful and youth-led learning materials to support learning about AI ethics by co-creating design projects with Generative AI using arts and crafts materials.          </p>
+                                Artificial intelligence (AI) in education promises to positively impact learning and increases the urgency for AI ethics learning. Co-Creating AI ethics offers playful and youth-led learning materials to support learning about AI ethics by co-creating design projects with Generative AI using arts and crafts materials.
+                            </p>
+
                             <a href="ai_ethics_activities.html" class="btn btn-primary">
                                 <img src="images/button_1.svg"
                                      data-hover-src="images/button_1_hover.svg"
@@ -71,162 +138,220 @@
                     </div>
 
                     <img src="images/Homepage%20first%20image.svg" alt="Green rectangle decoration" class="content-image">
-            </div>
-            <div class="image-spacer1"></div>
-
-            <div class="grid-container-2col">
-                <img src="images/Homepage%20second%20image.svg" alt="Green rectangle decoration" class="content-image">
-                <div class="ai-definitions">
-                    <div class="list-item">
-                        <img src="images/red_bullet.svg" alt="" class="list-icon">
-                        <div class="list-content">
-                            <h3>What is AI?</h3>
-                            <p>Artificial intelligence (AI) is part of computer science and wants to make computer systems that do things that normally would need human intelligence. AI usually takes a big collection of data (i.e., data sets), finds ideas and connections in the data to make something new.</p>
-                        </div>
-                    </div>
-                    <div class="list-item">
-                        <img src="images/dark_red_bullet.svg" alt="" class="list-icon">
-                        <div class="list-content">
-                            <h3>What is AI ethics?</h3>
-                            <p>AI ethics is the practice of how artificial intelligence (AI) should be designed, developed, deployed, and used to support individuals and society. AI Ethics Literacy By Design builds on the OECD AI principles translated to recognize AI ethics literacy. Learn more ></p>
-                        </div>
-                    </div>
-                    <div class="list-item">
-                        <img src="images/orange_bullet.svg" alt="" class="list-icon">
-                        <div class="list-content">
-                            <h3>What is AI ethics literacy?</h3>
-                            <p>AI ethics literacy is the ability to point to ethical implications of AI systems, evaluate their impact on individuals and society, and make informed decisions about their responsible development and use. AI ethics literacy is a necessary component of digital literacy.</p>
-                        </div>
-                    </div>
                 </div>
 
-            </div>
-
-
-
-
-            <section class="scenarios-section">
-                <h2 class="scenario-section-title">AI ethics scenarios and activities</h2>
-
-
-                <div class="cards-container">
-
-                    <div class="card card-red">
-                        <div class="card-image-placeholder-activities"></div>
-                        <div class="card-content">
-                            <p>Co-creating AI Ethics offers design-based learning activities for young people to explore AI ethics. Youth and generative AI become co-creators and design projects using craft materials and AI features. In the process, youth meet unexpected ethical issues related to creativity and more. The activities are designed based on state-of-the-art knowledge about how people learn through design.</p>
-                            <a href="ai_ethics_activities.html" class="btn btn-primary">
-                                <img src="images/button_2.svg"
-                                     data-hover-src="images/button_2_hover.svg"
-                                     alt="Explore AI Ethic Activities">
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="card card-red">
-                        <div class="card-image-placeholder-scenarios"></div>
-                        <div class="card-content">
-                            <p>Co-creating AI Ethics includes 10 AI Ethics Scenarios that present the use of AI systems in education in unethical ways. The scenarios include questions and materials that encourage critical conversations about AI ethics. Each scenario has a storyboard, an educator quote, a list of support materials, conversation prompts for three OECD AI principles, and more information about AI systems. </p>
-                            <a href="ai_ethics_scenarios.html" class="btn btn-primary">
-                                <img src="images/button_3.svg"
-                                     data-hover-src="images/button_3_hover.svg"
-                                     alt="Explore AI Ethic Scenarios">
-                            </a>
-                        </div>
-                    </div>
-
-                </div>
                 <div class="image-spacer1"></div>
-            </section>
 
-            <section class="oecd-section">
-                <h2 class="oecd-section-title">OECD AI Principles codebook and guiding questions</h2>
-                <div style="height: 2rem;"></div>
+                <div class="grid-container-2col">
+                    <img src="images/Homepage%20second%20image.svg" alt="Green rectangle decoration" class="content-image">
 
-                <div class="oecd-items">
-                    <div class="oecd-item">
-                        <img src="images/OECD_Codebook.png" alt="OECD Codebook Icon">
-                        <h3>OECD Codebook</h3>
-                        <p>The OECD AI principles codebook provides a guide for educators and practitioners to identify AI ethics in action. The codebook was developed through the analysis of youth workshops on developing AI ethics literacy.</p>
+                    <div class="ai-definitions">
+                        <div class="list-item">
+                            <img src="images/red_bullet.svg" alt="" class="list-icon">
+                            <div class="list-content">
+                                <h3>What is AI?</h3>
+                                <p>Artificial intelligence (AI) is part of computer science and wants to make computer systems that do things that normally would need human intelligence. AI usually takes a big collection of data (i.e., data sets), finds ideas and connections in the data to make something new.</p>
+                            </div>
+                        </div>
+
+                        <div class="list-item">
+                            <img src="images/dark_red_bullet.svg" alt="" class="list-icon">
+                            <div class="list-content">
+                                <h3>What is AI ethics?</h3>
+                                <p>AI ethics is the practice of how artificial intelligence (AI) should be designed, developed, deployed, and used to support individuals and society. AI Ethics Literacy By Design builds on the OECD AI principles translated to recognize AI ethics literacy. Learn more &gt;</p>
+                            </div>
+                        </div>
+
+                        <div class="list-item">
+                            <img src="images/orange_bullet.svg" alt="" class="list-icon">
+                            <div class="list-content">
+                                <h3>What is AI ethics literacy?</h3>
+                                <p>AI ethics literacy is the ability to point to ethical implications of AI systems, evaluate their impact on individuals and society, and make informed decisions about their responsible development and use. AI ethics literacy is a necessary component of digital literacy.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <section class="scenarios-section">
+                    <h2 class="scenario-section-title">AI ethics scenarios and activities</h2>
+
+                    <div class="cards-container">
+                        <div class="card card-red">
+                            <div class="card-image-placeholder-activities"></div>
+                            <div class="card-content">
+                                <p>Co-creating AI Ethics offers design-based learning activities for young people to explore AI ethics. Youth and generative AI become co-creators and design projects using craft materials and AI features. In the process, youth meet unexpected ethical issues related to creativity and more. The activities are designed based on state-of-the-art knowledge about how people learn through design.</p>
+                                <a href="ai_ethics_activities.html" class="btn btn-primary">
+                                    <img src="images/button_2.svg"
+                                         data-hover-src="images/button_2_hover.svg"
+                                         alt="Explore AI Ethic Activities">
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="card card-red">
+                            <div class="card-image-placeholder-scenarios"></div>
+                            <div class="card-content">
+                                <p>Co-creating AI Ethics includes 10 AI Ethics Scenarios that present the use of AI systems in education in unethical ways. The scenarios include questions and materials that encourage critical conversations about AI ethics. Each scenario has a storyboard, an educator quote, a list of support materials, conversation prompts for three OECD AI principles, and more information about AI systems.</p>
+                                <a href="ai_ethics_scenarios.html" class="btn btn-primary">
+                                    <img src="images/button_3.svg"
+                                         data-hover-src="images/button_3_hover.svg"
+                                         alt="Explore AI Ethic Scenarios">
+                                </a>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="oecd-item">
-                        <img src="images/OECD_Guiding_Questions.png" alt="OECD Guiding Questions Icon">
-                        <h3>OECD Guiding Questions</h3>
-                        <p>The OECD AI principles codebook provides a guide for educators and practitioners to identify AI ethics in action. The codebook was developed through the analysis of youth workshops on developing AI ethics literacy.</p>
+                    <div class="image-spacer1"></div>
+                </section>
+
+                <section class="oecd-section">
+                    <h2 class="oecd-section-title">OECD AI Principles codebook and guiding questions</h2>
+                    <div style="height: 2rem;"></div>
+
+                    <div class="oecd-items">
+                        <div class="oecd-item">
+                            <img src="images/OECD_Codebook.png" alt="OECD Codebook Icon">
+                            <h3>OECD Codebook</h3>
+                            <p>The OECD AI principles codebook provides a guide for educators and practitioners to identify AI ethics in action. The codebook was developed through the analysis of youth workshops on developing AI ethics literacy.</p>
+                        </div>
+
+                        <div class="oecd-item">
+                            <img src="images/OECD_Guiding_Questions.png" alt="OECD Guiding Questions Icon">
+                            <h3>OECD Guiding Questions</h3>
+                            <p>The OECD AI principles codebook provides a guide for educators and practitioners to identify AI ethics in action. The codebook was developed through the analysis of youth workshops on developing AI ethics literacy.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="publications-section">
+                    <h2 class="publications-title">Research</h2>
+
+                    <div class="publications-list">
+                        <ul>
+                            <li>
+                                Humburg et al. (2025). <strong>Humanizing AI for Education: Conversations with the JLS 2026 Special Issue Contributors.</strong>
+                                <em>Proceedings of the 19th International Conference of the Learning Sciences—ICLS 2025</em> (pp. 2269–2277).
+                                <a href="https://doi.org/10.22318/icls2025.373481" target="_blank" rel="noopener noreferrer" style="color: blue;">(Link)</a>
+                            </li>
+
+                            <li>
+                                Keune et al. (2024). <strong>Exploring AI ethics through educational scenarios with AI generative arts apps.</strong>
+                                <em>Proceedings of the 18th International Conference of the Learning Sciences—ICLS 2024</em> (pp. 1818–1821).
+                                <a href="https://doi.org/10.22318/icls2024.651304" target="_blank" rel="noopener noreferrer" style="color: blue;">(Link)</a>
+                            </li>
+
+                            <li>
+                                Keune &amp; Hurtado (2025). <strong>Art Making with AI to Foster AI Ethics Literacy</strong>
+                                <em>Technical University of Munich Institute for Ethics in Artificial Intelligence.</em>
+                                <a href="https://www.ieai.sot.tum.de/wp-content/uploads/2025/04/IEAI_ResearchBrief_Q1-2025_JH.pdf" target="_blank" rel="noopener noreferrer" style="color: blue;">(Link)</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="image-spacer1"></div>
+                </section>
+            </section>
+
+            <aside class="sidebar sidebar-right">
+                <img src="images/rightsidebar.svg" alt="Right sidebar decoration" class="sidebar-image">
+                <img src="images/rightsidebar_down.svg" alt="Right sidebar bottom decoration" class="sidebar-image">
+            </aside>
+        </div>
+    </main>
+
+    <div class="bottom-bar">
+        <div class="footer-content">
+            <div class="funding-section">
+                <p class="section-title">Supported by</p>
+                <div class="logo-grid">
+                    <div class="logo-item">
+                        <img src="images/IEAI%20Logo_blue_transparent.svg" alt="IEAI">
+                        <p class="logo-label">Institute for Ethics in <br> Artificial Intelligence</p>
+                    </div>
+                    <div class="logo-item">
+                        <img src="images/alignAI.svg" alt="align AI">
+                        <p class="logo-label">Aligning LLM Technologies <br> with Societal Values</p>
+                    </div>
+                    <div class="logo-item">
+                        <img src="images/EU.svg" alt="EU">
+                        <p class="logo-label">European Union</p>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            <section class="publications-section">
-                <h2 class="publications-title">Research</h2>
-
-                <div class="publications-list">
-                    <ul>
-                    <li>
-                        Humburg et al. (2025). <strong>Humanizing AI for Education: Conversations with the JLS 2026 Special Issue Contributors.</strong> <em>Proceedings of the 19th International Conference of the Learning Sciences—ICLS 2025</em> (pp. 2269–2277). International Society of the Learning Sciences. <a href="https://doi.org/10.22318/icls2025.373481" target="_blank" rel="noopener noreferrer" style="color: blue; ">(Link)</a>
-                    </li>
-
-                    <li>
-                        Keune et al. (2024). <strong>Exploring AI ethics through educational scenarios with AI generative arts apps. </strong> <em>Proceedings of the 18th International Conference of the Learning Sciences—ICLS 2024</em> (pp. 1818–1821). International Society of the Learning Sciences. <a href="https://doi.org/10.22318/icls2024.651304" target="_blank" rel="noopener noreferrer" style="color: blue; ">(Link)</a>
-                    </li>
-
-                    <li>
-                        Keune & Hurtado (2025). <strong>Art Making with AI to Foster AI Ethics Literacy</strong> <em>Technical University of Munich Institute for Ethics in Artificial Intelligence.</em> <a href="https://www.ieai.sot.tum.de/wp-content/uploads/2025/04/IEAI_ResearchBrief_Q1-2025_JH.pdf" target="_blank" rel="noopener noreferrer" style="color: blue;">(Link)</a>
-                    </li>
-                </ul>
+            <div class="footer-sidebar">
+                <div class="footer-column">
+                    <p class="section-title">Quick Links</p>
+                    <ul class="footer-links">
+                        <li><a href="imprint.html">Imprint</a></li>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                    </ul>
                 </div>
-                <div class="image-spacer1"></div>
-            </section>
-        </section>
 
-        <aside class="sidebar sidebar-right">
-            <img src="images/rightsidebar.svg" alt="Right sidebar decoration" class="sidebar-image">
-            <img src="images/rightsidebar_down.svg" alt="Right sidebar bottom decoration" class="sidebar-image">
-        </aside>
-    </div>
-</main>
-
-<div class="bottom-bar">
-    <div class="footer-content">
-        <div class="funding-section">
-            <p class="section-title">Supported by</p>
-            <div class="logo-grid">
-                <div class="logo-item">
-                    <img src="images/IEAI%20Logo_blue_transparent.svg" alt="IEAI">
-                    <p class="logo-label">Institute for Ethics in <br> Artificial Intelligence</p>
-                </div>
-                <div class="logo-item">
-                    <img src="images/alignAI.svg" alt="align AI">
-                    <p class="logo-label">Aligning LLM Technologies <br> with Societal Values</p>
-                </div>
-                <div class="logo-item">
-                    <img src="images/EU.svg" alt="EU">
-                    <p class="logo-label">European Union</p>
+                <div class="footer-column">
+                    <p class="section-title">Contact Info</p>
+                    <div class="contact-item">
+                        <span class="email-icon">✉</span>
+                        <a href="mailto:s.hurtado@tum.de">s.hurtado@tum.de</a>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="footer-sidebar">
-            <div class="footer-column">
-                <p class="section-title">Quick Links</p>
-                <ul class="footer-links">
-                    <li><a href="imprint.html">Imprint</a></li>
-                    <li><a href="privacy.html">Privacy Policy</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-column">
-                <p class="section-title">Contact Info</p>
-                <div class="contact-item">
-                    <span class="email-icon">✉</span>
-                    <a href="mailto:s.hurtado@tum.de">s.hurtado@tum.de</a>
-                </div>
-            </div>
-        </div>
     </div>
-</div>
+
+</div><!-- end homeView -->
 
 <script src="js/main.js"></script>
+
+<script>
+    const loginView = document.getElementById("loginView");
+    const homeView = document.getElementById("homeView");
+    const form = document.getElementById("loginForm");
+    const err = document.getElementById("err");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    async function refreshAuthUI() {
+        const r = await fetch("/me", { credentials: "include" });
+        const data = await r.json();
+
+        if (data.authed) {
+            loginView.classList.add("hidden");
+            homeView.classList.remove("hidden");
+        } else {
+            homeView.classList.add("hidden");
+            loginView.classList.remove("hidden");
+        }
+    }
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        err.classList.add("hidden");
+
+        const username = document.getElementById("u").value.trim();
+        const password = document.getElementById("p").value;
+
+        const r = await fetch("/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ username, password }),
+        });
+
+        if (r.ok) {
+            await refreshAuthUI();
+        } else {
+            err.textContent = "Wrong username or password.";
+            err.classList.remove("hidden");
+        }
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+        await fetch("/logout", { method: "POST", credentials: "include" });
+        await refreshAuthUI();
+    });
+
+    refreshAuthUI();
+</script>
+
 </body>
 </html>
