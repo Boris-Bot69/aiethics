@@ -10,9 +10,12 @@ import sharp from "sharp";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 
 dotenv.config();
+console.log("BASIC_USER:", process.env.BASIC_USER ? "set" : "missing");
+console.log("BASIC_PASS:", process.env.BASIC_PASS ? "set" : "missing");
 
-const BASIC_USER = process.env.BASIC_USER;
-const BASIC_PASS = process.env.BASIC_PASS;
+
+const BASIC_USER = process.env.BASIC_USER || "aiethics";
+const BASIC_PASS = process.env.BASIC_PASS || "aiethics";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -88,6 +91,9 @@ function requireLogin(req, res, next) {
 app.post("/login", (req, res) => {
     const { username, password } = req.body || {};
 
+    console.log("Login attempt:", { username, password: password ? "***" : "missing" });
+    console.log("Expected:", { BASIC_USER, BASIC_PASS: BASIC_PASS ? "***" : "missing" });
+
     if (!BASIC_USER || !BASIC_PASS) {
         return res.status(500).send("Auth not configured. Set BASIC_USER and BASIC_PASS on Render.");
     }
@@ -95,18 +101,22 @@ app.post("/login", (req, res) => {
     if (username === BASIC_USER && password === BASIC_PASS) {
         res.cookie("site_auth", "1", {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production", // secure cookie only on HTTPS
+            secure: false,
             sameSite: "lax",
+            path: "/",
             maxAge: 1000 * 60 * 60 * 12, // 12h
         });
+        console.log("Login successful - cookie set");
         return res.json({ ok: true });
     }
 
+    console.log("Login failed: credentials mismatch");
     return res.status(401).json({ ok: false });
 });
 
-app.post("/logout", (_req, res) => {
-    res.clearCookie("site_auth");
+app.post("/logout", (req, res) => {
+    console.log("Logout - clearing cookie");
+    res.clearCookie("site_auth", { path: "/" });
     res.json({ ok: true });
 });
 
@@ -116,6 +126,9 @@ app.get("/index.html", (_req, res) => res.sendFile(path.join(__dirname, "index.h
 
 
 app.get("/me", (req, res) => {
+    console.log("/me check - cookies:", req.cookies);
+    console.log("/me check - site_auth:", req.cookies?.site_auth);
+    console.log("/me check - isAuthed:", isAuthed(req));
     res.json({ authed: isAuthed(req) });
 });
 

@@ -16,7 +16,7 @@
         input { width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #ccc; border-radius: 8px; }
         button { margin-top: 16px; padding: 10px 14px; border: 0; border-radius: 10px; cursor:pointer; }
         .err { margin-top: 12px; color: #b00020; }
-        .hidden { display:none; }
+        .hidden { display: none !important; }
 
         /* login overlay */
         .login-overlay {
@@ -28,6 +28,10 @@
             justify-content: center;
             padding: 48px 16px;
             z-index: 9999;
+        }
+        
+        .login-overlay.hidden {
+            display: none !important;
         }
 
         /* simple logout button styling (won't break your CSS) */
@@ -54,7 +58,7 @@
 <!-- =========================
      LOGIN VIEW (overlay)
 ========================= -->
-<div id="loginView" class="login-overlay hidden">
+<div id="loginView" class="login-overlay">
     <div class="login-wrap">
         <div class="card">
             <h2 style="margin-top:0;">Login</h2>
@@ -309,22 +313,37 @@
     const err = document.getElementById("err");
     const logoutBtn = document.getElementById("logoutBtn");
 
+    console.log("Elements found:", { loginView: !!loginView, homeView: !!homeView, form: !!form });
+
     async function refreshAuthUI() {
         try {
             const r = await fetch("/me", { credentials: "include" });
-            if (!r.ok) throw new Error("not authed");
+            if (!r.ok) {
+                console.error("Auth check failed:", r.status, r.statusText);
+                throw new Error("not authed");
+            }
             const data = await r.json();
+            console.log("Auth check result:", data);
 
             if (data.authed) {
-                loginView.classList.add("hidden");
-                homeView.classList.remove("hidden");
+                console.log("User is authenticated - showing home view");
+                if (loginView) {
+                    loginView.classList.add("hidden");
+                    console.log("LoginView classes after hide:", loginView.className);
+                }
+                if (homeView) {
+                    homeView.classList.remove("hidden");
+                    console.log("HomeView classes after show:", homeView.className);
+                }
             } else {
-                homeView.classList.add("hidden");
-                loginView.classList.remove("hidden");
+                console.log("User is not authenticated - showing login view");
+                if (homeView) homeView.classList.add("hidden");
+                if (loginView) loginView.classList.remove("hidden");
             }
         } catch (e) {
-            homeView.classList.add("hidden");
-            loginView.classList.remove("hidden");
+            console.error("Auth check error:", e);
+            if (homeView) homeView.classList.add("hidden");
+            if (loginView) loginView.classList.remove("hidden");
         }
     }
 
@@ -343,6 +362,8 @@
         });
 
         if (r.ok) {
+            // Small delay to ensure cookie is set before checking
+            await new Promise(resolve => setTimeout(resolve, 100));
             await refreshAuthUI();
         } else {
             const msg = await r.text().catch(() => "");
@@ -358,6 +379,9 @@
         await refreshAuthUI();
     });
 
+    // Check authentication status immediately on page load
+    // Show login by default, hide it if authenticated
+    if (homeView) homeView.classList.add("hidden");
     refreshAuthUI();
 </script>
 
