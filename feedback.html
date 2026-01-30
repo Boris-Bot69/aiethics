@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback - Co-Creating AI Ethics</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        .feedback-form {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .form-section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: #f9f9f9;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .form-section h2 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .form-section p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #78A564;
+            box-shadow: 0 0 0 3px rgba(120, 165, 100, 0.1);
+        }
+
+        .form-group .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        /* Selection Grids */
+        .selection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .selection-item {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .selection-item:hover {
+            border-color: #78A564;
+            box-shadow: 0 2px 8px rgba(120, 165, 100, 0.15);
+        }
+
+        .selection-item input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .selection-item input[type="checkbox"]:checked + .selection-content {
+            background: #f0f7ed;
+            border-color: #78A564;
+        }
+
+        .selection-item input[type="checkbox"]:checked + .selection-content::before {
+            content: "✓";
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: #78A564;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .selection-content {
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .selection-item label {
+            font-weight: 500;
+            color: #333;
+            cursor: pointer;
+            margin: 0;
+            display: block;
+        }
+
+        /* Dynamic Feedback Boxes */
+        .feedback-boxes {
+            margin-top: 2rem;
+        }
+
+        .feedback-box {
+            background: white;
+            border: 2px solid #78A564;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feedback-box h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: #78A564;
+            font-size: 1.1rem;
+        }
+
+        .feedback-box textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        .feedback-box textarea:focus {
+            outline: none;
+            border-color: #78A564;
+            box-shadow: 0 0 0 3px rgba(120, 165, 100, 0.1);
+        }
+
+        .submit-btn {
+            background: #78A564;
+            color: white;
+            padding: 14px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 2rem;
+        }
+
+        .submit-btn:hover {
+            background: #6a9454;
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .success-message {
+            background: #4caf50;
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .error-message {
+            background: #f44336;
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #999;
+            font-style: italic;
+        }
+
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(to right, transparent, #78A564, transparent);
+            margin: 3rem 0;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="index.html" class="nav-link">Co-Creating AI Ethics</a>
+    <div class="nav-links-right">
+        <a href="ai_ethics_activities.html" class="nav-link">AI Ethics Activities</a>
+        <span class="nav-divider"></span>
+        <a href="ai_ethics_scenarios.html" class="nav-link">AI Ethics Scenarios</a>
+        <span class="nav-divider"></span>
+        <a href="oecd_principles.html" class="nav-link">Recognizing AI Ethics</a>
+        <span class="nav-divider"></span>
+        <a href="research.html" class="nav-link">Research</a>
+        <img src="images/tum.svg" alt="tum logo">
+    </div>
+</nav>
+
+<main class="main-content">
+    <div class="three-column-layout">
+        <aside class="sidebar sidebar-left">
+            <img src="images/leftsidebar.svg" alt="decoration" class="sidebar-image">
+            <img src="images/leftsidebar_down.svg" alt="decoration" class="sidebar-image">
+        </aside>
+
+        <section class="main-content-area">
+            <div class="image-spacer1"></div>
+
+            <div class="feedback-form">
+                <h1 class="custom-header">Feedback</h1>
+                <div style="height: 2rem;"></div>
+
+                <p>We value your feedback! Please share your thoughts, suggestions, or report any issues you've encountered while using our activities and scenarios.</p>
+                <div style="height: 2rem;"></div>
+
+                <div id="successMessage" class="success-message">
+                    ✓ Thank you for your feedback! Your message has been submitted successfully.
+                </div>
+
+                <div id="errorMessage" class="error-message">
+                    ✗ There was an error submitting your feedback. Please try again.
+                </div>
+
+                <form id="feedbackForm">
+                    <!-- General Information -->
+                    <div class="form-section">
+                        <h2>General Information</h2>
+                        <div class="form-group">
+                            <label for="name">Name (optional)</label>
+                            <input type="text" id="name" name="name" placeholder="Your name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email (optional)</label>
+                            <input type="email" id="email" name="email" placeholder="your.email@example.com">
+                            <div class="help-text">We'll only use this to respond to your feedback if needed.</div>
+                        </div>
+                    </div>
+
+                    <!-- Activities Selection -->
+                    <div class="form-section">
+                        <h2>AI Ethics Activities</h2>
+                        <p>Select one or more activities you'd like to provide feedback on:</p>
+                        <div class="selection-grid" id="activitiesGrid">
+                            <div class="selection-item">
+                                <input type="checkbox" id="activity_1" name="activities" value="Homage to a local artist">
+                                <div class="selection-content">
+                                    <label for="activity_1">Homage to a local artist</label>
+                                </div>
+                            </div>
+                            <div class="selection-item">
+                                <input type="checkbox" id="activity_2" name="activities" value="Magazine cut-outs">
+                                <div class="selection-content">
+                                    <label for="activity_2">Magazine cut-outs</label>
+                                </div>
+                            </div>
+                            <div class="selection-item">
+                                <input type="checkbox" id="activity_3" name="activities" value="Drawing plus textures">
+                                <div class="selection-content">
+                                    <label for="activity_3">Drawing plus textures</label>
+                                </div>
+                            </div>
+                            <div class="selection-item">
+                                <input type="checkbox" id="activity_4" name="activities" value="Expanded frames">
+                                <div class="selection-content">
+                                    <label for="activity_4">Expanded frames</label>
+                                </div>
+                            </div>
+                            <div class="selection-item">
+                                <input type="checkbox" id="activity_5" name="activities" value="AI super hero">
+                                <div class="selection-content">
+                                    <label for="activity_5">AI super hero</label>
+                                </div>
+                            </div>
+                            <div class="selection-item">
+                                <input type="checkbox" id="activity_6" name="activities" value="Prototyping and pitching AI">
+                                <div class="selection-content">
+                                    <label for="activity_6">Prototyping and pitching AI</label>
+                                </div>
+                            </div>
+                            <div class="selection-item">
+                                <input type="checkbox" id="activity_7" name="activities" value="The time capsule">
+                                <div class="selection-content">
+                                    <label for="activity_7">The time capsule</label>
+                                </div>
+                            </div>
+                            <div class="selection-item">
+                                <input type="checkbox" id="activity_8" name="activities" value="Train AI career characters">
+                                <div class="selection-content">
+                                    <label for="activity_8">Train AI career characters</label>
+                                </div>
+                            </div>
+                            <div class="selection-item">
+                                <input type="checkbox" id="activity_9" name="activities" value="Craft playdough storyboards">
+                                <div class="selection-content">
+                                    <label for="activity_9">Craft playdough storyboards</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="activitiesFeedback" class="feedback-boxes"></div>
+                    </div>
+
+                    <div class="section-divider"></div>
+
+                    <!-- Scenarios Selection -->
+                    <div class="form-section">
+                        <h2>AI Ethics Scenarios</h2>
+                        <p>Select one or more scenarios you'd like to provide feedback on:</p>
+                        <div class="selection-grid" id="scenariosGrid">
+                            <div class="selection-item">
+                                <input type="checkbox" id="scenario_1" name="scenarios" value="AI-generative arts app to create a homage to an artist">
+                                <div class="selection-content">
+                                    <label for="scenario_1">AI-generative arts app to create a homage to an artist</label>
+                                </div>
+                            </div>
+                            <div class="selection-item">
+                                <input type="checkbox" id="scenario_2" name="scenarios" value="AI-generative arts app to augment students' drawings">
+                                <div class="selection-content">
+                                    <label for="scenario_2">AI-generative arts app to augment students' drawings</label>
+                                </div>
+                            </div>
+                            <div class="selection-item">
+                                <input type="checkbox" id="scenario_3" name="scenarios" value="AI-generative arts apps to illustrate local celebrations">
+                                <div class="selection-content">
+                                    <label for="scenario_3">AI-generative arts apps to illustrate local celebrations</label>
+                                </div>
+                            </div>
+                            <div class="selection-item">
+                                <input type="checkbox" id="scenario_4" name="scenarios" value="Deepfake to foster engineering identities">
+                                <div class="selection-content">
+                                    <label for="scenario_4">Deepfake to foster engineering identities</label>
+                                </div>
+                            </div>
+                            <div class="selection-item">
+                                <input type="checkbox" id="scenario_5" name="scenarios" value="Social media recommendation algorithms to support personalized learning">
+                                <div class="selection-content">
+                                    <label for="scenario_5">Social media recommendation algorithms to support personalized learning</label>
+                                </div>
+                            </div>
+                            <div class="selection-item">
+                                <input type="checkbox" id="scenario_6" name="scenarios" value="Writing an essay with AI to support creative writing">
+                                <div class="selection-content">
+                                    <label for="scenario_6">Writing an essay with AI to support creative writing</label>
+                                </div>
+                            </div>
+                            <div class="selection-item">
+                                <input type="checkbox" id="scenario_7" name="scenarios" value="AI-generated feedback to improve the tone of formative feedback">
+                                <div class="selection-content">
+                                    <label for="scenario_7">AI-generated feedback to improve the tone of formative feedback</label>
+                                </div>
+                            </div>
+                            <div class="selection-item">
+                                <input type="checkbox" id="scenario_8" name="scenarios" value="Facial recognition technology to promote student well-being">
+                                <div class="selection-content">
+                                    <label for="scenario_8">Facial recognition technology to promote student well-being</label>
+                                </div>
+                            </div>
+                            <div class="selection-item">
+                                <input type="checkbox" id="scenario_9" name="scenarios" value="Intelligent tutoring to facilitate personalized learning">
+                                <div class="selection-content">
+                                    <label for="scenario_9">Intelligent tutoring to facilitate personalized learning</label>
+                                </div>
+                            </div>
+                            <div class="selection-item">
+                                <input type="checkbox" id="scenario_10" name="scenarios" value="AI-based classroom orchestration to ensure personalized feedback">
+                                <div class="selection-content">
+                                    <label for="scenario_10">AI-based classroom orchestration to ensure personalized feedback</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="scenariosFeedback" class="feedback-boxes"></div>
+                    </div>
+
+                    <!-- General Feedback -->
+                    <div class="form-section">
+                        <h2>General Feedback</h2>
+                        <div class="form-group">
+                            <label for="generalFeedback">Additional comments or suggestions about the website or overall experience (optional)</label>
+                            <textarea id="generalFeedback" name="generalFeedback" placeholder="Share any additional thoughts, suggestions, or report issues..."></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">Submit Feedback</button>
+                </form>
+            </div>
+
+            <div class="image-spacer1"></div>
+        </section>
+
+        <aside class="sidebar sidebar-right">
+            <img src="images/rightsidebar.svg" alt="decoration" class="sidebar-image">
+            <img src="images/rightsidebar_down.svg" alt="decoration" class="sidebar-image">
+        </aside>
+    </div>
+</main>
+
+<div class="bottom-bar">
+    <div class="footer-content">
+        <div class="funding-section">
+            <p class="section-title">Supported by</p>
+            <div class="logo-grid">
+                <div class="logo-item">
+                    <img src="images/IEAI%20Logo_blue_transparent.svg" alt="IEAI">
+                    <p class="logo-label">Institute for Ethics in <br> Artificial Intelligence</p>
+                </div>
+                <div class="logo-item">
+                    <img src="images/alignAI.svg" alt="align AI">
+                    <p class="logo-label">Aligning LLM Technologies <br> with Societal Values</p>
+                </div>
+                <div class="logo-item">
+                    <img src="images/EU.svg" alt="EU">
+                    <p class="logo-label">European Union</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-sidebar">
+            <div class="footer-column">
+                <p class="section-title">Quick Links</p>
+                <ul class="footer-links">
+                    <li><a href="imprint.html">Imprint</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="/feedback.html">Feedback</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-column">
+                <p class="section-title">Contact Info</p>
+                <div class="contact-item">
+                    <span class="email-icon">✉</span>
+                    <a href="mailto:s.hurtado@tum.de">s.hurtado@tum.de</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="js/main.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('feedbackForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const activitiesFeedback = document.getElementById('activitiesFeedback');
+        const scenariosFeedback = document.getElementById('scenariosFeedback');
+
+        // Track selected items and their feedback boxes
+        const activityFeedbackBoxes = new Map();
+        const scenarioFeedbackBoxes = new Map();
+
+        // Handle activity selection
+        document.querySelectorAll('#activitiesGrid input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const activityName = e.target.value;
+                if (e.target.checked) {
+                    // Create feedback box
+                    const boxId = `activity_fb_${activityName.replace(/\s+/g, '_')}`;
+                    const feedbackBox = document.createElement('div');
+                    feedbackBox.className = 'feedback-box';
+                    feedbackBox.id = boxId;
+                    feedbackBox.innerHTML = `
+                        <h3>Feedback for: ${activityName}</h3>
+                        <textarea name="activity_feedback_${activityName}" placeholder="Share your thoughts, suggestions, or report issues about this activity..." required></textarea>
+                    `;
+                    activitiesFeedback.appendChild(feedbackBox);
+                    activityFeedbackBoxes.set(activityName, feedbackBox);
+                } else {
+                    // Remove feedback box
+                    const box = activityFeedbackBoxes.get(activityName);
+                    if (box) {
+                        box.remove();
+                        activityFeedbackBoxes.delete(activityName);
+                    }
+                }
+            });
+        });
+
+        // Handle scenario selection
+        document.querySelectorAll('#scenariosGrid input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const scenarioName = e.target.value;
+                if (e.target.checked) {
+                    // Create feedback box
+                    const boxId = `scenario_fb_${scenarioName.replace(/\s+/g, '_')}`;
+                    const feedbackBox = document.createElement('div');
+                    feedbackBox.className = 'feedback-box';
+                    feedbackBox.id = boxId;
+                    feedbackBox.innerHTML = `
+                        <h3>Feedback for: ${scenarioName}</h3>
+                        <textarea name="scenario_feedback_${scenarioName}" placeholder="Share your thoughts, suggestions, or report issues about this scenario..." required></textarea>
+                    `;
+                    scenariosFeedback.appendChild(feedbackBox);
+                    scenarioFeedbackBoxes.set(scenarioName, feedbackBox);
+                } else {
+                    // Remove feedback box
+                    const box = scenarioFeedbackBoxes.get(scenarioName);
+                    if (box) {
+                        box.remove();
+                        scenarioFeedbackBoxes.delete(scenarioName);
+                    }
+                }
+            });
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Hide previous messages
+            successMessage.classList.remove('show');
+            errorMessage.classList.remove('show');
+            
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            // Collect form data
+            const formData = {
+                name: document.getElementById('name').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                generalFeedback: document.getElementById('generalFeedback').value.trim(),
+                activities: [],
+                scenarios: [],
+                timestamp: new Date().toISOString()
+            };
+
+            // Collect selected activities with their feedback
+            document.querySelectorAll('#activitiesGrid input[type="checkbox"]:checked').forEach(checkbox => {
+                const activityName = checkbox.value;
+                const feedbackTextarea = form.querySelector(`textarea[name="activity_feedback_${activityName}"]`);
+                formData.activities.push({
+                    name: activityName,
+                    feedback: feedbackTextarea ? feedbackTextarea.value.trim() : ''
+                });
+            });
+
+            // Collect selected scenarios with their feedback
+            document.querySelectorAll('#scenariosGrid input[type="checkbox"]:checked').forEach(checkbox => {
+                const scenarioName = checkbox.value;
+                const feedbackTextarea = form.querySelector(`textarea[name="scenario_feedback_${scenarioName}"]`);
+                formData.scenarios.push({
+                    name: scenarioName,
+                    feedback: feedbackTextarea ? feedbackTextarea.value.trim() : ''
+                });
+            });
+
+            // Validate that at least one activity or scenario is selected with feedback
+            if (formData.activities.length === 0 && formData.scenarios.length === 0) {
+                errorMessage.textContent = 'Please select at least one activity or scenario to provide feedback.';
+                errorMessage.classList.add('show');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Feedback';
+                return;
+            }
+
+            // Validate that all selected items have feedback
+            const allHaveFeedback = 
+                formData.activities.every(a => a.feedback.trim() !== '') &&
+                formData.scenarios.every(s => s.feedback.trim() !== '');
+
+            if (!allHaveFeedback) {
+                errorMessage.textContent = 'Please provide feedback for all selected activities and scenarios.';
+                errorMessage.classList.add('show');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Feedback';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/feedback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    successMessage.classList.add('show');
+                    form.reset();
+                    // Clear all feedback boxes
+                    activitiesFeedback.innerHTML = '';
+                    scenariosFeedback.innerHTML = '';
+                    activityFeedbackBoxes.clear();
+                    scenarioFeedbackBoxes.clear();
+                    // Scroll to success message
+                    successMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    throw new Error('Failed to submit feedback');
+                }
+            } catch (error) {
+                console.error('Error submitting feedback:', error);
+                errorMessage.classList.add('show');
+                errorMessage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Feedback';
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

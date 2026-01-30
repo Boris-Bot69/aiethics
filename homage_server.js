@@ -125,9 +125,27 @@ app.post("/logout", (req, res) => {
 app.get("/", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
 app.get("/index.html", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
 
-// Explicit route for feedback.html
+// Explicit routes for feedback.html (handle both with and without .html extension)
 app.get("/feedback.html", requireLogin, (req, res) => {
-    res.sendFile(path.join(__dirname, "feedback.html"));
+    const filePath = path.join(__dirname, "feedback.html");
+    console.log("Serving feedback.html from:", filePath);
+    res.sendFile(filePath, (err) => {
+        if (err) {
+            console.error("Error serving feedback.html:", err);
+            res.status(500).send("Error loading feedback page");
+        }
+    });
+});
+
+app.get("/feedback", requireLogin, (req, res) => {
+    const filePath = path.join(__dirname, "feedback.html");
+    console.log("Serving feedback (redirecting to feedback.html) from:", filePath);
+    res.sendFile(filePath, (err) => {
+        if (err) {
+            console.error("Error serving feedback:", err);
+            res.status(500).send("Error loading feedback page");
+        }
+    });
 });
 
 
@@ -174,11 +192,11 @@ ensureFeedbackDB().catch(console.error);
 
 app.post("/api/feedback", requireLogin, async (req, res) => {
     try {
-        const { name, email, subject, message, timestamp } = req.body;
+        const { name, email, generalFeedback, activities, scenarios, timestamp } = req.body;
 
-        // Validate required fields
-        if (!subject || !message) {
-            return res.status(400).json({ error: "Subject and message are required" });
+        // Validate that at least one activity or scenario is provided
+        if ((!activities || activities.length === 0) && (!scenarios || scenarios.length === 0)) {
+            return res.status(400).json({ error: "Please select at least one activity or scenario" });
         }
 
         // Read existing feedback
@@ -190,8 +208,9 @@ app.post("/api/feedback", requireLogin, async (req, res) => {
             id: Date.now().toString(),
             name: name || "Anonymous",
             email: email || null,
-            subject,
-            message,
+            generalFeedback: generalFeedback || null,
+            activities: activities || [],
+            scenarios: scenarios || [],
             timestamp: timestamp || new Date().toISOString(),
             ip: req.ip || req.connection.remoteAddress,
         };
@@ -201,7 +220,13 @@ app.post("/api/feedback", requireLogin, async (req, res) => {
         // Save back to file
         await fs.writeFile(FEEDBACK_DB_PATH, JSON.stringify(feedbacks, null, 2), "utf-8");
 
-        console.log("Feedback submitted:", { id: newFeedback.id, subject });
+        const activityCount = activities ? activities.length : 0;
+        const scenarioCount = scenarios ? scenarios.length : 0;
+        console.log("Feedback submitted:", { 
+            id: newFeedback.id, 
+            activities: activityCount, 
+            scenarios: scenarioCount 
+        });
 
         res.json({ success: true, id: newFeedback.id });
     } catch (error) {
