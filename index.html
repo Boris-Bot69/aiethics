@@ -45,6 +45,60 @@
             font: inherit;
             cursor: pointer;
         }
+
+        /* Login success message (toast) */
+        .login-success-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4caf50;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+        }
+
+        .login-success-toast.show {
+            opacity: 1;
+        }
+
+        /* Session status indicator (top right corner) */
+        .session-status {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            background: rgba(128, 128, 128, 0.15);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(128, 128, 128, 0.2);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 11px;
+            color: rgba(0, 0, 0, 0.7);
+            z-index: 9998;
+            max-width: 280px;
+            line-height: 1.4;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .session-status .status-label {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: rgba(0, 0, 0, 0.8);
+        }
+
+        .session-status .session-id {
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            word-break: break-all;
+            color: rgba(0, 0, 0, 0.6);
+        }
     </style>
 
     <!-- Google Fonts -->
@@ -76,6 +130,21 @@
             </form>
         </div>
     </div>
+</div>
+
+<!-- =========================
+     LOGIN SUCCESS TOAST
+========================= -->
+<div id="loginSuccessToast" class="login-success-toast">
+    ✓ You are logged in successfully!
+</div>
+
+<!-- =========================
+     SESSION STATUS INDICATOR
+========================= -->
+<div id="sessionStatus" class="session-status hidden">
+    <div class="status-label">Logged in</div>
+    <div class="session-id" id="sessionIdDisplay"></div>
 </div>
 
 <!-- =========================
@@ -288,6 +357,7 @@
                     <ul class="footer-links">
                         <li><a href="imprint.html">Imprint</a></li>
                         <li><a href="privacy.html">Privacy Policy</a></li>
+                        <li><a href="feedback.html">Feedback</a></li>
                     </ul>
                 </div>
 
@@ -312,8 +382,37 @@
     const form = document.getElementById("loginForm");
     const err = document.getElementById("err");
     const logoutBtn = document.getElementById("logoutBtn");
+    const loginSuccessToast = document.getElementById("loginSuccessToast");
+    const sessionStatus = document.getElementById("sessionStatus");
+    const sessionIdDisplay = document.getElementById("sessionIdDisplay");
 
     console.log("Elements found:", { loginView: !!loginView, homeView: !!homeView, form: !!form });
+
+    // Show success toast message
+    function showLoginSuccess() {
+        if (loginSuccessToast) {
+            loginSuccessToast.classList.add("show");
+            setTimeout(() => {
+                loginSuccessToast.classList.remove("show");
+            }, 3000); // Hide after 3 seconds
+        }
+    }
+
+    // Update session status indicator - show only computer-id
+    function updateSessionStatus(sessionInfo) {
+        if (!sessionStatus || !sessionIdDisplay) return;
+        
+        const sessionKeys = Object.keys(sessionInfo || {});
+        if (sessionKeys.length > 0) {
+            // Show only the first key (computer-id) and its value
+            const firstKey = sessionKeys[0];
+            const computerId = `${firstKey}: ${sessionInfo[firstKey]}`;
+            sessionIdDisplay.textContent = computerId;
+            sessionStatus.classList.remove("hidden");
+        } else {
+            sessionStatus.classList.add("hidden");
+        }
+    }
 
     async function refreshAuthUI() {
         try {
@@ -335,15 +434,22 @@
                     homeView.classList.remove("hidden");
                     console.log("HomeView classes after show:", homeView.className);
                 }
+                // Update session status
+                if (data.sessionInfo) {
+                    updateSessionStatus(data.sessionInfo);
+                }
             } else {
                 console.log("User is not authenticated - showing login view");
                 if (homeView) homeView.classList.add("hidden");
                 if (loginView) loginView.classList.remove("hidden");
+                // Hide session status when not authenticated
+                if (sessionStatus) sessionStatus.classList.add("hidden");
             }
         } catch (e) {
             console.error("Auth check error:", e);
             if (homeView) homeView.classList.add("hidden");
             if (loginView) loginView.classList.remove("hidden");
+            if (sessionStatus) sessionStatus.classList.add("hidden");
         }
     }
 
@@ -362,6 +468,8 @@
         });
 
         if (r.ok) {
+            // Show success message
+            showLoginSuccess();
             // Small delay to ensure cookie is set before checking
             await new Promise(resolve => setTimeout(resolve, 100));
             await refreshAuthUI();
@@ -376,6 +484,7 @@
 
     logoutBtn?.addEventListener("click", async () => {
         await fetch("/logout", { method: "POST", credentials: "include" });
+        if (sessionStatus) sessionStatus.classList.add("hidden");
         await refreshAuthUI();
     });
 

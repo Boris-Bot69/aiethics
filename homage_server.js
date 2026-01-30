@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import fs from "node:fs/promises";
 
 dotenv.config();
 console.log("BASIC_USER:", process.env.BASIC_USER ? "set" : "missing");
@@ -104,9 +105,9 @@ app.post("/login", (req, res) => {
             secure: false,
             sameSite: "lax",
             path: "/",
-            maxAge: 1000 * 60 * 60 * 12, // 12h
+            // No maxAge - this makes it a session cookie that expires when browser closes
         });
-        console.log("Login successful - cookie set");
+        console.log("Login successful - cookie set (session-only)");
         return res.json({ ok: true });
     }
 
@@ -124,15 +125,102 @@ app.post("/logout", (req, res) => {
 app.get("/", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
 app.get("/index.html", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
 
+// Explicit route for feedback.html
+app.get("/feedback.html", requireLogin, (req, res) => {
+    res.sendFile(path.join(__dirname, "feedback.html"));
+});
+
 
 app.get("/me", (req, res) => {
     console.log("/me check - cookies:", req.cookies);
     console.log("/me check - site_auth:", req.cookies?.site_auth);
     console.log("/me check - isAuthed:", isAuthed(req));
-    res.json({ authed: isAuthed(req) });
+    
+    // Return auth status and session info (excluding sensitive cookies)
+    const sessionInfo = {};
+    if (req.cookies) {
+        Object.keys(req.cookies).forEach(key => {
+            if (key !== 'site_auth') {
+                sessionInfo[key] = req.cookies[key];
+            }
+        });
+    }
+    
+    res.json({ 
+        authed: isAuthed(req),
+        sessionInfo: sessionInfo
+    });
 });
 
 app.use("/html", requireLogin, express.static(path.join(__dirname, "html")));
+
+/* ============================================================
+   Feedback API - Store feedback in JSON database
+============================================================ */
+const FEEDBACK_DB_PATH = path.join(__dirname, "feedback_db.json");
+
+// Ensure feedback database file exists
+async function ensureFeedbackDB() {
+    try {
+        await fs.access(FEEDBACK_DB_PATH);
+    } catch {
+        // File doesn't exist, create it with empty array
+        await fs.writeFile(FEEDBACK_DB_PATH, JSON.stringify([], null, 2), "utf-8");
+    }
+}
+
+// Initialize database on server start
+ensureFeedbackDB().catch(console.error);
+
+app.post("/api/feedback", requireLogin, async (req, res) => {
+    try {
+        const { name, email, subject, message, timestamp } = req.body;
+
+        // Validate required fields
+        if (!subject || !message) {
+            return res.status(400).json({ error: "Subject and message are required" });
+        }
+
+        // Read existing feedback
+        const dbContent = await fs.readFile(FEEDBACK_DB_PATH, "utf-8");
+        const feedbacks = JSON.parse(dbContent);
+
+        // Add new feedback entry
+        const newFeedback = {
+            id: Date.now().toString(),
+            name: name || "Anonymous",
+            email: email || null,
+            subject,
+            message,
+            timestamp: timestamp || new Date().toISOString(),
+            ip: req.ip || req.connection.remoteAddress,
+        };
+
+        feedbacks.push(newFeedback);
+
+        // Save back to file
+        await fs.writeFile(FEEDBACK_DB_PATH, JSON.stringify(feedbacks, null, 2), "utf-8");
+
+        console.log("Feedback submitted:", { id: newFeedback.id, subject });
+
+        res.json({ success: true, id: newFeedback.id });
+    } catch (error) {
+        console.error("Error saving feedback:", error);
+        res.status(500).json({ error: "Failed to save feedback" });
+    }
+});
+
+// Optional: Admin endpoint to view all feedback (protected)
+app.get("/api/feedback", requireLogin, async (req, res) => {
+    try {
+        const dbContent = await fs.readFile(FEEDBACK_DB_PATH, "utf-8");
+        const feedbacks = JSON.parse(dbContent);
+        res.json({ feedbacks });
+    } catch (error) {
+        console.error("Error reading feedback:", error);
+        res.status(500).json({ error: "Failed to read feedback" });
+    }
+});
 
 const ROOT_HTML_PAGES = new Set([
     "ai_ethics_activities.html",
@@ -141,6 +229,7 @@ const ROOT_HTML_PAGES = new Set([
     "privacy.html",
     "research.html",
     "imprint.html",
+    "feedback.html",
 ]);
 
 app.get("/:page", requireLogin, (req, res, next) => {
