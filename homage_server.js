@@ -9,14 +9,26 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import fs from "node:fs/promises";
+import rateLimit from "express-rate-limit";
+import {
+    validateUser,
+    createUser,
+    deleteUser,
+    listUsers,
+    extendAccess,
+    ensureUsersDB
+} from "./auth/userManager.js";
 
 dotenv.config();
-console.log("BASIC_USER:", process.env.BASIC_USER ? "set" : "missing");
-console.log("BASIC_PASS:", process.env.BASIC_PASS ? "set" : "missing");
 
+// Admin secret for admin panel access
+const ADMIN_SECRET = process.env.ADMIN_SECRET || "admin123";
+const COOKIE_SECRET = process.env.COOKIE_SECRET || "your-secret-key-change-in-production";
 
-const BASIC_USER = process.env.BASIC_USER || "aiethics";
-const BASIC_PASS = process.env.BASIC_PASS || "aiethics";
+// Initialize users database
+ensureUsersDB().catch(console.error);
+
+console.log("ADMIN_SECRET:", ADMIN_SECRET ? "set" : "missing");
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -49,9 +61,28 @@ app.options(/.*/, corsMiddleware);
 /* ============================================================
    Parsers
 ============================================================ */
-app.use(cookieParser());
+app.use(cookieParser(COOKIE_SECRET)); // Enable signed cookies
 app.use(bodyParser.json({ limit: "1000mb" }));
 app.use(bodyParser.urlencoded({ limit: "1000mb", extended: true }));
+
+/* ============================================================
+   Rate Limiting
+============================================================ */
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // 5 attempts per window
+    message: { error: "Too many login attempts. Please try again in 15 minutes." },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+const adminLoginLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 3, // 3 attempts per hour
+    message: { error: "Too many admin login attempts. Please try again in 1 hour." },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 
 /* ============================================================
    Public static assets (CSS/JS/Images)
@@ -67,10 +98,19 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 app.get("/healthz", (_req, res) => res.status(200).send("ok"));
 
 /* ============================================================
-   Cookie login
+   Cookie login - Secure with bcrypt and time-limited access
 ============================================================ */
 function isAuthed(req) {
-    return req.cookies?.site_auth === "1";
+    // Check signed cookie for username
+    return req.signedCookies?.site_auth != null;
+}
+
+function getAuthUsername(req) {
+    return req.signedCookies?.site_auth || null;
+}
+
+function isAdminAuthed(req) {
+    return req.signedCookies?.admin_auth === "1";
 }
 
 function requireLogin(req, res, next) {
@@ -78,52 +118,182 @@ function requireLogin(req, res, next) {
     if (req.path === "/login" || req.path === "/logout" || req.path === "/me") return next();
     if (req.path === "/healthz") return next();
 
+    // Admin routes have their own auth
+    if (req.path.startsWith("/admin")) return next();
+
     if (req.path.startsWith("/css/")) return next();
     if (req.path.startsWith("/js/")) return next();
     if (req.path.startsWith("/images/")) return next();
 
     if (req.path === "/" || req.path === "/index.html") return next();
+    if (req.path === "/admin.html") return next();
 
     if (isAuthed(req)) return next();
     return res.status(401).send("Please login first.");
 }
 
+function requireAdmin(req, res, next) {
+    if (!isAdminAuthed(req)) {
+        return res.status(401).json({ error: "Admin authentication required" });
+    }
+    next();
+}
 
-app.post("/login", (req, res) => {
+
+app.post("/login", loginLimiter, async (req, res) => {
     const { username, password } = req.body || {};
 
     console.log("Login attempt:", { username, password: password ? "***" : "missing" });
-    console.log("Expected:", { BASIC_USER, BASIC_PASS: BASIC_PASS ? "***" : "missing" });
 
-    if (!BASIC_USER || !BASIC_PASS) {
-        return res.status(500).send("Auth not configured. Set BASIC_USER and BASIC_PASS on Render.");
+    if (!username || !password) {
+        return res.status(400).json({ ok: false, error: "Username and password required" });
     }
 
-    if (username === BASIC_USER && password === BASIC_PASS) {
-        res.cookie("site_auth", "1", {
-            httpOnly: true,
-            secure: false,
-            sameSite: "lax",
-            path: "/",
-            // No maxAge - this makes it a session cookie that expires when browser closes
-        });
-        console.log("Login successful - cookie set (session-only)");
-        return res.json({ ok: true });
-    }
+    try {
+        const result = await validateUser(username, password);
 
-    console.log("Login failed: credentials mismatch");
-    return res.status(401).json({ ok: false });
+        if (result.valid) {
+            // Set signed cookie with username, auto-expire with user
+            res.cookie("site_auth", result.username, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                signed: true,
+                sameSite: "lax",
+                path: "/",
+                maxAge: Math.min(result.remainingMs, 7 * 24 * 60 * 60 * 1000) // Cap at 7 days
+            });
+            console.log(`Login successful for ${result.username} - expires ${result.expiresAt}`);
+            return res.json({
+                ok: true,
+                username: result.username,
+                expiresAt: result.expiresAt
+            });
+        }
+
+        console.log("Login failed:", result.error);
+        return res.status(401).json({ ok: false, error: result.error });
+    } catch (err) {
+        console.error("Login error:", err);
+        return res.status(500).json({ ok: false, error: "Login failed" });
+    }
 });
 
 app.post("/logout", (req, res) => {
     console.log("Logout - clearing cookie");
-    res.clearCookie("site_auth", { path: "/" });
+    res.clearCookie("site_auth", { path: "/", signed: true });
     res.json({ ok: true });
+});
+
+/* ============================================================
+   Admin Authentication & API Routes
+============================================================ */
+app.post("/admin/login", adminLoginLimiter, (req, res) => {
+    const { secret } = req.body || {};
+
+    if (secret === ADMIN_SECRET) {
+        res.cookie("admin_auth", "1", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            signed: true,
+            sameSite: "lax",
+            path: "/",
+            maxAge: 2 * 60 * 60 * 1000 // 2 hours
+        });
+        console.log("Admin login successful");
+        return res.json({ ok: true });
+    }
+
+    console.log("Admin login failed: invalid secret");
+    return res.status(401).json({ error: "Invalid admin secret" });
+});
+
+app.post("/admin/logout", (req, res) => {
+    res.clearCookie("admin_auth", { path: "/", signed: true });
+    res.json({ ok: true });
+});
+
+app.get("/admin/me", (req, res) => {
+    res.json({ authed: isAdminAuthed(req) });
+});
+
+// List all users
+app.get("/admin/users", requireAdmin, async (req, res) => {
+    try {
+        const users = await listUsers();
+        res.json(users);
+    } catch (err) {
+        console.error("Error listing users:", err);
+        res.status(500).json({ error: "Failed to list users" });
+    }
+});
+
+// Create a new user
+app.post("/admin/users", requireAdmin, async (req, res) => {
+    const { username, password, days } = req.body || {};
+
+    if (!username || !password) {
+        return res.status(400).json({ error: "Username and password required" });
+    }
+
+    try {
+        const result = await createUser(username, password, days || 7, "admin");
+        if (result.success) {
+            console.log(`Admin created user: ${username}`);
+            res.json({ success: true, user: result.user });
+        } else {
+            res.status(400).json({ error: result.error });
+        }
+    } catch (err) {
+        console.error("Error creating user:", err);
+        res.status(500).json({ error: "Failed to create user" });
+    }
+});
+
+// Extend user access
+app.put("/admin/users/:username/extend", requireAdmin, async (req, res) => {
+    const { username } = req.params;
+    const { days } = req.body || {};
+
+    if (!days || days <= 0) {
+        return res.status(400).json({ error: "Days must be a positive number" });
+    }
+
+    try {
+        const result = await extendAccess(username, days);
+        if (result.success) {
+            console.log(`Admin extended access for ${username} by ${days} days`);
+            res.json({ success: true, newExpiresAt: result.newExpiresAt });
+        } else {
+            res.status(400).json({ error: result.error });
+        }
+    } catch (err) {
+        console.error("Error extending access:", err);
+        res.status(500).json({ error: "Failed to extend access" });
+    }
+});
+
+// Delete a user
+app.delete("/admin/users/:username", requireAdmin, async (req, res) => {
+    const { username } = req.params;
+
+    try {
+        const result = await deleteUser(username);
+        if (result.success) {
+            console.log(`Admin deleted user: ${username}`);
+            res.json({ success: true });
+        } else {
+            res.status(400).json({ error: result.error });
+        }
+    } catch (err) {
+        console.error("Error deleting user:", err);
+        res.status(500).json({ error: "Failed to delete user" });
+    }
 });
 
 
 app.get("/", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
 app.get("/index.html", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
+app.get("/admin.html", (_req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 
 // Explicit routes for feedback.html (handle both with and without .html extension)
 app.get("/feedback.html", requireLogin, (req, res) => {
@@ -149,24 +319,34 @@ app.get("/feedback", requireLogin, (req, res) => {
 });
 
 
-app.get("/me", (req, res) => {
-    console.log("/me check - cookies:", req.cookies);
-    console.log("/me check - site_auth:", req.cookies?.site_auth);
-    console.log("/me check - isAuthed:", isAuthed(req));
-    
-    // Return auth status and session info (excluding sensitive cookies)
-    const sessionInfo = {};
-    if (req.cookies) {
-        Object.keys(req.cookies).forEach(key => {
-            if (key !== 'site_auth') {
-                sessionInfo[key] = req.cookies[key];
+app.get("/me", async (req, res) => {
+    const authed = isAuthed(req);
+    const username = getAuthUsername(req);
+
+    console.log("/me check - isAuthed:", authed, "username:", username);
+
+    // If authed, re-validate to get expiration info
+    let expiresAt = null;
+    let daysRemaining = null;
+
+    if (authed && username) {
+        try {
+            const users = await listUsers();
+            const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+            if (user) {
+                expiresAt = user.expiresAt;
+                daysRemaining = user.daysUntilExpiry;
             }
-        });
+        } catch (e) {
+            console.error("Error fetching user info:", e);
+        }
     }
-    
-    res.json({ 
-        authed: isAuthed(req),
-        sessionInfo: sessionInfo
+
+    res.json({
+        authed,
+        username: authed ? username : null,
+        expiresAt,
+        daysRemaining
     });
 });
 

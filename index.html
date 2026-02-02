@@ -78,8 +78,8 @@
             backdrop-filter: blur(8px);
             border: 1px solid rgba(128, 128, 128, 0.2);
             border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 11px;
+            padding: 10px 14px;
+            font-size: 12px;
             color: rgba(0, 0, 0, 0.7);
             z-index: 9998;
             max-width: 280px;
@@ -91,13 +91,38 @@
             font-weight: 600;
             margin-bottom: 4px;
             color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .session-status .session-id {
-            font-family: 'Courier New', monospace;
-            font-size: 10px;
-            word-break: break-all;
+            font-size: 11px;
             color: rgba(0, 0, 0, 0.6);
+        }
+
+        .session-status .expiry-info {
+            font-size: 11px;
+            margin-top: 4px;
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        .session-status .expiry-warning {
+            color: #b45309;
+            font-weight: 500;
+        }
+
+        .session-status .logout-link {
+            display: inline-block;
+            margin-top: 6px;
+            font-size: 11px;
+            color: #0071e3;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .session-status .logout-link:hover {
+            color: #0077ed;
         }
     </style>
 
@@ -143,8 +168,12 @@
      SESSION STATUS INDICATOR
 ========================= -->
 <div id="sessionStatus" class="session-status hidden">
-    <div class="status-label">Logged in</div>
-    <div class="session-id" id="sessionIdDisplay"></div>
+    <div class="status-label">
+        <span>Logged in as</span>
+        <strong id="usernameDisplay"></strong>
+    </div>
+    <div class="expiry-info" id="expiryDisplay"></div>
+    <span class="logout-link" id="logoutLink">Logout</span>
 </div>
 
 <!-- =========================
@@ -381,10 +410,11 @@
     const homeView = document.getElementById("homeView");
     const form = document.getElementById("loginForm");
     const err = document.getElementById("err");
-    const logoutBtn = document.getElementById("logoutBtn");
     const loginSuccessToast = document.getElementById("loginSuccessToast");
     const sessionStatus = document.getElementById("sessionStatus");
-    const sessionIdDisplay = document.getElementById("sessionIdDisplay");
+    const usernameDisplay = document.getElementById("usernameDisplay");
+    const expiryDisplay = document.getElementById("expiryDisplay");
+    const logoutLink = document.getElementById("logoutLink");
 
     console.log("Elements found:", { loginView: !!loginView, homeView: !!homeView, form: !!form });
 
@@ -398,16 +428,42 @@
         }
     }
 
-    // Update session status indicator - show only computer-id
-    function updateSessionStatus(sessionInfo) {
-        if (!sessionStatus || !sessionIdDisplay) return;
-        
-        const sessionKeys = Object.keys(sessionInfo || {});
-        if (sessionKeys.length > 0) {
-            // Show only the first key (computer-id) and its value
-            const firstKey = sessionKeys[0];
-            const computerId = `${firstKey}: ${sessionInfo[firstKey]}`;
-            sessionIdDisplay.textContent = computerId;
+    // Format expiry date
+    function formatExpiryDate(isoString) {
+        if (!isoString) return "";
+        const date = new Date(isoString);
+        return date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric"
+        });
+    }
+
+    // Update session status indicator with username and expiry
+    function updateSessionStatus(data) {
+        if (!sessionStatus) return;
+
+        if (data.authed && data.username) {
+            // Show username
+            if (usernameDisplay) {
+                usernameDisplay.textContent = data.username;
+            }
+
+            // Show expiry info
+            if (expiryDisplay) {
+                if (data.daysRemaining !== null && data.daysRemaining !== undefined) {
+                    if (data.daysRemaining <= 0) {
+                        expiryDisplay.innerHTML = '<span class="expiry-warning">Access expired</span>';
+                    } else if (data.daysRemaining <= 2) {
+                        expiryDisplay.innerHTML = `<span class="expiry-warning">Expires in ${data.daysRemaining} day${data.daysRemaining === 1 ? '' : 's'}</span>`;
+                    } else {
+                        expiryDisplay.textContent = `Expires: ${formatExpiryDate(data.expiresAt)}`;
+                    }
+                } else {
+                    expiryDisplay.textContent = "";
+                }
+            }
+
             sessionStatus.classList.remove("hidden");
         } else {
             sessionStatus.classList.add("hidden");
@@ -434,10 +490,8 @@
                     homeView.classList.remove("hidden");
                     console.log("HomeView classes after show:", homeView.className);
                 }
-                // Update session status
-                if (data.sessionInfo) {
-                    updateSessionStatus(data.sessionInfo);
-                }
+                // Update session status with username and expiry
+                updateSessionStatus(data);
             } else {
                 console.log("User is not authenticated - showing login view");
                 if (homeView) homeView.classList.add("hidden");
@@ -460,29 +514,35 @@
         const username = document.getElementById("u").value.trim();
         const password = document.getElementById("p").value;
 
-        const r = await fetch("/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ username, password }),
-        });
+        try {
+            const r = await fetch("/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ username, password }),
+            });
 
-        if (r.ok) {
-            // Show success message
-            showLoginSuccess();
-            // Small delay to ensure cookie is set before checking
-            await new Promise(resolve => setTimeout(resolve, 100));
-            await refreshAuthUI();
-        } else {
-            const msg = await r.text().catch(() => "");
-            err.textContent = msg.includes("Auth not configured")
-                ? "Server auth not configured (BASIC_USER/BASIC_PASS missing)."
-                : "Wrong username or password.";
+            const data = await r.json().catch(() => ({}));
+
+            if (r.ok && data.ok) {
+                // Show success message
+                showLoginSuccess();
+                // Small delay to ensure cookie is set before checking
+                await new Promise(resolve => setTimeout(resolve, 100));
+                await refreshAuthUI();
+            } else {
+                // Show error from server
+                err.textContent = data.error || "Wrong username or password.";
+                err.classList.remove("hidden");
+            }
+        } catch (e) {
+            err.textContent = "Login failed. Please try again.";
             err.classList.remove("hidden");
         }
     });
 
-    logoutBtn?.addEventListener("click", async () => {
+    // Logout link handler
+    logoutLink?.addEventListener("click", async () => {
         await fetch("/logout", { method: "POST", credentials: "include" });
         if (sessionStatus) sessionStatus.classList.add("hidden");
         await refreshAuthUI();
