@@ -1,0 +1,20 @@
+[
+  {
+    "id": "d8cd0bb1-1ea9-4a7c-9c09-84359ccdb722",
+    "username": "testuser",
+    "passwordHash": "$2b$10$tVqgsrDoOwEOw/pf2js.au5HGmtY7fcYkViTphSGDXr6MQWS0.gce",
+    "createdAt": "2026-02-02T17:42:28.264Z",
+    "expiresAt": "2026-02-23T17:42:28.264Z",
+    "createdBy": "admin",
+    "active": true
+  },
+  {
+    "id": "6b469d19-5f12-4fcb-85e8-e78a14ac556a",
+    "username": "teacher1",
+    "passwordHash": "$2b$10$4l87ABI7U88NLSdA4EzIzeJJKSZrFAZ7LXg2INRYV3/Cc69h5jh1O",
+    "createdAt": "2026-02-02T17:43:33.376Z",
+    "expiresAt": "2026-02-16T17:43:33.376Z",
+    "createdBy": "admin",
+    "active": true
+  }
+]
