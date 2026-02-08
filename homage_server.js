@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
@@ -61,9 +60,9 @@ app.options(/.*/, corsMiddleware);
 /* ============================================================
    Parsers
 ============================================================ */
-app.use(cookieParser(COOKIE_SECRET)); // Enable signed cookies
-app.use(bodyParser.json({ limit: "1000mb" }));
-app.use(bodyParser.urlencoded({ limit: "1000mb", extended: true }));
+app.use(cookieParser(COOKIE_SECRET));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 /* ============================================================
    Rate Limiting
@@ -138,7 +137,6 @@ function requireAdmin(req, res, next) {
     }
     next();
 }
-
 
 app.post("/login", loginLimiter, async (req, res) => {
     const { username, password } = req.body || {};
@@ -290,29 +288,15 @@ app.delete("/admin/users/:username", requireAdmin, async (req, res) => {
     }
 });
 
-
 app.get("/", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
 app.get("/index.html", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
 app.get("/admin.html", (_req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 
-// Explicit routes for feedback.html (handle both with and without .html extension)
-app.get("/feedback.html", requireLogin, (req, res) => {
-    const filePath = path.join(__dirname, "feedback.html");
-    console.log("Serving feedback.html from:", filePath);
-    res.sendFile(filePath, (err) => {
+// Serve feedback.html (with and without .html extension)
+app.get(["/feedback.html", "/feedback"], requireLogin, (_req, res) => {
+    res.sendFile(path.join(__dirname, "feedback.html"), (err) => {
         if (err) {
             console.error("Error serving feedback.html:", err);
-            res.status(500).send("Error loading feedback page");
-        }
-    });
-});
-
-app.get("/feedback", requireLogin, (req, res) => {
-    const filePath = path.join(__dirname, "feedback.html");
-    console.log("Serving feedback (redirecting to feedback.html) from:", filePath);
-    res.sendFile(filePath, (err) => {
-        if (err) {
-            console.error("Error serving feedback:", err);
             res.status(500).send("Error loading feedback page");
         }
     });
@@ -463,11 +447,17 @@ app.use(requireLogin);
 ============================================================ */
 const HTML_BASE = path.join(__dirname, "html", "ai_activities_webpages");
 
+/** Strip the data-URL prefix from a base64 string, if present. */
+function toRaw(dataUrl) {
+    if (typeof dataUrl !== "string") return dataUrl;
+    const idx = dataUrl.indexOf(",");
+    return idx !== -1 ? dataUrl.slice(idx + 1) : dataUrl;
+}
+
 app.get("/homage", (_req, res) => res.sendFile(path.join(HTML_BASE, "homage.html")));
 app.get("/magazine", (_req, res) => res.sendFile(path.join(HTML_BASE, "magazine_cutouts.html")));
 app.get("/expanded", (_req, res) => res.sendFile(path.join(HTML_BASE, "expanded_frames.html")));
 app.get("/texture", (_req, res) => res.sendFile(path.join(HTML_BASE, "drawing_texture.html")));
-
 
 // GenAI client
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
@@ -539,8 +529,6 @@ app.post("/edit-magazine", async (req, res) => {
     }
 });
 
-
-
 app.post("/mix-texture", async (req, res) => {
     try {
         const { structureBase64, textureBase64, strength, prompt } = req.body;
@@ -603,7 +591,7 @@ app.post("/mix-texture", async (req, res) => {
         const base64 = imgPart.inlineData.data; // already base64
         res.json({ imageDataUrl: `data:${mime};base64,${base64}` });
     } catch (err) {
-        console.error("❌ /mix-texture error:", err);
+        console.error("/mix-texture error:", err);
         res.status(500).json({ error: err.message || "Unknown error" });
     }
 });
@@ -616,99 +604,86 @@ app.post("/expand_canvas", async (req, res) => {
         const baseBuf = Buffer.from(image.split(",")[1], "base64");
         const meta = await sharp(baseBuf).metadata();
 
-        // Add 25% margin around
+        // Calculate new dimensions (25% larger on each side)
         const margin = Math.round(meta.width * 0.25);
         const newW = meta.width + margin * 2;
         const newH = meta.height + margin * 2;
 
-        // Composite onto a slightly neutral background
-        const extended = await sharp({
+        // Create padded image (original centered on transparent/white background)
+        const paddedImage = await sharp({
             create: {
                 width: newW,
                 height: newH,
                 channels: 4,
-                background: { r: 245, g: 245, b: 245, alpha: 1 },
+                background: { r: 255, g: 255, b: 255, alpha: 1 },
             },
         })
             .composite([{ input: baseBuf, top: margin, left: margin }])
             .png()
             .toBuffer();
 
-        // Simple, natural prompt
-        const prompt = `
-Just expand the image outward naturally.
-Keep everything in the original area completely unchanged.
-Extend the scene smoothly beyond the borders, continuing background and lighting.
-Do not zoom out or add any borders or frames.
-`;
+        // Create mask: black where original image is (keep), white where we want new content (generate)
+        const blackRect = await sharp({
+            create: {
+                width: meta.width,
+                height: meta.height,
+                channels: 3,
+                background: { r: 0, g: 0, b: 0 },
+            },
+        })
+            .png()
+            .toBuffer();
 
-        console.log("🎨 Expanding image naturally...");
+        const mask = await sharp({
+            create: {
+                width: newW,
+                height: newH,
+                channels: 3,
+                background: { r: 255, g: 255, b: 255 },
+            },
+        })
+            .composite([{ input: blackRect, top: margin, left: margin }])
+            .png()
+            .toBuffer();
 
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash-image",
-            contents: [
-                { inlineData: { data: extended.toString("base64"), mimeType: "image/png" } },
-                { text: prompt },
+        console.log("Outpainting with Imagen 3...");
+
+        const response = await ai.models.editImage({
+            model: "imagen-3.0-capability-001",
+            prompt: "Naturally extend and continue the scene beyond the edges, maintaining the same style, lighting, and atmosphere",
+            referenceImages: [
+                {
+                    referenceType: "REFERENCE_TYPE_RAW",
+                    referenceId: 1,
+                    referenceImage: {
+                        bytesBase64Encoded: paddedImage.toString("base64"),
+                    },
+                },
+                {
+                    referenceType: "REFERENCE_TYPE_MASK",
+                    referenceImage: {
+                        bytesBase64Encoded: mask.toString("base64"),
+                    },
+                    maskImageConfig: {
+                        maskMode: "MASK_MODE_USER_PROVIDED",
+                        dilation: 0.02,
+                    },
+                },
             ],
-            config: { responseModalities: ["IMAGE"], temperature: 0.7 },
+            config: {
+                editMode: "EDIT_MODE_OUTPAINT",
+                numberOfImages: 1,
+            },
         });
 
-        const part = response?.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data);
-        if (!part) throw new Error("No image returned from Gemini.");
+        const generatedImage = response?.generatedImages?.[0]?.image?.imageBytes;
+        if (!generatedImage) throw new Error("No image returned from Imagen.");
 
         res.json({
-            image_url: `data:image/png;base64,${part.inlineData.data}`,
+            image_url: `data:image/png;base64,${generatedImage}`,
         });
     } catch (err) {
-        console.error("❌ /expand_canvas error:", err);
-        res.status(500).json({ error: err.message });
-    }
-});
-
-
-/* ============================================================
-   SUMMARY PDF
-============================================================ */
-app.get("/summary_a4", async (_req, res) => {
-    try {
-        console.log("🧩 Generating summary PDF...");
-        const layers = ["A8", "A7", "A6", "A5", "A4"];
-        const imgs = [];
-
-        for (const key of layers) {
-            const img = frames[key];
-            if (!img) continue;
-            const buf = await sharp(Buffer.from(toRaw(img), "base64"))
-                .resize({ width: 1000 })
-                .png()
-                .toBuffer();
-            imgs.push({ key, buf });
-        }
-
-        if (imgs.length === 0) {
-            return res.status(400).json({ error: "No frames available for summary." });
-        }
-
-        const pdf = await PDFDocument.create();
-        const font = await pdf.embedFont(StandardFonts.HelveticaBold);
-
-        for (const { key, buf } of imgs) {
-            const img = await pdf.embedPng(buf);
-            const { width, height } = img.scale(0.7);
-            const page = pdf.addPage([595.28, 841.89]);
-            const pw = page.getWidth();
-            const ph = page.getHeight();
-            const text = key === "A8" ? "Original Artwork (A8)" : `Expansion ${key}`;
-            const textW = font.widthOfTextAtSize(text, 16);
-            page.drawText(text, { x: (pw - textW) / 2, y: ph - 40, size: 16, font, color: rgb(0.1, 0.1, 0.1) });
-            page.drawImage(img, { x: (pw - width) / 2, y: (ph - height) / 2 - 20, width, height });
-        }
-
-        const pdfBytes = await pdf.save();
-        const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
-        res.json({ pdf_url: `data:application/pdf;base64,${pdfBase64}` });
-    } catch (err) {
-        console.error("❌ /summary_a4 error:", err);
+        console.error("/expand_canvas error:", err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -735,11 +710,11 @@ app.post("/generate-panel", async (req, res) => {
         if (story.ended) {
             return res.json({
                 message:
-                    "📖 The story has already reached an ending! You can start a new hero if you wish.",
+                    "The story has already reached an ending! You can start a new hero if you wish.",
             });
         }
 
-        console.log(`🎨 [${sessionId}] New panel prompt:`, prompt);
+        console.log(`[${sessionId}] New panel prompt:`, prompt);
 
         // Build story memory
         story.context += `\nPanel ${story.panels.length + 1}: ${prompt}`;
@@ -790,13 +765,13 @@ If the story logically reaches a conclusion, end it naturally with an emotional 
             ended: story.ended,
         });
     } catch (err) {
-        console.error("❌ /generate-panel error:", err);
+        console.error("/generate-panel error:", err);
         res.status(500).json({ error: err.message });
     }
 });
 
 /* ============================================================
-   2️⃣  Suggest next-panel ideas (context-aware)
+   Suggest next-panel ideas (context-aware)
 ============================================================ */
 app.post("/suggest-panel-prompt", async (req, res) => {
     try {
@@ -812,7 +787,7 @@ app.post("/suggest-panel-prompt", async (req, res) => {
 Story so far:
 ${previous}
 
-Suggest one creative next event that fits naturally. Keep it positive and concise. It should makes in context`,
+Suggest one creative next event that fits naturally. Keep it positive and concise. It should make sense in context.`,
                 },
             ],
             config: { temperature: 0.9 },
@@ -824,13 +799,13 @@ Suggest one creative next event that fits naturally. Keep it positive and concis
 
         res.json({ suggestion });
     } catch (err) {
-        console.error("❌ /suggest-panel-prompt error:", err);
+        console.error("/suggest-panel-prompt error:", err);
         res.status(500).json({ error: err.message });
     }
 });
 
 /* ============================================================
-   3️⃣  Reset story (start new hero)
+   Reset story (start new hero)
 ============================================================ */
 app.post("/reset-story", (req, res) => {
     const { sessionId } = req.body;
@@ -1036,9 +1011,6 @@ Do not explain technical details.
     }
 });
 
-
-
-
 /* ============================================
    2. /image — Image generieren
 =============================================== */
@@ -1159,7 +1131,6 @@ Return a concise improved version with ethical alignment.
         res.status(500).json({ error: "Refinement failed." });
     }
 });
-
 
 app.post("/chat", async (req, res) => {
     try {
@@ -1353,9 +1324,6 @@ app.post("/generate-capsule-pdf", async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-
-
-
 
 /* ============================================================
    START SERVER
