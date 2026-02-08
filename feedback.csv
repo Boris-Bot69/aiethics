@@ -1,0 +1,2 @@
+timestamp,name,email,generalFeedback,activities,scenarios,ip
+2026-02-08T17:14:58.424Z,Boris,b.liu@tum.de,,"[{""name"":""Homage to a local artist"",""feedback"":""Good""},{""name"":""Magazine cut-outs"",""feedback"":""Bad""}]","[{""name"":""AI-generative arts app to create a homage to an artist"",""feedback"":""Good""},{""name"":""AI-generative arts app to augment students' drawings"",""feedback"":""Bad""}]",::1

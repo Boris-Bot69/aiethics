@@ -21,12 +21,12 @@ import {
 
 dotenv.config();
 
+// Initialize users database
+ensureUsersDB().catch(console.error);
+
 // Admin secret for admin panel access
 const ADMIN_SECRET = process.env.ADMIN_SECRET || "admin123";
 const COOKIE_SECRET = process.env.COOKIE_SECRET || "your-secret-key-change-in-production";
-
-// Initialize users database
-ensureUsersDB().catch(console.error);
 
 console.log("ADMIN_SECRET:", ADMIN_SECRET ? "set" : "missing");
 
@@ -353,22 +353,32 @@ app.get("/me", async (req, res) => {
 app.use("/html", requireLogin, express.static(path.join(__dirname, "html")));
 
 /* ============================================================
-   Feedback API - Store feedback in JSON database
+   Feedback API - Store feedback in CSV file
 ============================================================ */
-const FEEDBACK_DB_PATH = path.join(__dirname, "feedback_db.json");
+const FEEDBACK_CSV_PATH = path.join(__dirname, "feedback.csv");
 
-// Ensure feedback database file exists
-async function ensureFeedbackDB() {
+// Escape CSV field (handle commas, quotes, newlines)
+function escapeCSV(field) {
+    if (field === null || field === undefined) return "";
+    const str = String(field);
+    if (str.includes(",") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
+        return '"' + str.replace(/"/g, '""') + '"';
+    }
+    return str;
+}
+
+// Ensure CSV file exists with headers
+async function ensureFeedbackCSV() {
     try {
-        await fs.access(FEEDBACK_DB_PATH);
+        await fs.access(FEEDBACK_CSV_PATH);
     } catch {
-        // File doesn't exist, create it with empty array
-        await fs.writeFile(FEEDBACK_DB_PATH, JSON.stringify([], null, 2), "utf-8");
+        const headers = "timestamp,name,email,generalFeedback,activities,scenarios,ip\n";
+        await fs.writeFile(FEEDBACK_CSV_PATH, headers, "utf-8");
     }
 }
 
-// Initialize database on server start
-ensureFeedbackDB().catch(console.error);
+// Initialize CSV on server start
+ensureFeedbackCSV().catch(console.error);
 
 app.post("/api/feedback", requireLogin, async (req, res) => {
     try {
@@ -379,48 +389,46 @@ app.post("/api/feedback", requireLogin, async (req, res) => {
             return res.status(400).json({ error: "Please select at least one activity or scenario" });
         }
 
-        // Read existing feedback
-        const dbContent = await fs.readFile(FEEDBACK_DB_PATH, "utf-8");
-        const feedbacks = JSON.parse(dbContent);
+        await ensureFeedbackCSV();
 
-        // Add new feedback entry
-        const newFeedback = {
-            id: Date.now().toString(),
-            name: name || "Anonymous",
-            email: email || null,
-            generalFeedback: generalFeedback || null,
-            activities: activities || [],
-            scenarios: scenarios || [],
-            timestamp: timestamp || new Date().toISOString(),
-            ip: req.ip || req.connection.remoteAddress,
-        };
+        // Format activities and scenarios as JSON strings for CSV
+        const activitiesStr = activities ? JSON.stringify(activities) : "";
+        const scenariosStr = scenarios ? JSON.stringify(scenarios) : "";
 
-        feedbacks.push(newFeedback);
+        const row = [
+            escapeCSV(timestamp || new Date().toISOString()),
+            escapeCSV(name || "Anonymous"),
+            escapeCSV(email || ""),
+            escapeCSV(generalFeedback || ""),
+            escapeCSV(activitiesStr),
+            escapeCSV(scenariosStr),
+            escapeCSV(req.ip || req.connection.remoteAddress)
+        ].join(",") + "\n";
 
-        // Save back to file
-        await fs.writeFile(FEEDBACK_DB_PATH, JSON.stringify(feedbacks, null, 2), "utf-8");
+        await fs.appendFile(FEEDBACK_CSV_PATH, row, "utf-8");
 
         const activityCount = activities ? activities.length : 0;
         const scenarioCount = scenarios ? scenarios.length : 0;
-        console.log("Feedback submitted:", { 
-            id: newFeedback.id, 
-            activities: activityCount, 
-            scenarios: scenarioCount 
+        console.log("Feedback submitted to CSV:", {
+            activities: activityCount,
+            scenarios: scenarioCount
         });
 
-        res.json({ success: true, id: newFeedback.id });
+        res.json({ success: true });
     } catch (error) {
         console.error("Error saving feedback:", error);
         res.status(500).json({ error: "Failed to save feedback" });
     }
 });
 
-// Optional: Admin endpoint to view all feedback (protected)
+// Admin endpoint to download feedback CSV
 app.get("/api/feedback", requireLogin, async (req, res) => {
     try {
-        const dbContent = await fs.readFile(FEEDBACK_DB_PATH, "utf-8");
-        const feedbacks = JSON.parse(dbContent);
-        res.json({ feedbacks });
+        await ensureFeedbackCSV();
+        const csvContent = await fs.readFile(FEEDBACK_CSV_PATH, "utf-8");
+        res.setHeader("Content-Type", "text/csv");
+        res.setHeader("Content-Disposition", "attachment; filename=feedback.csv");
+        res.send(csvContent);
     } catch (error) {
         console.error("Error reading feedback:", error);
         res.status(500).json({ error: "Failed to read feedback" });

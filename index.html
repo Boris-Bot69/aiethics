@@ -137,7 +137,7 @@
 <!-- =========================
      LOGIN VIEW (overlay)
 ========================= -->
-<div id="loginView" class="login-overlay">
+<div id="loginView" class="login-overlay hidden">
     <div class="login-wrap">
         <div class="card">
             <h2 style="margin-top:0;">Login</h2>
@@ -549,8 +549,7 @@
     });
 
     // Check authentication status immediately on page load
-    // Show login by default, hide it if authenticated
-    if (homeView) homeView.classList.add("hidden");
+    // Both views start hidden, show appropriate one after auth check
     refreshAuthUI();
 </script>
 
