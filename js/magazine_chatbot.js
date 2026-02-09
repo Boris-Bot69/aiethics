@@ -233,7 +233,7 @@ function showImagePreview(base64) {
     const img = document.createElement("img");
     img.src = base64;
     img.alt = "Uploaded artwork";
-    img.classList.add("chat-image-preview");
+    img.classList.add("chat-image-preview", "zoomable");
     img.style.maxWidth = "100%";
     img.style.borderRadius = "10px";
     img.style.marginTop = "10px";
@@ -263,6 +263,7 @@ async function sendToAI(imageBase64, prompt) {
             const img = document.createElement("img");
             img.src = data.image;
             img.alt = "AI edited artwork";
+            img.classList.add("zoomable");
             img.style.maxWidth = "100%";
             img.style.borderRadius = "10px";
             container.appendChild(img);

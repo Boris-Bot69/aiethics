@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
         msg.innerHTML = `
             <div class="avatar"></div>
             <div class="text">
-                ${image ? `<img class="chat-image-preview" src="${image}" />` : ""}
+                ${image ? `<img class="chat-image-preview zoomable" src="${image}" />` : ""}
                 ${text ? text.replace(/\n/g, "<br>") : ""}
             </div>
         `;

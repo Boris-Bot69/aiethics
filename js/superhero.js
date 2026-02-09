@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
     downloadAllBtn.disabled = true;
     downloadAllBtn.style.opacity = "0.6";
 
+    const MAX_PANELS = 6;
     let uploadedBase64 = null;
     let isProcessing = false;
     let sessionId = crypto.randomUUID();
@@ -104,6 +105,11 @@ document.addEventListener("DOMContentLoaded", () => {
             addBotMessage("Please upload an image first.");
             return;
         }
+        if (galleryContainer.querySelectorAll(".panel-card").length >= MAX_PANELS) {
+            addBotMessage("You've reached the 6-panel limit. Download your comic PDF or start a new hero.");
+            await generatePDF();
+            return;
+        }
 
         try {
             isProcessing = true;
@@ -128,11 +134,12 @@ document.addEventListener("DOMContentLoaded", () => {
             addImageMessage(data.image, "ai");
             addPanelToGallery(data.image);
 
-            if (data.ended) {
-                addBotMessage("Your story has reached an ending. You can generate your final comic PDF by clicking the button.");
+            const panelCount = galleryContainer.querySelectorAll(".panel-card").length;
+            if (data.ended || panelCount >= MAX_PANELS) {
+                addBotMessage("Your story has reached an ending. Generating your comic PDF now.");
                 await generatePDF();
             } else {
-                addBotMessageWithSuggestion("What happens next?");
+                addBotMessageWithSuggestion(`What happens next? (${panelCount}/${MAX_PANELS} panels)`);
             }
         } catch (err) {
             console.error("Error generating panel:", err);
@@ -149,7 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const img = document.createElement("img");
         img.src = imageDataUrl;
-        img.className = "panel-thumb";
+        img.className = "panel-thumb zoomable";
 
         const delBtn = document.createElement("button");
         delBtn.className = "panel-delete-btn";
@@ -193,18 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const link = document.createElement("a");
                 link.href = data.pdf;
                 link.download = "AI_Superhero_Comic.pdf";
-                link.textContent = "Download your Comic PDF";
-
-                const msg = document.createElement("div");
-                msg.className = "message ai-message";
-                msg.innerHTML = `<div class="avatar"></div>`;
-                const textDiv = document.createElement("div");
-                textDiv.className = "text";
-                textDiv.appendChild(link);
-                msg.appendChild(textDiv);
-
-                chatMessages.appendChild(msg);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                link.click();
             } else {
                 addBotMessage("Could not generate the final PDF.");
             }
@@ -315,7 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function addImageMessage(src, sender = "ai") {
         const msg = document.createElement("div");
         msg.className = `message ${sender === "user" ? "user-align" : "ai-message"}`;
-        msg.innerHTML = `<div class="avatar"></div><div class="text"><img src="${src}" class="chat-image-preview"/></div>`;
+        msg.innerHTML = `<div class="avatar"></div><div class="text"><img src="${src}" class="chat-image-preview zoomable"/></div>`;
         chatMessages.appendChild(msg);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }

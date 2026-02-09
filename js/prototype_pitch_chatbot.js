@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
         msg.innerHTML = `
             <div class="avatar"></div>
             <div class="text">
-                <img src="data:image/png;base64,${base64}" class="chat-image-preview" alt="Generated concept image">
+                <img src="data:image/png;base64,${base64}" class="chat-image-preview zoomable" alt="Generated concept image">
             </div>
         `;
         chatMessages.appendChild(msg);
@@ -159,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
             msg.innerHTML = `
                 <div class="avatar"></div>
                 <div class="text">
-                    <img src="${ev.target.result}" class="chat-image-preview" alt="Uploaded image">
+                    <img src="${ev.target.result}" class="chat-image-preview zoomable" alt="Uploaded image">
                 </div>
             `;
             chatMessages.appendChild(msg);

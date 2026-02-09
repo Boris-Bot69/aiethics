@@ -453,6 +453,7 @@
 
 <script src="../../js/main.js"></script>
 <script src="../../js/app.js"></script>
+<script src="../../js/image-zoom.js"></script>
 <script src="../../js/magazine_chatbot.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
@@ -535,26 +536,6 @@
 </script>
 
 
-<script>
-    document.addEventListener("click", function (e) {
-        const zoomable = e.target.closest(".zoomable");
-        if (!zoomable) return;
-
-        // Create overlay
-        const overlay = document.createElement("div");
-        overlay.classList.add("zoom-overlay");
-
-        const img = document.createElement("img");
-        img.src = zoomable.src;
-        img.alt = zoomable.alt;
-        overlay.appendChild(img);
-
-        // Close on click
-        overlay.addEventListener("click", () => overlay.remove());
-
-        document.body.appendChild(overlay);
-    });
-</script>
 
 
 

@@ -60,7 +60,7 @@ function addImageBubble(src, extraBelow = null) {
     const wrap = document.createElement("div");
     const img = document.createElement("img");
     img.src = src;
-    img.classList.add("chat-image-preview");
+    img.classList.add("chat-image-preview", "zoomable");
     wrap.appendChild(img);
     if (extraBelow) wrap.appendChild(extraBelow);
     addMessage(null, "bot", wrap);
@@ -148,7 +148,7 @@ async function expandWithAI(nextStage, btnEl) {
     showTyping();
 
     try {
-        const resp = await fetch("http://localhost:3000/expand_canvas", {
+        const resp = await fetch("/expand_canvas", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ image: uploadedBase64 }),

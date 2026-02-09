@@ -169,6 +169,7 @@ function appendGeneratedImage(base64, promptText, index) {
     const img = document.createElement("img");
     img.src = `data:image/png;base64,${base64}`;
     img.alt = "Generated image";
+    img.classList.add("zoomable");
     img.style.maxWidth = "100%";
     img.style.borderRadius = "10px";
     img.style.marginTop = "8px";
@@ -292,6 +293,7 @@ function showSummary() {
         const img = document.createElement("img");
         img.src = `data:image/png;base64,${item.base64}`;
         img.alt = `Image ${idx + 1}`;
+        img.classList.add("zoomable");
         img.style.maxWidth = "100%";
         img.style.borderRadius = "8px";
 
@@ -435,18 +437,3 @@ async function sendPrompt(prompt) {
     }
 }
 
-document.addEventListener("click", (e) => {
-    const zoomable = e.target.closest(".zoomable");
-    if (!zoomable) return;
-
-    const overlay = document.createElement("div");
-    overlay.className = "zoom-overlay";
-
-    const img = document.createElement("img");
-    img.src = zoomable.src;
-    img.alt = zoomable.alt || "Zoomed image";
-    overlay.appendChild(img);
-
-    overlay.addEventListener("click", () => overlay.remove());
-    document.body.appendChild(overlay);
-});

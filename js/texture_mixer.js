@@ -155,6 +155,7 @@
             placeholder.style.display = "none";
             mixedImgEl.style.display = "block";
             mixedImgEl.src = data.imageDataUrl;
+            mixedImgEl.classList.add("zoomable");
             resultArea.classList.remove("hidden");
 
             // Enable downloading
