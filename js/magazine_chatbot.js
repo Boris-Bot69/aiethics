@@ -5,7 +5,7 @@
 let chatPanel, chatMessages, editor, sendBtn, imageUpload;
 let uploadedBase64 = null;
 let stage = 1; // 1st upload/edit → 2nd upload/edit
-let aiConsentGiven = false;
+
 
 // ===============================
 // DOM READY
@@ -192,13 +192,6 @@ function appendAIContainer() {
 // Handle Input (upload + text)
 // ===============================
 function handleUserInput() {
-    console.log("▶ handleUserInput called. aiConsentGiven:", aiConsentGiven, "uploadedBase64?", !!uploadedBase64);
-
-    if (!aiConsentGiven) {
-        appendMessage("Please accept the consent notice before continuing.", "ai");
-        return;
-    }
-
     const text = editor.innerText.trim();
     const hasImage = !!uploadedBase64;
 
