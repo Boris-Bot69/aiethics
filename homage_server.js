@@ -290,7 +290,7 @@ app.delete("/admin/users/:username", requireAdmin, async (req, res) => {
 
 app.get("/", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
 app.get("/index.html", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
-app.get("/admin.html", (_req, res) => res.sendFile(path.join(__dirname, "admin.html")));
+app.get(["/admin.html", "/admin"], (_req, res) => res.sendFile(path.join(__dirname, "admin.html")));
 
 // Serve feedback.html (with and without .html extension)
 app.get(["/feedback.html", "/feedback"], requireLogin, (_req, res) => {
