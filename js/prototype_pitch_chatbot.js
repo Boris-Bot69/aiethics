@@ -64,6 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const bubble = document.createElement("div");
         bubble.className = "message bot typing";
         bubble.innerHTML = `
+            <div class="avatar"></div>
             <div class="typing-indicator">
                 <div class="typing-dot"></div>
                 <div class="typing-dot"></div>

@@ -46,16 +46,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function showTyping() {
-        const div = document.createElement("div");
-        div.className = "typing-indicator";
-        div.innerHTML = `
+        const msg = document.createElement("div");
+        msg.className = "message ai-message typing";
+
+        const avatar = document.createElement("div");
+        avatar.classList.add("avatar");
+
+        const bubble = document.createElement("div");
+        bubble.classList.add("typing-indicator");
+        bubble.innerHTML = `
             <span class="typing-dot"></span>
             <span class="typing-dot"></span>
             <span class="typing-dot"></span>
         `;
-        messages.appendChild(div);
+
+        msg.appendChild(avatar);
+        msg.appendChild(bubble);
+        messages.appendChild(msg);
         messages.scrollTop = messages.scrollHeight;
-        return div;
+        return msg;
     }
 
     async function api(url, body) {

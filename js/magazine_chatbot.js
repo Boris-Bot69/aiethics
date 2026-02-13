@@ -161,7 +161,12 @@ function enableEditor() {
 // ===============================
 function appendMessage(text, sender = "ai") {
     const msg = document.createElement("div");
-    msg.classList.add("message", `${sender}-message`);
+    msg.classList.add("message");
+    if (sender === "user") {
+        msg.classList.add("user-align");
+    } else {
+        msg.classList.add("ai-message");
+    }
     const avatar = document.createElement("div");
     avatar.classList.add("avatar");
     const textDiv = document.createElement("div");
