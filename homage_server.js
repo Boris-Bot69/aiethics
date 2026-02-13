@@ -512,12 +512,31 @@ app.post("/edit-magazine", async (req, res) => {
                 },
                 { text: prompt || "Enhance or edit this drawing creatively." },
             ],
-            config: { responseModalities: ["IMAGE"] },
+            config: { responseModalities: ["TEXT", "IMAGE"] },
         });
 
-        const imgPart = response?.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.data);
+        const candidate = response?.candidates?.[0];
+        const blockReason = response?.promptFeedback?.blockReason
+            || candidate?.finishReason;
+
+        if (!candidate || !candidate.content?.parts?.length) {
+            console.error("/edit-magazine: empty response.",
+                "blockReason:", blockReason || "(none)",
+                "promptFeedback:", JSON.stringify(response?.promptFeedback || {}));
+            const userMsg = blockReason === "SAFETY"
+                ? "The prompt was blocked by safety filters. Try rephrasing your description."
+                : "The model could not generate an image. Try rephrasing your description.";
+            return res.status(500).json({ error: userMsg });
+        }
+
+        const parts = candidate.content.parts;
+        const imgPart = parts.find(p => p.inlineData?.data);
         if (!imgPart) {
-            return res.status(500).json({ error: "No image returned from model" });
+            const textMsg = parts.map((p) => p.text).filter(Boolean).join(" ").slice(0, 300);
+            console.error("/edit-magazine: no image in parts. Text:", textMsg || "(none)");
+            return res.status(500).json({
+                error: textMsg || "The model could not generate an image. Try rephrasing your description.",
+            });
         }
 
         res.json({
@@ -745,13 +764,34 @@ If the story logically reaches a conclusion, end it naturally with an emotional 
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash-image",
             contents,
-            config: { responseModalities: ["IMAGE"], temperature: 0.8 },
+            config: { responseModalities: ["TEXT", "IMAGE"], temperature: 0.8 },
         });
 
-        const part = response?.candidates?.[0]?.content?.parts?.find(
-            (p) => p.inlineData?.data
-        );
-        if (!part) throw new Error("No image returned.");
+        // Check for safety / block reasons before inspecting parts
+        const candidate = response?.candidates?.[0];
+        const blockReason = response?.promptFeedback?.blockReason
+            || candidate?.finishReason;
+
+        if (!candidate || !candidate.content?.parts?.length) {
+            console.error("/generate-panel: empty response.",
+                "blockReason:", blockReason || "(none)",
+                "promptFeedback:", JSON.stringify(response?.promptFeedback || {}));
+            const userMsg = blockReason === "SAFETY"
+                ? "The prompt was blocked by safety filters. Please avoid copyrighted characters or sensitive content and try again."
+                : "The model could not generate an image for this prompt. Try rephrasing your description with more original details.";
+            return res.status(500).json({ error: userMsg });
+        }
+
+        const parts = candidate.content.parts;
+        const part = parts.find((p) => p.inlineData?.data);
+
+        if (!part) {
+            const textMsg = parts.map((p) => p.text).filter(Boolean).join(" ").slice(0, 300);
+            console.error("/generate-panel: no image in parts. Text:", textMsg || "(none)");
+            return res.status(500).json({
+                error: textMsg || "The model could not generate an image for this prompt. Try rephrasing your description.",
+            });
+        }
 
         const mime = part.inlineData.mimeType || "image/png";
         const base64 = part.inlineData.data;

@@ -144,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
             console.error("Error generating panel:", err);
             hideTyping();
-            addBotMessage("Error. Please try again with your prompt.");
+            addBotMessage("Please write a longer prompt!");
         } finally {
             isProcessing = false;
         }
@@ -191,12 +191,23 @@ document.addEventListener("DOMContentLoaded", () => {
     // === Generate final PDF ===
     async function generatePDF() {
         try {
+            // Remove any leftover suggestion buttons since the story is done
+            chatMessages.querySelectorAll(".suggest-inline").forEach(el => {
+                const textDiv = el.closest(".text");
+                if (textDiv) {
+                    // Keep the panel count text, remove only the buttons
+                    el.remove();
+                }
+            });
+
+            addBotMessage("Generating your comic PDF, please wait…");
             showTyping();
             const res = await fetch(`${API_BASE}/generate-comic-pdf?sessionId=${sessionId}`);
             const data = await res.json();
             hideTyping();
 
             if (res.ok && data.pdf) {
+                addBotMessage("Your comic PDF is ready!");
                 const link = document.createElement("a");
                 link.href = data.pdf;
                 link.download = "AI_Superhero_Comic.pdf";
