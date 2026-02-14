@@ -558,14 +558,6 @@ app.post("/mix-texture", async (req, res) => {
             return res.status(400).json({ error: "Both images are required" });
         }
 
-        const s = Math.max(0, Math.min(1, Number(strength ?? 0.6)));
-
-        // Strength-aware wording so the model understands the slider
-        let intensityWord;
-        if (s < 0.3)      intensityWord = "subtly hint at";
-        else if (s < 0.6) intensityWord = "moderately blend";
-        else if (s < 0.8) intensityWord = "strongly apply";
-        else               intensityWord = "completely cover with";
 
         const instruction =
             `IMAGE EDITING TASK — Texture Transfer
@@ -574,7 +566,7 @@ Look at these two images:
 - Image 1 (STRUCTURE): This is the object. Keep its EXACT shape, silhouette, 3D form, perspective, lighting, and shadows.
 - Image 2 (TEXTURE/MATERIAL): This is a surface material or texture pattern.
 
-YOUR JOB: ${intensityWord} the texture from Image 2 onto the surfaces of the object in Image 1.
+YOUR JOB: Strongly apply the texture from Image 2 onto the surfaces of the object in Image 1.
 
 CRITICAL RULES:
 - Do NOT change the object's shape, size, or position

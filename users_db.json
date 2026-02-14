@@ -7,5 +7,14 @@
     "expiresAt": "2027-02-08T17:13:39.828Z",
     "createdBy": "admin",
     "active": true
+  },
+  {
+    "id": "afd2686c-191a-499d-84f9-46349d91e7d9",
+    "username": "xiaoyu",
+    "passwordHash": "$2b$10$rYAKW3T7oKMKBgtQDkL/Je4nMfnBN05mlAYuYhEYEu5AicdFbc3JK",
+    "createdAt": "2026-02-09T14:30:36.600Z",
+    "expiresAt": "2026-02-16T14:30:36.600Z",
+    "createdBy": "admin",
+    "active": true
   }
 ]
