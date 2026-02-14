@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@fal-ai/client": "^1.9.1",
     "@google/genai": "^1.28.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",

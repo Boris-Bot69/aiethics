@@ -548,6 +548,9 @@ app.post("/edit-magazine", async (req, res) => {
     }
 });
 
+// ============================================================
+//  IMPROVED /mix-texture — Better prompt engineering for Gemini
+// ============================================================
 app.post("/mix-texture", async (req, res) => {
     try {
         const { structureBase64, textureBase64, strength, prompt } = req.body;
@@ -555,59 +558,68 @@ app.post("/mix-texture", async (req, res) => {
             return res.status(400).json({ error: "Both images are required" });
         }
 
+        const s = Math.max(0, Math.min(1, Number(strength ?? 0.6)));
 
-        const defaultInstruction =
-            `You are a texture-to-structure fusion tool. 
-       Take the first image as the STRUCTURE (the main content, shapes, edges).
-       Take the second image as the TEXTURE (the material/style).
-       Fuse them so that the texture conforms to the surfaces and contours of the structure.
-       Preserve structure edges and silhouettes. Avoid warping the global composition.
-       Use a texture strength of ${Math.max(0, Math.min(1, Number(strength ?? 0.6)))} 
-       (0=ignore texture, 1=strong texture dominance).
-       Output exactly one fused image.`;
+        // Strength-aware wording so the model understands the slider
+        let intensityWord;
+        if (s < 0.3)      intensityWord = "subtly hint at";
+        else if (s < 0.6) intensityWord = "moderately blend";
+        else if (s < 0.8) intensityWord = "strongly apply";
+        else               intensityWord = "completely cover with";
+
+        const instruction =
+            `IMAGE EDITING TASK — Texture Transfer
+
+Look at these two images:
+- Image 1 (STRUCTURE): This is the object. Keep its EXACT shape, silhouette, 3D form, perspective, lighting, and shadows.
+- Image 2 (TEXTURE/MATERIAL): This is a surface material or texture pattern.
+
+YOUR JOB: ${intensityWord} the texture from Image 2 onto the surfaces of the object in Image 1.
+
+CRITICAL RULES:
+- Do NOT change the object's shape, size, or position
+- Do NOT create a new object — edit the EXISTING one
+- Do NOT break, shatter, or disassemble the object
+- The texture should WRAP around the object's 3D contours like a skin or paint
+- Preserve the original lighting and shadows from Image 1
+- The background should remain unchanged
+- Think of it like re-skinning a 3D model with a new material
+${prompt?.trim() ? `\nAdditional instruction: ${prompt.trim()}` : ""}
+
+Output exactly one image.`;
 
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash-image",
             contents: [
-                // STRUCTURE image first
                 {
                     inlineData: {
                         data: toRaw(structureBase64),
                         mimeType: structureBase64.includes("image/png") ? "image/png" : "image/jpeg",
                     },
                 },
-                // TEXTURE image second
                 {
                     inlineData: {
                         data: toRaw(textureBase64),
                         mimeType: textureBase64.includes("image/png") ? "image/png" : "image/jpeg",
                     },
                 },
-                // Instruction + optional user prompt
-                {
-                    text:
-                        (prompt?.trim()
-                            ? `Base instruction:\n${defaultInstruction}\n\nUser request:\n${prompt.trim()}`
-                            : defaultInstruction),
-                },
+                { text: instruction },
             ],
-            // Ask for image + (optional) short text
-            config: { responseModalities: ["TEXT", "IMAGE"] },
+            config: { responseModalities: ["IMAGE", "TEXT"] },
         });
 
-        // Find the first image part in the response
         const parts = response?.candidates?.[0]?.content?.parts || [];
         const imgPart = parts.find((p) => p.inlineData?.data);
         if (!imgPart) {
             const maybeText = parts.map((p) => p.text).filter(Boolean).join("\n").slice(0, 500);
-            return res
-                .status(500)
-                .json({ error: "No image returned from model", details: maybeText || undefined });
+            return res.status(500).json({
+                error: "No image returned from model",
+                details: maybeText || undefined,
+            });
         }
 
-        // Return a data URL so the browser can <img src="...">
         const mime = imgPart.inlineData.mimeType || "image/png";
-        const base64 = imgPart.inlineData.data; // already base64
+        const base64 = imgPart.inlineData.data;
         res.json({ imageDataUrl: `data:${mime};base64,${base64}` });
     } catch (err) {
         console.error("/mix-texture error:", err);
@@ -615,20 +627,24 @@ app.post("/mix-texture", async (req, res) => {
     }
 });
 
+
+// ============================================================
+//  IMPROVED /expand_canvas — Better prompt + Gemini fallback
+// ============================================================
 app.post("/expand_canvas", async (req, res) => {
     try {
-        const { image } = req.body;
+        const { image, prompt } = req.body;
         if (!image) return res.status(400).json({ error: "Missing image data" });
 
         const baseBuf = Buffer.from(image.split(",")[1], "base64");
         const meta = await sharp(baseBuf).metadata();
 
-        // Calculate new dimensions (25% larger on each side)
+        // 25% expansion on each side
         const margin = Math.round(meta.width * 0.25);
         const newW = meta.width + margin * 2;
         const newH = meta.height + margin * 2;
 
-        // Create padded image (original centered on transparent/white background)
+        // Create padded image: original centered on white background
         const paddedImage = await sharp({
             create: {
                 width: newW,
@@ -641,72 +657,67 @@ app.post("/expand_canvas", async (req, res) => {
             .png()
             .toBuffer();
 
-        // Create mask: black where original image is (keep), white where we want new content (generate)
-        const blackRect = await sharp({
-            create: {
-                width: meta.width,
-                height: meta.height,
-                channels: 3,
-                background: { r: 0, g: 0, b: 0 },
-            },
-        })
-            .png()
-            .toBuffer();
+        console.log(`Expanding canvas ${meta.width}x${meta.height} → ${newW}x${newH}`);
 
-        const mask = await sharp({
-            create: {
-                width: newW,
-                height: newH,
-                channels: 3,
-                background: { r: 255, g: 255, b: 255 },
-            },
-        })
-            .composite([{ input: blackRect, top: margin, left: margin }])
-            .png()
-            .toBuffer();
+        const instruction = prompt?.trim()
+            || "Expand this image creatively beyond its current borders. "
+            + "The white areas around the edges are the new canvas space to fill. "
+            + "Add interesting new content: extend the environment, add characters, "
+            + "objects, scenery, or atmospheric details that enrich the scene. "
+            + "Be creative and surprising — each expansion should reveal more of the world. "
+            + "Match the art style, color palette, and mood of the original image. "
+            + "The center content must stay intact and blend seamlessly with the new additions.";
 
-        console.log("Outpainting with Imagen 3...");
-
-        const response = await ai.models.editImage({
-            model: "imagen-3.0-capability-001",
-            prompt: "Naturally extend and continue the scene beyond the edges, maintaining the same style, lighting, and atmosphere",
-            referenceImages: [
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash-image",
+            contents: [
                 {
-                    referenceType: "REFERENCE_TYPE_RAW",
-                    referenceId: 1,
-                    referenceImage: {
-                        bytesBase64Encoded: paddedImage.toString("base64"),
+                    inlineData: {
+                        data: paddedImage.toString("base64"),
+                        mimeType: "image/png",
                     },
                 },
-                {
-                    referenceType: "REFERENCE_TYPE_MASK",
-                    referenceImage: {
-                        bytesBase64Encoded: mask.toString("base64"),
-                    },
-                    maskImageConfig: {
-                        maskMode: "MASK_MODE_USER_PROVIDED",
-                        dilation: 0.02,
-                    },
-                },
+                { text: instruction },
             ],
-            config: {
-                editMode: "EDIT_MODE_OUTPAINT",
-                numberOfImages: 1,
-            },
+            config: { responseModalities: ["IMAGE", "TEXT"] },
         });
 
-        const generatedImage = response?.generatedImages?.[0]?.image?.imageBytes;
-        if (!generatedImage) throw new Error("No image returned from Imagen.");
+        const candidate = response?.candidates?.[0];
+        const blockReason = response?.promptFeedback?.blockReason
+            || candidate?.finishReason;
+
+        if (!candidate || !candidate.content?.parts?.length) {
+            console.error("/expand_canvas: empty response.",
+                "blockReason:", blockReason || "(none)",
+                "promptFeedback:", JSON.stringify(response?.promptFeedback || {}));
+            const userMsg = blockReason === "SAFETY"
+                ? "The prompt was blocked by safety filters. Try rephrasing your description."
+                : "The model could not expand this image. Try again.";
+            return res.status(500).json({ error: userMsg });
+        }
+
+        const parts = candidate.content.parts;
+        const imgPart = parts.find((p) => p.inlineData?.data);
+
+        if (!imgPart) {
+            const textMsg = parts.map((p) => p.text).filter(Boolean).join(" ").slice(0, 300);
+            console.error("/expand_canvas: no image in parts. Text:", textMsg || "(none)");
+            return res.status(500).json({
+                error: textMsg || "The model could not expand this image. Try again.",
+            });
+        }
+
+        const mime = imgPart.inlineData.mimeType || "image/png";
+        const base64 = imgPart.inlineData.data;
 
         res.json({
-            image_url: `data:image/png;base64,${generatedImage}`,
+            image_url: `data:${mime};base64,${base64}`,
         });
     } catch (err) {
         console.error("/expand_canvas error:", err);
         res.status(500).json({ error: err.message });
     }
 });
-
 
 // AI SUPERHERO
 
