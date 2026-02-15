@@ -58,7 +58,7 @@ p {
 
 .navbar {
     background-color: transparent;
-    background-image: url("/images/navbar.svg");
+    background-image: url("/images/menu/navbar.svg");
     background-size: cover;
     background-position: center bottom;
     transition: transform 0.3s ease-in-out;
@@ -469,7 +469,7 @@ p {
 
 .bottom-bar {
     min-height: 20rem;
-    background-image: url('../images/bottom.svg');
+    background-image: url('../images/menu/bottom.svg');
     background-repeat: no-repeat;
 
     background-position: top center;
