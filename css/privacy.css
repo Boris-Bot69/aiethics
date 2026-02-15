@@ -84,6 +84,14 @@ p {
     align-items: center;
     gap: 3rem;
 }
+.nav-brand {
+    color: #222222;
+    padding: 0.5rem;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+}
+
 .nav-link {
     position: relative;
     overflow: hidden;
@@ -468,7 +476,7 @@ p {
     background-repeat: no-repeat;
 
     background-position: top center;
-    background-size: 100% auto;
+    background-size: cover;
 
     display: flex;
     align-items: flex-start;

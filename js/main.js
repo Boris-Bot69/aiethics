@@ -11,7 +11,7 @@
     });
 
     function setupNavigation() {
-        const navLinks = document.querySelectorAll('.nav-link');
+        const navLinks = document.querySelectorAll('.nav-link:not(.nav-brand)');
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 
         navLinks.forEach(link => {

@@ -208,6 +208,110 @@ h1 {
 }
 
 
+/* ============================================= */
+/* RESEARCH & PUBLICATIONS PAGE STYLES           */
+/* ============================================= */
+
+/* Main 3-Column Grid */
+.pub-cards-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    width: 100%;
+}
+
+.pub-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+/* The wrapper holds both the document background and the colored card */
+.pub-card-wrapper {
+    position: relative;
+    height: 480px;
+    width: 100%;
+}
+
+/* The paper document peeking out from behind */
+.pub-doc-bg {
+    position: absolute;
+    top: 10%;
+    right: 0;
+    width: 80%;
+    height: 85%;
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    background-size: cover;
+    background-position: top center;
+    background-repeat: no-repeat;
+    z-index: 1;
+    border: 1px solid #eaeaea;
+}
+
+/* The main solid color card */
+.pub-color-card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 85%;
+    height: 100%;
+    padding: 2.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    z-index: 2;
+    color: #ffffff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Subtle hover lift effect */
+.pub-card-link:hover .pub-color-card {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+}
+
+/* Exact mockup colors */
+.bg-orange { background-color: #E68D32; }
+.bg-green  { background-color: #79A662; }
+.bg-coral  { background-color: #ED7870; }
+
+/* Typography inside the cards */
+.pub-top {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.4;
+    margin-bottom: 2rem;
+    opacity: 0.95;
+}
+
+.pub-title {
+    font-family: 'Georgia', serif; /* Serif font to match your mockup */
+    font-size: 1.8rem;
+    line-height: 1.3;
+    flex-grow: 1;
+    display: flex;
+    align-items: center; /* Centers the title vertically if it is short */
+}
+
+.pub-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 1rem;
+    opacity: 0.95;
+}
+
+.to-be-continued {
+    font-family: 'Georgia', serif;
+    font-size: 1.25rem;
+    color: #333;
+    margin-top: 4rem;
+    padding-left: 0.5rem;
+}
+
 .two-column-layout {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -534,6 +638,13 @@ body.no-scroll {
 
     .menu-toggle {
         display: flex; /* This makes the button visible */
+    }
+
+    .pub-cards-container {
+        grid-template-columns: 1fr;
+        gap: 4rem; /* Adds more space between stacked items */
+        max-width: 500px;
+        margin: 0 auto;
     }
 
     body {
