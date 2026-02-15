@@ -43,7 +43,7 @@ h1 {
 }
 
 /* ============================================= */
-/* 2. LAYOUT & SITE-WIDE COMPONENTS              */
+/* LAYOUT & SITE-WIDE COMPONENTS                 */
 /* ============================================= */
 
 .navbar {
@@ -52,7 +52,6 @@ h1 {
     background-size: cover;
     background-position: center bottom;
     transition: transform 0.3s ease-in-out;
-
     background-repeat: no-repeat;
     height: 105px;
     position: fixed;
@@ -75,6 +74,7 @@ h1 {
     align-items: center;
     gap: 3rem;
 }
+
 .nav-brand {
     color: #222222;
     padding: 0.5rem;
@@ -87,7 +87,6 @@ h1 {
     position: relative;
     overflow: hidden;
     z-index: 1;
-
     color: #222222;
     padding: 0.5rem;
     border-radius: 4px;
@@ -95,7 +94,6 @@ h1 {
     transition: color 0.4s ease-out;
 }
 
-/* 2. Create the hidden slider element */
 .nav-link::before {
     content: '';
     position: absolute;
@@ -103,13 +101,9 @@ h1 {
     left: 0;
     width: 100%;
     height: 100%;
-
     background-color: #78A564;
-
     transform: translateX(-100%);
-
     transition: transform 0.4s ease-in-out;
-
     z-index: -1;
 }
 
@@ -117,7 +111,6 @@ h1 {
 .nav-link.active::before {
     transform: translateX(0);
 }
-
 
 .nav-link:hover,
 .nav-link.active {
@@ -130,11 +123,10 @@ h1 {
     background-color: #FF6B6B;
     opacity: 0.8;
 }
-/* 4. Main Content Layout */
+
 .main-content {
     width: 100%;
 }
-/* --- Main Layout & Sidebars --- */
 
 .breadcrumb {
     display: flex;
@@ -144,7 +136,6 @@ h1 {
     font-size: 1rem;
     padding: 3rem 0 0 10rem;
 }
-
 
 .breadcrumb-item a {
     color: black;
@@ -168,15 +159,12 @@ h1 {
     font-weight: 600;
 }
 
-
-
 .three-column-layout {
     display: grid;
     grid-template-columns: 1fr 5fr 1fr;
     gap: 0;
 }
 
-/* Sidebar Styles */
 .sidebar {
     position: sticky;
     top: 105px;
@@ -185,7 +173,6 @@ h1 {
     min-height: 0;
     overflow: visible;
 }
-
 
 .sidebar-left {
     margin-left: -12vw;
@@ -203,16 +190,29 @@ h1 {
     max-height: 1200px;
     object-fit: contain;
 }
+
 .main-content-area {
     padding: 2rem 1rem;
 }
 
+.custom-header {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 48px;
+    line-height: 60px;
+    color: black;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.image-spacer1 {
+    height: 4rem;
+}
 
 /* ============================================= */
-/* RESEARCH & PUBLICATIONS PAGE STYLES           */
+/* RESEARCH & PUBLICATIONS CARDS                 */
 /* ============================================= */
 
-/* Main 3-Column Grid */
 .pub-cards-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -226,30 +226,32 @@ h1 {
     display: block;
 }
 
-/* The wrapper holds both the document background and the colored card */
 .pub-card-wrapper {
     position: relative;
     height: 480px;
     width: 100%;
 }
 
-/* The paper document peeking out from behind */
 .pub-doc-bg {
     position: absolute;
-    top: 10%;
+    top: 5%;
     right: 0;
-    width: 80%;
-    height: 85%;
+    width: 85%;
+    height: 90%;
     background-color: #ffffff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 2px 4px 15px rgba(0,0,0,0.08);
     background-size: cover;
-    background-position: top center;
+    background-position: top left;
     background-repeat: no-repeat;
     z-index: 1;
     border: 1px solid #eaeaea;
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* The main solid color card */
+.pub-card-link:hover .pub-doc-bg {
+    transform: translate(30px, 0) rotate(1.5deg);
+}
+
 .pub-color-card {
     position: absolute;
     top: 0;
@@ -261,21 +263,12 @@ h1 {
     flex-direction: column;
     z-index: 2;
     color: #ffffff;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Subtle hover lift effect */
-.pub-card-link:hover .pub-color-card {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
-}
-
-/* Exact mockup colors */
 .bg-orange { background-color: #E68D32; }
 .bg-green  { background-color: #79A662; }
 .bg-coral  { background-color: #ED7870; }
 
-/* Typography inside the cards */
 .pub-top {
     font-family: 'Inter', sans-serif;
     font-size: 0.9rem;
@@ -286,12 +279,12 @@ h1 {
 }
 
 .pub-title {
-    font-family: 'Georgia', serif; /* Serif font to match your mockup */
+    font-family: 'Georgia', serif;
     font-size: 1.8rem;
     line-height: 1.3;
     flex-grow: 1;
     display: flex;
-    align-items: center; /* Centers the title vertically if it is short */
+    align-items: center;
 }
 
 .pub-bottom {
@@ -312,149 +305,19 @@ h1 {
     padding-left: 0.5rem;
 }
 
-.two-column-layout {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0;
-}
-.text-content p {
-    margin-top: 1rem;
-    line-height: 1.7;
-    color: #444;
-}
-
-/* Styling for the image column */
-.image-content img {
-    width: 100%; /* Makes the image fill its column */
-    height: auto; /* Maintains aspect ratio */
-    display: block; /* Removes extra space below the image */
-    border-radius: 8px; /* Optional: adds rounded corners */
-}
 /* ============================================= */
-/* 3. PAGE-SPECIFIC STYLES (AI ACTIVITIES)       */
+/* FOOTER & BOTTOM BAR                           */
 /* ============================================= */
-
-/* --- Page Header --- */
-.custom-header {
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-size: 48px;
-    line-height: 60px;
-    color: black;
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.text-with-button-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-.custom-text {
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 150%;
-    color: #828282;
-    text-align: center;
-    max-width: 87.5rem;
-}
-
-
-.custom-button {
-
-    background-repeat: no-repeat;
-    background-size: contain;
-}
-
-.image-spacer1 { height: 4rem; }
-
-
-
-/* This is the main grid container */
-.cards-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr; /* Forces 2 Columns */
-    gap: 3rem;
-    padding: 2rem 0;
-    align-items: stretch;
-}
-
-.activity-card-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    height: 100%;
-}
-
-.activity-item {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    text-align: center;
-}
-
-/* Uniform Header height to align images below */
-.activity-item h4 {
-    font-weight: 600;
-    font-size: 1rem;
-    color: #333;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0 0 1rem 0;
-
-    /* Lock the height */
-    min-height: 4.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Uniform Image Box */
-.activity-image-box {
-    height: 250px;
-    overflow: hidden;
-    margin-bottom: 1rem;
-    border-radius: 8px;
-}
-
-.activity-image-box img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Crops images to fit perfectly */
-}
-
-.activity-info {
-    flex-grow: 1; /* Makes the text area expand evenly */
-}
-
-.activity-info p {
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: #828282;
-}
-
 
 .bottom-bar {
     min-height: 20rem;
     background-image: url('../images/bottom.svg');
     background-repeat: no-repeat;
-
     background-position: top center;
     background-size: cover;
-
     display: flex;
     align-items: flex-start;
     padding: 4rem 2rem;
-}
-
-.section-title {
-    font-weight: bold;
-    font-size: 1.2rem;
-    margin-bottom: 2rem;
-    color: #333;
 }
 
 .logo-grid {
@@ -491,7 +354,6 @@ h1 {
     margin: 0 auto;
 }
 
-
 .footer-sidebar {
     display: flex;
     gap: 4rem;
@@ -503,7 +365,6 @@ h1 {
     margin-bottom: 1.5rem;
     color: #333;
 }
-
 
 .footer-links {
     list-style: none;
@@ -525,22 +386,15 @@ h1 {
     text-decoration: underline;
 }
 
-
 .contact-item {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.email-icon {
-    font-size: 1rem;
-}
-
-
-
-
-
-
+/* ============================================= */
+/* MOBILE NAVIGATION                             */
+/* ============================================= */
 
 .hamburger-icon {
     display: block;
@@ -548,6 +402,7 @@ h1 {
     width: 20px;
     height: 14px;
 }
+
 .hamburger-icon::before,
 .hamburger-icon::after {
     content: '';
@@ -557,15 +412,12 @@ h1 {
     height: 2px;
     background-color: #FFFFFF;
 }
-.hamburger-icon::before {
-    top: 0;
-}
-.hamburger-icon::after {
-    bottom: 0;
-}
+
+.hamburger-icon::before { top: 0; }
+.hamburger-icon::after { bottom: 0; }
 
 .menu-toggle {
-    display: none; /* This correctly hides the button on desktop */
+    display: none;
     background-color: transparent;
     border: 1px solid #FFFFFF;
     border-radius: 4px;
@@ -585,19 +437,14 @@ h1 {
     right: 0;
     width: 80%;
     max-width: 300px;
-
     background-color: #78A564;
-
     z-index: 999;
-
     transform: translateX(100%);
-
     transition: transform 0.3s ease-in-out;
     display: flex;
     flex-direction: column;
     padding: 2rem;
     gap: 1.5rem;
-
     border-bottom-left-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -616,7 +463,9 @@ body.no-scroll {
     overflow: hidden;
 }
 
-
+/* ============================================= */
+/* RESPONSIVE DESIGN (MOBILE/TABLET)             */
+/* ============================================= */
 
 @media (max-width: 960px) {
     .navbar {
@@ -627,29 +476,29 @@ body.no-scroll {
         height: 4.5rem;
         flex-wrap: nowrap;
     }
+
     .navbar .nav-link {
         color: #ffffff;
     }
-
 
     .nav-links-right {
         display: none;
     }
 
     .menu-toggle {
-        display: flex; /* This makes the button visible */
+        display: flex;
+    }
+
+    body {
+        padding-top: 4.5rem;
+        background-image: none;
     }
 
     .pub-cards-container {
         grid-template-columns: 1fr;
-        gap: 4rem; /* Adds more space between stacked items */
+        gap: 4rem;
         max-width: 500px;
         margin: 0 auto;
-    }
-
-    body {
-        padding-top: 4.5rem; /* Match the navbar height */
-        background-image: none;
     }
 
     .bottom-bar {
@@ -679,23 +528,12 @@ body.no-scroll {
         display: none;
     }
 
-    .three-column-layout,
-    .grid-container-2col {
+    .three-column-layout {
         grid-template-columns: 1fr;
     }
 
-    .grid-container-2col .custom-header,
-    .grid-container-2col .custom-text {
-        text-align: center;
-    }
-
-    .content-image {
-        display: none;
-    }
-
-    /* Remove original styles that are no longer needed for mobile nav */
     .nav-link {
-        font-size: initial; /* Reset font size change */
+        font-size: initial;
     }
 
     .nav-divider {
@@ -703,20 +541,6 @@ body.no-scroll {
     }
 
     .breadcrumb {
-        padding: 1rem; /* Adjust padding for mobile */
+        padding: 1rem;
     }
-
-
-    .card {
-        padding: 1.5rem;
-    }
-
-    .scenario-step,
-    .scenario-step.step-reverse {
-        flex-direction: column; /* Stack image and text vertically */
-        gap: 1.5rem;
-        text-align: center;
-    }
-
-
 }

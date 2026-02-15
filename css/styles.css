@@ -12,7 +12,7 @@ html {
 }
 
 body {
-    background-image: url('../images/scissor.svg');
+    background-image: url('../images/main_page/scissor.svg');
     background-repeat: no-repeat;
     background-position: center top;
     font-family: 'Inter', sans-serif;
@@ -347,16 +347,16 @@ p {
 
 /* --- Card Color Variations --- */
 .card.card-red {
-    border-image-source: url('../images/border_1.svg'); /* Path to your red border SVG */
+    border-image-source: url('../images/main_page/border_1.svg'); /* Path to your red border SVG */
 }
 
 .card.card-orange {
-    border-image-source: url('../images/border_2.svg'); /* Path to your orange border SVG */
+    border-image-source: url('../images/main_page/border_2.svg'); /* Path to your orange border SVG */
 }
 
 /* --- Card Internals --- */
 .card-image-placeholder-activities {
-    background-image: url('../images/Activities image bottom home page.svg');
+    background-image: url('../images/main_page/Activities image bottom home page.svg');
     height: 15rem;
     width: 100%;
     border-radius: 0.75rem;
@@ -364,7 +364,7 @@ p {
 
 
 .card-image-placeholder-scenarios {
-    background-image: url('../images/Scenarios image bottom home page.svg');
+    background-image: url('../images/main_page/Scenarios image bottom home page.svg');
     height: 15rem;
     width: 100%;
     border-radius: 0.75rem;
@@ -875,7 +875,7 @@ body.no-scroll {
     }
 
     body {
-        background-image: url('../images/scissor.svg');
+        background-image: url('../images/main_page/scissor.svg');
         background-repeat: no-repeat;
         background-position: center 14rem; /* Move scissors down */
         background-size: clamp(900px, 60vw, 1400px); /* Scale up on large screens */
