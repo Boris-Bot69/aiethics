@@ -9,6 +9,7 @@ import sharp from "sharp";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import fs from "node:fs/promises";
 import rateLimit from "express-rate-limit";
+import { createClient } from "@supabase/supabase-js";
 import {
     validateUser,
     createUser,
@@ -19,6 +20,12 @@ import {
 } from "./auth/userManager.js";
 
 dotenv.config();
+
+// Initialize Supabase client
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY
+);
 
 // Initialize users database
 ensureUsersDB().catch(console.error);
@@ -337,11 +344,9 @@ app.get("/me", async (req, res) => {
 app.use("/html", requireLogin, express.static(path.join(__dirname, "html")));
 
 /* ============================================================
-   Feedback API - Store feedback in CSV file
+   Feedback API - Store feedback in Supabase
 ============================================================ */
-const FEEDBACK_CSV_PATH = path.join(__dirname, "feedback.csv");
 
-// Escape CSV field (handle commas, quotes, newlines)
 function escapeCSV(field) {
     if (field === null || field === undefined) return "";
     const str = String(field);
@@ -350,19 +355,6 @@ function escapeCSV(field) {
     }
     return str;
 }
-
-// Ensure CSV file exists with headers
-async function ensureFeedbackCSV() {
-    try {
-        await fs.access(FEEDBACK_CSV_PATH);
-    } catch {
-        const headers = "timestamp,name,email,generalFeedback,activities,scenarios,ip\n";
-        await fs.writeFile(FEEDBACK_CSV_PATH, headers, "utf-8");
-    }
-}
-
-// Initialize CSV on server start
-ensureFeedbackCSV().catch(console.error);
 
 app.post("/api/feedback", requireLogin, async (req, res) => {
     try {
@@ -373,27 +365,21 @@ app.post("/api/feedback", requireLogin, async (req, res) => {
             return res.status(400).json({ error: "Please select at least one activity or scenario" });
         }
 
-        await ensureFeedbackCSV();
+        const { error } = await supabase.from("feedback").insert({
+            timestamp: timestamp || new Date().toISOString(),
+            name: name || "Anonymous",
+            email: email || "",
+            general_feedback: generalFeedback || "",
+            activities: activities || [],
+            scenarios: scenarios || [],
+            ip: req.ip || req.connection.remoteAddress
+        });
 
-        // Format activities and scenarios as JSON strings for CSV
-        const activitiesStr = activities ? JSON.stringify(activities) : "";
-        const scenariosStr = scenarios ? JSON.stringify(scenarios) : "";
-
-        const row = [
-            escapeCSV(timestamp || new Date().toISOString()),
-            escapeCSV(name || "Anonymous"),
-            escapeCSV(email || ""),
-            escapeCSV(generalFeedback || ""),
-            escapeCSV(activitiesStr),
-            escapeCSV(scenariosStr),
-            escapeCSV(req.ip || req.connection.remoteAddress)
-        ].join(",") + "\n";
-
-        await fs.appendFile(FEEDBACK_CSV_PATH, row, "utf-8");
+        if (error) throw error;
 
         const activityCount = activities ? activities.length : 0;
         const scenarioCount = scenarios ? scenarios.length : 0;
-        console.log("Feedback submitted to CSV:", {
+        console.log("Feedback submitted to Supabase:", {
             activities: activityCount,
             scenarios: scenarioCount
         });
@@ -405,11 +391,28 @@ app.post("/api/feedback", requireLogin, async (req, res) => {
     }
 });
 
-// Admin endpoint to download feedback CSV
+// Admin endpoint to download feedback as CSV
 app.get("/api/feedback", requireLogin, async (req, res) => {
     try {
-        await ensureFeedbackCSV();
-        const csvContent = await fs.readFile(FEEDBACK_CSV_PATH, "utf-8");
+        const { data, error } = await supabase
+            .from("feedback")
+            .select("*")
+            .order("timestamp", { ascending: true });
+
+        if (error) throw error;
+
+        const headers = "timestamp,name,email,generalFeedback,activities,scenarios,ip";
+        const rows = (data || []).map(row => [
+            escapeCSV(row.timestamp),
+            escapeCSV(row.name),
+            escapeCSV(row.email),
+            escapeCSV(row.general_feedback),
+            escapeCSV(JSON.stringify(row.activities)),
+            escapeCSV(JSON.stringify(row.scenarios)),
+            escapeCSV(row.ip)
+        ].join(","));
+
+        const csvContent = [headers, ...rows].join("\n") + "\n";
         res.setHeader("Content-Type", "text/csv");
         res.setHeader("Content-Disposition", "attachment; filename=feedback.csv");
         res.send(csvContent);
