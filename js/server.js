@@ -136,7 +136,10 @@ function requireLogin(req, res, next) {
     if (req.path === "/admin.html") return next();
 
     if (isAuthed(req)) return next();
-    return res.status(401).send("Please login first.");
+    if (req.accepts("html")) {
+        return res.redirect("/?redirect_to=" + encodeURIComponent(req.originalUrl));
+    }
+    return res.status(401).json({ error: "Please login first." });
 }
 
 function requireAdmin(req, res, next) {

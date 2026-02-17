@@ -69,61 +69,6 @@
             opacity: 1;
         }
 
-        /* Session status indicator (top right corner) */
-        .session-status {
-            position: fixed;
-            top: 16px;
-            right: 16px;
-            background: rgba(128, 128, 128, 0.15);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(128, 128, 128, 0.2);
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-size: 12px;
-            color: rgba(0, 0, 0, 0.7);
-            z-index: 9998;
-            max-width: 280px;
-            line-height: 1.4;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-
-        .session-status .status-label {
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .session-status .session-id {
-            font-size: 11px;
-            color: rgba(0, 0, 0, 0.6);
-        }
-
-        .session-status .expiry-info {
-            font-size: 11px;
-            margin-top: 4px;
-            color: rgba(0, 0, 0, 0.6);
-        }
-
-        .session-status .expiry-warning {
-            color: #b45309;
-            font-weight: 500;
-        }
-
-        .session-status .logout-link {
-            display: inline-block;
-            margin-top: 6px;
-            font-size: 11px;
-            color: #0071e3;
-            cursor: pointer;
-            text-decoration: underline;
-        }
-
-        .session-status .logout-link:hover {
-            color: #0077ed;
-        }
     </style>
 
     <!-- Google Fonts -->
@@ -164,17 +109,6 @@
     ✓ You are logged in successfully!
 </div>
 
-<!-- =========================
-     SESSION STATUS INDICATOR
-========================= -->
-<div id="sessionStatus" class="session-status hidden">
-    <div class="status-label">
-        <span>Logged in as</span>
-        <strong id="usernameDisplay"></strong>
-    </div>
-    <div class="expiry-info" id="expiryDisplay"></div>
-    <span class="logout-link" id="logoutLink">Logout</span>
-</div>
 
 <!-- =========================
      HOME VIEW (your page)
@@ -411,12 +345,6 @@
     const form = document.getElementById("loginForm");
     const err = document.getElementById("err");
     const loginSuccessToast = document.getElementById("loginSuccessToast");
-    const sessionStatus = document.getElementById("sessionStatus");
-    const usernameDisplay = document.getElementById("usernameDisplay");
-    const expiryDisplay = document.getElementById("expiryDisplay");
-    const logoutLink = document.getElementById("logoutLink");
-
-    console.log("Elements found:", { loginView: !!loginView, homeView: !!homeView, form: !!form });
 
     // Show success toast message
     function showLoginSuccess() {
@@ -424,86 +352,26 @@
             loginSuccessToast.classList.add("show");
             setTimeout(() => {
                 loginSuccessToast.classList.remove("show");
-            }, 3000); // Hide after 3 seconds
-        }
-    }
-
-    // Format expiry date
-    function formatExpiryDate(isoString) {
-        if (!isoString) return "";
-        const date = new Date(isoString);
-        return date.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric"
-        });
-    }
-
-    // Update session status indicator with username and expiry
-    function updateSessionStatus(data) {
-        if (!sessionStatus) return;
-
-        if (data.authed && data.username) {
-            // Show username
-            if (usernameDisplay) {
-                usernameDisplay.textContent = data.username;
-            }
-
-            // Show expiry info
-            if (expiryDisplay) {
-                if (data.daysRemaining !== null && data.daysRemaining !== undefined) {
-                    if (data.daysRemaining <= 0) {
-                        expiryDisplay.innerHTML = '<span class="expiry-warning">Access expired</span>';
-                    } else if (data.daysRemaining <= 2) {
-                        expiryDisplay.innerHTML = `<span class="expiry-warning">Expires in ${data.daysRemaining} day${data.daysRemaining === 1 ? '' : 's'}</span>`;
-                    } else {
-                        expiryDisplay.textContent = `Expires: ${formatExpiryDate(data.expiresAt)}`;
-                    }
-                } else {
-                    expiryDisplay.textContent = "";
-                }
-            }
-
-            sessionStatus.classList.remove("hidden");
-        } else {
-            sessionStatus.classList.add("hidden");
+            }, 3000);
         }
     }
 
     async function refreshAuthUI() {
         try {
             const r = await fetch("/me", { credentials: "include" });
-            if (!r.ok) {
-                console.error("Auth check failed:", r.status, r.statusText);
-                throw new Error("not authed");
-            }
+            if (!r.ok) throw new Error("not authed");
             const data = await r.json();
-            console.log("Auth check result:", data);
 
             if (data.authed) {
-                console.log("User is authenticated - showing home view");
-                if (loginView) {
-                    loginView.classList.add("hidden");
-                    console.log("LoginView classes after hide:", loginView.className);
-                }
-                if (homeView) {
-                    homeView.classList.remove("hidden");
-                    console.log("HomeView classes after show:", homeView.className);
-                }
-                // Update session status with username and expiry
-                updateSessionStatus(data);
+                if (loginView) loginView.classList.add("hidden");
+                if (homeView) homeView.classList.remove("hidden");
             } else {
-                console.log("User is not authenticated - showing login view");
                 if (homeView) homeView.classList.add("hidden");
                 if (loginView) loginView.classList.remove("hidden");
-                // Hide session status when not authenticated
-                if (sessionStatus) sessionStatus.classList.add("hidden");
             }
         } catch (e) {
-            console.error("Auth check error:", e);
             if (homeView) homeView.classList.add("hidden");
             if (loginView) loginView.classList.remove("hidden");
-            if (sessionStatus) sessionStatus.classList.add("hidden");
         }
     }
 
@@ -525,13 +393,13 @@
             const data = await r.json().catch(() => ({}));
 
             if (r.ok && data.ok) {
-                // Show success message
                 showLoginSuccess();
-                // Small delay to ensure cookie is set before checking
                 await new Promise(resolve => setTimeout(resolve, 100));
                 await refreshAuthUI();
+                // Redirect back if we came from another page
+                const redirectTo = new URLSearchParams(window.location.search).get('redirect_to');
+                if (redirectTo && redirectTo.startsWith('/')) window.location.href = redirectTo;
             } else {
-                // Show error from server
                 err.textContent = data.error || "Wrong username or password.";
                 err.classList.remove("hidden");
             }
@@ -541,18 +409,9 @@
         }
     });
 
-    // Logout link handler
-    logoutLink?.addEventListener("click", async () => {
-        await fetch("/logout", { method: "POST", credentials: "include" });
-        if (sessionStatus) sessionStatus.classList.add("hidden");
-        await refreshAuthUI();
-    });
-
-    // Check authentication status immediately on page load
-    // Both views start hidden, show appropriate one after auth check
     refreshAuthUI();
 </script>
 
-
+<script src="/js/auth-widget.js"></script>
 </body>
 </html>
