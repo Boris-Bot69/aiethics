@@ -17,7 +17,7 @@ import {
     listUsers,
     extendAccess,
     ensureUsersDB
-} from "./auth/userManager.js";
+} from "../auth/userManager.js";
 
 dotenv.config();
 
@@ -38,6 +38,7 @@ console.log("ADMIN_SECRET:", ADMIN_SECRET ? "set" : "missing");
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const PROJECT_ROOT = path.join(__dirname, "..");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -94,9 +95,9 @@ const adminLoginLimiter = rateLimit({
    Public static assets (CSS/JS/Images)
    These must be public, otherwise your pages look "unstyled".
 ============================================================ */
-app.use("/css", express.static(path.join(__dirname, "css")));
-app.use("/js", express.static(path.join(__dirname, "js")));
-app.use("/images", express.static(path.join(__dirname, "images")));
+app.use("/css", express.static(path.join(PROJECT_ROOT, "css")));
+app.use("/js", express.static(path.join(PROJECT_ROOT, "js")));
+app.use("/images", express.static(path.join(PROJECT_ROOT, "images")));
 
 /* ============================================================
    Health check
@@ -295,13 +296,13 @@ app.delete("/admin/users/:username", requireAdmin, async (req, res) => {
     }
 });
 
-app.get("/", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
-app.get("/index.html", (_req, res) => res.sendFile(path.join(__dirname, "index.html")));
-app.get(["/admin.html", "/admin"], (_req, res) => res.sendFile(path.join(__dirname, "admin.html")));
+app.get("/", (_req, res) => res.sendFile(path.join(PROJECT_ROOT, "index.html")));
+app.get("/index.html", (_req, res) => res.sendFile(path.join(PROJECT_ROOT, "index.html")));
+app.get(["/admin.html", "/admin"], (_req, res) => res.sendFile(path.join(PROJECT_ROOT, "html", "admin.html")));
 
 // Serve feedback.html (with and without .html extension)
 app.get(["/feedback.html", "/feedback"], requireLogin, (_req, res) => {
-    res.sendFile(path.join(__dirname, "feedback.html"), (err) => {
+    res.sendFile(path.join(PROJECT_ROOT, "html", "feedback.html"), (err) => {
         if (err) {
             console.error("Error serving feedback.html:", err);
             res.status(500).send("Error loading feedback page");
@@ -341,7 +342,7 @@ app.get("/me", async (req, res) => {
     });
 });
 
-app.use("/html", requireLogin, express.static(path.join(__dirname, "html")));
+app.use("/html", requireLogin, express.static(path.join(PROJECT_ROOT, "html")));
 
 /* ============================================================
    Feedback API - Store feedback in Supabase
@@ -437,7 +438,7 @@ app.get("/:page", requireLogin, (req, res, next) => {
 
     if (!ROOT_HTML_PAGES.has(page)) return next(); // not one of your root html pages
 
-    return res.sendFile(path.join(__dirname, page));
+    return res.sendFile(path.join(PROJECT_ROOT, "html", page));
 });
 
 /* ============================================================
@@ -448,7 +449,7 @@ app.use(requireLogin);
 /* ============================================================
    Your existing routes (kept)
 ============================================================ */
-const HTML_BASE = path.join(__dirname, "html", "ai_activities_webpages");
+const HTML_BASE = path.join(PROJECT_ROOT, "html", "ai_activities_webpages");
 
 /** Strip the data-URL prefix from a base64 string, if present. */
 function toRaw(dataUrl) {
