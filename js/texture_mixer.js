@@ -27,29 +27,7 @@
     const overlayOn  = () => overlay.classList.add("is-active");
     const overlayOff = () => overlay.classList.remove("is-active");
 
-    // --- Add a strength slider under your submit section (no CSS changes needed)
     const submitSection = form.querySelector(".submit-section");
-    const sliderWrap = document.createElement("div");
-    sliderWrap.style.display = "grid";
-    sliderWrap.style.placeItems = "center";
-    sliderWrap.style.gap = "0.25rem";
-    sliderWrap.innerHTML = `
-    <label style="font-weight:500;">Texture strength</label>
-    <input id="strengthSlider" type="range" min="0" max="100" value="60" step="1" style="width:240px;">
-    <div style="font-size:0.9rem;color:#666;">
-      <span>Structure</span>
-      <span style="margin:0 0.5rem;">⬅︎</span>
-      <strong id="strengthValue">0.60</strong>
-      <span style="margin:0 0.5rem;">➡︎</span>
-      <span>Texture</span>
-    </div>
-  `;
-    submitSection.insertBefore(sliderWrap, submitSection.firstChild);
-    const strengthSlider = document.getElementById("strengthSlider");
-    const strengthValue  = document.getElementById("strengthValue");
-    strengthSlider.addEventListener("input", () => {
-        strengthValue.textContent = (Number(strengthSlider.value) / 100).toFixed(2);
-    });
 
     // Create a download button once we have a result
     const dlBtn = document.createElement("a");
@@ -118,8 +96,6 @@
                 fileToDataURL(textureInput.files[0]),
             ]);
 
-            const strength = Number(strengthSlider.value) / 100;
-
             // === NEW: use retry + safeJson to avoid showing raw parse errors ===
             const data = await withRetry(async () => {
                 const resp = await fetch("/mix-texture", {
@@ -128,7 +104,6 @@
                     body: JSON.stringify({
                         structureBase64: structureDataUrl,
                         textureBase64: textureDataUrl,
-                        strength,
                         prompt:
                             "Apply the material naturally on surfaces. Respect lighting and shading of the structure.",
                     }),

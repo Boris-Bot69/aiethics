@@ -560,7 +560,7 @@ app.post("/edit-magazine", async (req, res) => {
 // ============================================================
 app.post("/mix-texture", async (req, res) => {
     try {
-        const { structureBase64, textureBase64, strength, prompt } = req.body;
+        const { structureBase64, textureBase64, prompt } = req.body;
         if (!structureBase64 || !textureBase64) {
             return res.status(400).json({ error: "Both images are required" });
         }
