@@ -172,7 +172,7 @@ h1 {
     align-self: start;
     height: auto;
     min-height: 0;
-    overflow: visible;
+    overflow: hidden;
 }
 
 .sidebar-left {
