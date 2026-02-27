@@ -627,101 +627,87 @@ Output exactly one image.`;
 });
 
 
+// ============================================================
+//  /expand_canvas v4 — Fixes stripe artifacts + better blend
+// ============================================================
+//
+// CHANGES from v3:
+//   1. ELIMINATED manual pixel loop (cause of white stripes)
+//      → Now uses Sharp's built-in "dest-in" composite blend mode
+//      → This correctly applies the alpha mask without buffer issues
+//   2. Wider feather for less visible blend boundary
+//   3. Converts input to PNG first to avoid JPEG channel issues
+// ============================================================
+
 app.post("/expand_canvas", async (req, res) => {
     try {
         const { image, prompt, stage, expansionNumber } = req.body;
         if (!image) return res.status(400).json({ error: "Missing image data" });
 
-        // --- 1. Decode the incoming image -----------------------------------
         const rawB64 = image.includes(",") ? image.split(",")[1] : image;
         const baseBuf = Buffer.from(rawB64, "base64");
-        const meta = await sharp(baseBuf).metadata();
+
+        // IMPORTANT: Convert to PNG first to avoid JPEG channel/encoding issues
+        const pngBuf = await sharp(baseBuf).png().toBuffer();
+        const meta = await sharp(pngBuf).metadata();
         const origW = meta.width;
         const origH = meta.height;
 
-        // 25 % expansion on each side (same as before)
-        const margin = Math.round(origW * 0.25);
+        // 10% expansion per side — subtle step so the original reads as the star
+        const margin = Math.round(origW * 0.10);
         const newW = origW + margin * 2;
         const newH = origH + margin * 2;
 
-        console.log(`[expand_canvas] ${origW}×${origH} → ${newW}×${newH}  stage=${stage || "?"}`);
+        console.log(`[expand] ${origW}×${origH} → ${newW}×${newH}  margin=${margin}  stage=${stage || "?"}`);
 
-        // --- 2. Build the padded canvas with edge-bleed ----------------------
-        //
-        //  Step A — extend by mirroring edges (gives colour continuity)
-        //  Step B — create a heavily blurred version of that
-        //  Step C — composite the SHARP original on top, centred
-        //  Step D — draw a thin boundary rectangle around the original area
-        //
-        // This means the outer ring is a blurry colour hint, not blank white.
-
-        // A: mirror-extend to the target size
-        const mirrorExtended = await sharp(baseBuf)
+        // ── STEP 1: Build padded input ──
+        // Replicate edges outward, then lightly blur only the outer region
+        const replicateExtended = await sharp(pngBuf)
             .extend({
-                top: margin,
-                bottom: margin,
-                left: margin,
-                right: margin,
-                extendWith: "mirror",
+                top: margin, bottom: margin,
+                left: margin, right: margin,
+                extendWith: "copy",
             })
-            .toBuffer();
-
-        // B: blur the whole thing heavily (sigma ~20-40 depending on size)
-        const blurSigma = Math.max(20, Math.round(margin * 0.4));
-        const blurredBg = await sharp(mirrorExtended)
-            .blur(blurSigma)
-            .toBuffer();
-
-        // C: composite the crisp original centred on the blurred background
-        const withOriginal = await sharp(blurredBg)
-            .composite([{ input: baseBuf, top: margin, left: margin }])
-            .toBuffer();
-
-        // D: draw a thin (3-4 px) semi-transparent border around original area
-        //    using an SVG overlay — this is the "boundary marker"
-        const borderThickness = Math.max(2, Math.round(origW * 0.005));
-        const borderSvg = Buffer.from(`
-            <svg width="${newW}" height="${newH}" xmlns="http://www.w3.org/2000/svg">
-                <rect
-                    x="${margin}" y="${margin}"
-                    width="${origW}" height="${origH}"
-                    fill="none"
-                    stroke="rgba(255,0,0,0.35)"
-                    stroke-width="${borderThickness}"
-                    stroke-dasharray="${borderThickness * 4},${borderThickness * 4}"
-                />
-            </svg>
-        `);
-
-        const paddedImage = await sharp(withOriginal)
-            .composite([{ input: borderSvg, top: 0, left: 0 }])
             .png()
             .toBuffer();
 
-        // --- 3. Build the prompt ---------------------------------------------
+        const lightBlurSigma = Math.max(8, Math.round(margin * 0.3));
+        const blurredFull = await sharp(replicateExtended)
+            .blur(lightBlurSigma)
+            .png()
+            .toBuffer();
+
+        // Sharp original centered on blurred background
+        const paddedImage = await sharp(blurredFull)
+            .composite([{ input: pngBuf, top: margin, left: margin }])
+            .png()
+            .toBuffer();
+
+        // ── STEP 2: Send to Gemini ──
         const userHint = prompt?.trim() || "";
 
-        const instruction = `OUTPAINTING TASK — Extend this artwork beyond its current borders.
+        const instruction = `OUTPAINTING TASK — edge-only extension
 
-WHAT YOU SEE:
-- The SHARP, clear area in the CENTER is the original artwork. It is surrounded by a thin dashed red rectangle marking its exact boundary.
-- The BLURRY area outside that rectangle is the new canvas to fill. The blur is only there to give you colour and style hints — replace it entirely with new, sharp, detailed content.
+You are given ONE image: an artwork whose outer border is slightly blurry.
 
-RULES (follow strictly):
-1. The center content inside the dashed rectangle MUST stay EXACTLY as-is — do not redraw, recolor, or alter it in any way.
-2. SEAMLESSLY continue the scene outward from the edges. Match the art style, color palette, brush strokes, and mood perfectly.
-3. Add NEW creative content: extend the environment, add objects, characters, scenery, or atmospheric details that enrich the world.
-4. The transition between old and new must be invisible — no visible seam, no border, no frame effect.
-5. Do NOT treat the center image as a "photo" or "poster" — it IS the scene. You are revealing more of the same world.
-6. Remove the dashed red rectangle in your output — it was only a guide for you.
-7. Output exactly ONE image at the full canvas size.
-${userHint ? `\nCREATIVE DIRECTION from the artist: ${userHint}` : ""}
-${stage ? `\nThis is expansion step ${expansionNumber || "?"} (currently at ${stage} size). Make each expansion reveal something new and surprising.` : ""}`;
+YOUR ONLY JOB: Replace the blurry outer border with sharp new content that continues the scene naturally outward, as if the camera pulled back a tiny amount.
 
-        // --- 4. Call Gemini --------------------------------------------------
+STRICT RULES:
+- DO NOT touch, redraw, recolor, or alter the center of the image in ANY way
+- Only the blurry border region needs to be filled — everything else must be pixel-perfect identical
+- Continue the same surfaces, colors, textures, and objects from where the sharp area ends
+- Match the exact art style, line quality, color palette, and lighting of the existing content
+- The transition must be seamless — no visible seam between old and new
+- Less is more: subtle continuation beats dramatic invention
+- Do NOT introduce new focal objects or subjects unless they are already partially visible at the edge
+${userHint ? `\nARTIST DIRECTION (apply only to the new border area): ${userHint}` : ""}
+
+Output exactly one image at the same dimensions as the input.`;
+
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash-image",
             contents: [
+                // The padded version to outpaint (blurry border = area to fill)
                 {
                     inlineData: {
                         data: paddedImage.toString("base64"),
@@ -730,48 +716,99 @@ ${stage ? `\nThis is expansion step ${expansionNumber || "?"} (currently at ${st
                 },
                 { text: instruction },
             ],
-            config: { responseModalities: ["IMAGE", "TEXT"] },
+            config: {
+                responseModalities: ["IMAGE", "TEXT"],
+                temperature: 0.3,
+            },
         });
 
-        // --- 5. Handle response ----------------------------------------------
+        // ── Handle response ──
         const candidate = response?.candidates?.[0];
         const blockReason =
             response?.promptFeedback?.blockReason || candidate?.finishReason;
 
         if (!candidate || !candidate.content?.parts?.length) {
-            console.error(
-                "[expand_canvas] empty response.",
-                "blockReason:",
-                blockReason || "(none)"
-            );
-            const userMsg =
-                blockReason === "SAFETY"
-                    ? "The prompt was blocked by safety filters. Try rephrasing your description."
-                    : "The model could not expand this image. Try again.";
-            return res.status(500).json({ error: userMsg });
+            console.error("[expand] empty response. blockReason:", blockReason || "(none)");
+            return res.status(500).json({
+                error: blockReason === "SAFETY"
+                    ? "Blocked by safety filters. Try rephrasing."
+                    : "Could not expand image. Try again.",
+            });
         }
 
         const parts = candidate.content.parts;
         const imgPart = parts.find((p) => p.inlineData?.data);
-
         if (!imgPart) {
-            const textMsg = parts
-                .map((p) => p.text)
-                .filter(Boolean)
-                .join(" ")
-                .slice(0, 300);
-            console.error("[expand_canvas] no image in parts. Text:", textMsg || "(none)");
-            return res.status(500).json({
-                error:
-                    textMsg ||
-                    "The model could not expand this image. Try again.",
-            });
+            const txt = parts.map((p) => p.text).filter(Boolean).join(" ").slice(0, 300);
+            return res.status(500).json({ error: txt || "No image returned. Try again." });
         }
 
-        const mime = imgPart.inlineData.mimeType || "image/png";
-        const base64 = imgPart.inlineData.data;
+        const geminiResultBuf = Buffer.from(imgPart.inlineData.data, "base64");
 
-        res.json({ image_url: `data:${mime};base64,${base64}` });
+        // ── STEP 3: POST-PROCESS — feathered blend (NO manual pixel loop) ──
+
+        // 3a. Resize Gemini output to match target canvas
+        const gMeta = await sharp(geminiResultBuf).metadata();
+        const geminiSized = (gMeta.width !== newW || gMeta.height !== newH)
+            ? await sharp(geminiResultBuf).resize(newW, newH, { fit: "fill" }).png().toBuffer()
+            : await sharp(geminiResultBuf).png().toBuffer();
+
+        // 3b. Build feathered alpha mask (origW × origH)
+        //     White center = keep original exactly, black edges = show Gemini content
+        //     Narrow feather (≤12px) so the original is preserved across ~95% of its area
+        const feather = Math.max(4, Math.min(12, Math.round(margin * 0.15)));
+        const safeW = Math.max(1, origW - feather * 2);
+        const safeH = Math.max(1, origH - feather * 2);
+
+        // Inner fully-opaque region (white)
+        const innerRect = await sharp({
+            create: { width: safeW, height: safeH, channels: 3, background: { r: 255, g: 255, b: 255 } },
+        }).png().toBuffer();
+
+        // Place white rect on black background, then blur to create gradient
+        const featheredMaskRGB = await sharp({
+            create: { width: origW, height: origH, channels: 3, background: { r: 0, g: 0, b: 0 } },
+        })
+            .composite([{ input: innerRect, top: feather, left: feather }])
+            .blur(Math.max(3, Math.round(feather * 0.9)))
+            .png()
+            .toBuffer();
+
+        // Extract single channel as grayscale mask
+        const featheredMask = await sharp(featheredMaskRGB)
+            .extractChannel(0)
+            .toColourspace("b-w")
+            .png()
+            .toBuffer();
+
+        // 3c. Apply mask to original using Sharp's "dest-in" blend
+        //     This keeps original pixels where mask is white, transparent where black
+        //     NO manual pixel loop needed — this avoids the stripe artifacts!
+        const maskedOriginal = await sharp(pngBuf)
+            .ensureAlpha()
+            .composite([{
+                input: featheredMask,
+                blend: "dest-in",  // original visible where mask is bright
+            }])
+            .png()
+            .toBuffer();
+
+        // 3d. Final composite: Gemini background + feathered original on top
+        const finalImage = await sharp(geminiSized)
+            .ensureAlpha()
+            .composite([{
+                input: maskedOriginal,
+                top: margin,
+                left: margin,
+                blend: "over",
+            }])
+            .png()
+            .toBuffer();
+
+        console.log(`[expand] Done. Margin: ${margin}px (10%), feather: ${feather}px`);
+
+        res.json({ image_url: `data:image/png;base64,${finalImage.toString("base64")}` });
+
     } catch (err) {
         console.error("[expand_canvas] error:", err);
         res.status(500).json({ error: err.message });
