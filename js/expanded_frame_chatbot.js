@@ -13,13 +13,6 @@ window.addEventListener("DOMContentLoaded", () => {
     chatMessages = chatPanel?.querySelector(".chat-messages");
     imageUpload = document.getElementById("imageUpload");
 
-    addBotMessage(`
-Welcome to <em>Expanded Frames</em>.<br/>
-Upload your <b>A8</b> image to begin.<br/>
-Then click “Expand” to let AI extend your artwork step by step (A8 → A7 → A6 → A5 → A4).<br/>
-After A4, you can start again with a new image.
-    `);
-
     const uploadBtn = document.getElementById("uploadBtn");
     uploadBtn?.addEventListener("click", () => imageUpload.click());
     imageUpload?.addEventListener("change", handleImageUpload);
@@ -56,13 +49,12 @@ function addBotMessage(html) {
     addMessage(html, "bot");
 }
 
-function addImageBubble(src, extraBelow = null) {
+function addImageBubble(src) {
     const wrap = document.createElement("div");
     const img = document.createElement("img");
     img.src = src;
     img.classList.add("chat-image-preview", "zoomable");
     wrap.appendChild(img);
-    if (extraBelow) wrap.appendChild(extraBelow);
     addMessage(null, "bot", wrap);
     return { wrap, img };
 }
@@ -103,6 +95,42 @@ function hideTyping() {
 }
 
 // ===============================
+// UPLOAD PANEL VISIBILITY
+// ===============================
+function setUploadPanelVisible(visible) {
+    const bar = document.querySelector(".chat-input-bar");
+    if (bar) bar.style.display = visible ? "" : "none";
+
+    let newArtworkBar = chatPanel?.querySelector(".new-artwork-bar");
+
+    if (!visible) {
+        if (!newArtworkBar) {
+            newArtworkBar = document.createElement("div");
+            newArtworkBar.className = "new-artwork-bar";
+
+            const btn = document.createElement("button");
+            btn.className = "new-artwork-btn";
+            btn.textContent = "↻ New Artwork";
+            btn.onclick = () => {
+                stage = "A8";
+                uploadedBase64 = null;
+                lastHumanUploadBase64 = null;
+                if (imageUpload) imageUpload.value = "";
+                setUploadPanelVisible(true);
+                addBotMessage("Upload a new <b>A8</b> image to begin.");
+            };
+
+            newArtworkBar.appendChild(btn);
+            chatPanel.appendChild(newArtworkBar);
+        } else {
+            newArtworkBar.style.display = "";
+        }
+    } else {
+        if (newArtworkBar) newArtworkBar.style.display = "none";
+    }
+}
+
+// ===============================
 // IMAGE UPLOAD
 // ===============================
 async function handleImageUpload(e) {
@@ -114,18 +142,27 @@ async function handleImageUpload(e) {
         uploadedBase64 = ev.target.result;
         lastHumanUploadBase64 = ev.target.result;
         stage = "A8";
-        addBotMessage("Image uploaded as A8.");
-        appendExpandButton();
+
+        // Hide the upload panel and show the "New Artwork" button
+        setUploadPanelVisible(false);
+
+        // Show the uploaded image with the expand button directly below it
+        const { wrap } = addImageBubble(uploadedBase64);
+        const controls = buildExpandControlsDOM();
+        if (controls) wrap.appendChild(controls);
     };
     reader.readAsDataURL(file);
 }
 
 // ===============================
-// EXPAND LOGIC
+// EXPAND CONTROLS (button only)
 // ===============================
-function appendExpandButton() {
+function buildExpandControlsDOM() {
     const nextStage = getNextStage();
-    if (!nextStage) return;
+    if (!nextStage) return null;
+
+    const container = document.createElement("div");
+    container.className = "expand-controls";
 
     const expandBtn = document.createElement("button");
     expandBtn.className = "expand-btn";
@@ -135,7 +172,14 @@ function appendExpandButton() {
         expandBtn.textContent = "Expanding …";
         await expandWithAI(nextStage, expandBtn);
     };
-    addMessage(null, "bot", expandBtn);
+
+    container.appendChild(expandBtn);
+    return container;
+}
+
+function appendExpandControls() {
+    const container = buildExpandControlsDOM();
+    if (container) addMessage(null, "bot", container);
 }
 
 function getNextStage() {
@@ -143,27 +187,46 @@ function getNextStage() {
     return i >= 0 ? frameOrder[i + 1] : null;
 }
 
+// ===============================
+// EXPAND WITH AI
+// ===============================
 async function expandWithAI(nextStage, btnEl) {
-    addBotMessage(`Expanding to <b>${nextStage}</b> …`);
+    const expansionNumber = frameOrder.indexOf(nextStage);
+
+    addBotMessage(`Expanding to <b>${nextStage}</b> — this may take a moment …`);
     showTyping();
 
     try {
         const resp = await fetch("/expand_canvas", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ image: uploadedBase64 }),
+            body: JSON.stringify({
+                image: uploadedBase64,
+                prompt: "",
+                stage: nextStage,
+                expansionNumber: expansionNumber,
+            }),
         });
 
-        if (!resp.ok) throw new Error(`Server error: ${resp.status}`);
+        if (!resp.ok) {
+            const errData = await resp.json().catch(() => ({}));
+            throw new Error(errData.error || `Server error: ${resp.status}`);
+        }
 
         const { image_url } = await resp.json();
         hideTyping();
 
+        // Update state — the NEW expanded image becomes the input for the next round
+        stage = nextStage;
+        uploadedBase64 = image_url;
+
+        // Show the expanded image
         const { wrap } = addImageBubble(image_url);
 
+        // Download button below the image
         const dl = document.createElement("button");
         dl.className = "download-btn";
-        dl.textContent = "Download image";
+        dl.textContent = `Download ${nextStage}`;
         dl.onclick = () => {
             const a = document.createElement("a");
             a.href = image_url;
@@ -172,34 +235,38 @@ async function expandWithAI(nextStage, btnEl) {
         };
         wrap.appendChild(dl);
 
-        // Update stage and data
-        stage = nextStage;
-        uploadedBase64 = image_url;
-        lastHumanUploadBase64 = image_url;
-
+        // Expand button for the next stage, directly below the image
         const next = getNextStage();
         if (next) {
-            appendExpandButton();
+            const controls = buildExpandControlsDOM();
+            if (controls) wrap.appendChild(controls);
         } else {
-            addBotMessage("Expansion completed. A4 frame reached.");
+            addBotMessage(
+                "🎉 <b>A4 reached!</b> Your expanded artwork is complete. " +
+                "You can download your images above, or start a new round."
+            );
+
             const newRoundBtn = document.createElement("button");
             newRoundBtn.className = "expand-btn";
             newRoundBtn.textContent = "Start new round (upload new image)";
             newRoundBtn.onclick = () => {
                 stage = "A8";
                 uploadedBase64 = null;
-                addBotMessage("Upload a new A8 image to begin again.");
+                lastHumanUploadBase64 = null;
+                if (imageUpload) imageUpload.value = "";
+                setUploadPanelVisible(true);
+                addBotMessage("Upload a new <b>A8</b> image to begin again.");
             };
             addMessage(null, "bot", newRoundBtn);
         }
     } catch (err) {
-        console.error(err);
+        console.error("[expandWithAI]", err);
         hideTyping();
-        addBotMessage("Expansion failed. Please check the server logs.");
-        if (btnEl) {
-            btnEl.disabled = false;
-            btnEl.textContent = `Expand again`;
-        }
+        addBotMessage(
+            `<span style="color:#ff6b6b">Expansion failed:</span> ${err.message}<br/>` +
+            `Please try again.`
+        );
+        appendExpandControls();
     }
 }
 

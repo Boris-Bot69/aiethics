@@ -1142,6 +1142,31 @@ body.no-scroll {
     opacity: 0.9;
 }
 
+.new-artwork-bar {
+    padding: 0.5rem 1rem;
+    background: #f8f8f8;
+    border-top: 1px solid #e0e0e0;
+    border-radius: 0 0 8px 8px;
+    display: flex;
+    justify-content: center;
+}
+
+.new-artwork-btn {
+    background: none;
+    border: 1px solid #aaa;
+    border-radius: 20px;
+    padding: 5px 16px;
+    font-size: 0.85rem;
+    color: #555;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.new-artwork-btn:hover {
+    background: #e8e8e8;
+    color: #333;
+}
+
 
 
 

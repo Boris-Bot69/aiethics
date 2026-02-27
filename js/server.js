@@ -627,46 +627,98 @@ Output exactly one image.`;
 });
 
 
-// ============================================================
-//  IMPROVED /expand_canvas — Better prompt + Gemini fallback
-// ============================================================
 app.post("/expand_canvas", async (req, res) => {
     try {
-        const { image, prompt } = req.body;
+        const { image, prompt, stage, expansionNumber } = req.body;
         if (!image) return res.status(400).json({ error: "Missing image data" });
 
-        const baseBuf = Buffer.from(image.split(",")[1], "base64");
+        // --- 1. Decode the incoming image -----------------------------------
+        const rawB64 = image.includes(",") ? image.split(",")[1] : image;
+        const baseBuf = Buffer.from(rawB64, "base64");
         const meta = await sharp(baseBuf).metadata();
+        const origW = meta.width;
+        const origH = meta.height;
 
-        // 25% expansion on each side
-        const margin = Math.round(meta.width * 0.25);
-        const newW = meta.width + margin * 2;
-        const newH = meta.height + margin * 2;
+        // 25 % expansion on each side (same as before)
+        const margin = Math.round(origW * 0.25);
+        const newW = origW + margin * 2;
+        const newH = origH + margin * 2;
 
-        // Create padded image: original centered on white background
-        const paddedImage = await sharp({
-            create: {
-                width: newW,
-                height: newH,
-                channels: 4,
-                background: { r: 255, g: 255, b: 255, alpha: 1 },
-            },
-        })
+        console.log(`[expand_canvas] ${origW}×${origH} → ${newW}×${newH}  stage=${stage || "?"}`);
+
+        // --- 2. Build the padded canvas with edge-bleed ----------------------
+        //
+        //  Step A — extend by mirroring edges (gives colour continuity)
+        //  Step B — create a heavily blurred version of that
+        //  Step C — composite the SHARP original on top, centred
+        //  Step D — draw a thin boundary rectangle around the original area
+        //
+        // This means the outer ring is a blurry colour hint, not blank white.
+
+        // A: mirror-extend to the target size
+        const mirrorExtended = await sharp(baseBuf)
+            .extend({
+                top: margin,
+                bottom: margin,
+                left: margin,
+                right: margin,
+                extendWith: "mirror",
+            })
+            .toBuffer();
+
+        // B: blur the whole thing heavily (sigma ~20-40 depending on size)
+        const blurSigma = Math.max(20, Math.round(margin * 0.4));
+        const blurredBg = await sharp(mirrorExtended)
+            .blur(blurSigma)
+            .toBuffer();
+
+        // C: composite the crisp original centred on the blurred background
+        const withOriginal = await sharp(blurredBg)
             .composite([{ input: baseBuf, top: margin, left: margin }])
+            .toBuffer();
+
+        // D: draw a thin (3-4 px) semi-transparent border around original area
+        //    using an SVG overlay — this is the "boundary marker"
+        const borderThickness = Math.max(2, Math.round(origW * 0.005));
+        const borderSvg = Buffer.from(`
+            <svg width="${newW}" height="${newH}" xmlns="http://www.w3.org/2000/svg">
+                <rect
+                    x="${margin}" y="${margin}"
+                    width="${origW}" height="${origH}"
+                    fill="none"
+                    stroke="rgba(255,0,0,0.35)"
+                    stroke-width="${borderThickness}"
+                    stroke-dasharray="${borderThickness * 4},${borderThickness * 4}"
+                />
+            </svg>
+        `);
+
+        const paddedImage = await sharp(withOriginal)
+            .composite([{ input: borderSvg, top: 0, left: 0 }])
             .png()
             .toBuffer();
 
-        console.log(`Expanding canvas ${meta.width}x${meta.height} → ${newW}x${newH}`);
+        // --- 3. Build the prompt ---------------------------------------------
+        const userHint = prompt?.trim() || "";
 
-        const instruction = prompt?.trim()
-            || "Expand this image creatively beyond its current borders. "
-            + "The white areas around the edges are the new canvas space to fill. "
-            + "Add interesting new content: extend the environment, add characters, "
-            + "objects, scenery, or atmospheric details that enrich the scene. "
-            + "Be creative and surprising — each expansion should reveal more of the world. "
-            + "Match the art style, color palette, and mood of the original image. "
-            + "The center content must stay intact and blend seamlessly with the new additions.";
+        const instruction = `OUTPAINTING TASK — Extend this artwork beyond its current borders.
 
+WHAT YOU SEE:
+- The SHARP, clear area in the CENTER is the original artwork. It is surrounded by a thin dashed red rectangle marking its exact boundary.
+- The BLURRY area outside that rectangle is the new canvas to fill. The blur is only there to give you colour and style hints — replace it entirely with new, sharp, detailed content.
+
+RULES (follow strictly):
+1. The center content inside the dashed rectangle MUST stay EXACTLY as-is — do not redraw, recolor, or alter it in any way.
+2. SEAMLESSLY continue the scene outward from the edges. Match the art style, color palette, brush strokes, and mood perfectly.
+3. Add NEW creative content: extend the environment, add objects, characters, scenery, or atmospheric details that enrich the world.
+4. The transition between old and new must be invisible — no visible seam, no border, no frame effect.
+5. Do NOT treat the center image as a "photo" or "poster" — it IS the scene. You are revealing more of the same world.
+6. Remove the dashed red rectangle in your output — it was only a guide for you.
+7. Output exactly ONE image at the full canvas size.
+${userHint ? `\nCREATIVE DIRECTION from the artist: ${userHint}` : ""}
+${stage ? `\nThis is expansion step ${expansionNumber || "?"} (currently at ${stage} size). Make each expansion reveal something new and surprising.` : ""}`;
+
+        // --- 4. Call Gemini --------------------------------------------------
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash-image",
             contents: [
@@ -681,17 +733,21 @@ app.post("/expand_canvas", async (req, res) => {
             config: { responseModalities: ["IMAGE", "TEXT"] },
         });
 
+        // --- 5. Handle response ----------------------------------------------
         const candidate = response?.candidates?.[0];
-        const blockReason = response?.promptFeedback?.blockReason
-            || candidate?.finishReason;
+        const blockReason =
+            response?.promptFeedback?.blockReason || candidate?.finishReason;
 
         if (!candidate || !candidate.content?.parts?.length) {
-            console.error("/expand_canvas: empty response.",
-                "blockReason:", blockReason || "(none)",
-                "promptFeedback:", JSON.stringify(response?.promptFeedback || {}));
-            const userMsg = blockReason === "SAFETY"
-                ? "The prompt was blocked by safety filters. Try rephrasing your description."
-                : "The model could not expand this image. Try again.";
+            console.error(
+                "[expand_canvas] empty response.",
+                "blockReason:",
+                blockReason || "(none)"
+            );
+            const userMsg =
+                blockReason === "SAFETY"
+                    ? "The prompt was blocked by safety filters. Try rephrasing your description."
+                    : "The model could not expand this image. Try again.";
             return res.status(500).json({ error: userMsg });
         }
 
@@ -699,24 +755,31 @@ app.post("/expand_canvas", async (req, res) => {
         const imgPart = parts.find((p) => p.inlineData?.data);
 
         if (!imgPart) {
-            const textMsg = parts.map((p) => p.text).filter(Boolean).join(" ").slice(0, 300);
-            console.error("/expand_canvas: no image in parts. Text:", textMsg || "(none)");
+            const textMsg = parts
+                .map((p) => p.text)
+                .filter(Boolean)
+                .join(" ")
+                .slice(0, 300);
+            console.error("[expand_canvas] no image in parts. Text:", textMsg || "(none)");
             return res.status(500).json({
-                error: textMsg || "The model could not expand this image. Try again.",
+                error:
+                    textMsg ||
+                    "The model could not expand this image. Try again.",
             });
         }
 
         const mime = imgPart.inlineData.mimeType || "image/png";
         const base64 = imgPart.inlineData.data;
 
-        res.json({
-            image_url: `data:${mime};base64,${base64}`,
-        });
+        res.json({ image_url: `data:${mime};base64,${base64}` });
     } catch (err) {
-        console.error("/expand_canvas error:", err);
+        console.error("[expand_canvas] error:", err);
         res.status(500).json({ error: err.message });
     }
 });
+
+
+
 
 // AI SUPERHERO
 
