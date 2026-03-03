@@ -447,6 +447,31 @@ h1 {
 .status-message {
     min-height: 1.25rem;
     font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+}
+
+/* Typing dots shown inside the status area while AI is running */
+.status-typing {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-typing span {
+    width: 8px;
+    height: 8px;
+    background: #888;
+    border-radius: 50%;
+    animation: statusDotBounce 0.9s infinite ease-in-out;
+}
+
+.status-typing span:nth-child(2) { animation-delay: 0.2s; }
+.status-typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes statusDotBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30%            { transform: translateY(-5px); opacity: 1; }
 }
 
 .mixer-divider {

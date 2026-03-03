@@ -451,6 +451,44 @@ h1 {
     background-color: #d2e8ff;
 }
 
+/* Your-turn instruction shown after each AI expansion */
+.draw-instruction {
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: #fffbe6;
+    border: 1px solid #f0c040;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #5a4000;
+}
+
+/* Restart bar at the bottom of the chat panel */
+.restart-bar {
+    padding: 0.5rem 1rem;
+    background: #f8f8f8;
+    border-top: 1px solid #e0e0e0;
+    border-radius: 0 0 8px 8px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.restart-btn {
+    background: none;
+    border: 1px solid #bbb;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 0.82rem;
+    color: #666;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.restart-btn:hover {
+    background: #e8e8e8;
+    color: #333;
+}
+
 
 .summary-bubble {
     display: flex;

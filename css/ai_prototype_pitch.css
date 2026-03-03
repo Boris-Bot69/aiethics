@@ -474,6 +474,63 @@ h1 {
     object-fit: contain;
 }
 
+/* === Upload button === */
+.upload-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 0.25rem;
+}
+
+/* === Action / suggestion buttons above chat bar === */
+.design-mode-row {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0.5rem 1rem 0.75rem 1rem;
+    border-top: 1px dashed #cce5ff;
+    background: #f8fdff;
+}
+
+.design-mode-btn {
+    padding: 0.4rem 0.9rem;
+    background: #fff;
+    border: 1px solid #bcdcff;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #555;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    transition: background 0.18s ease, border-color 0.18s ease,
+    box-shadow 0.18s ease, transform 0.12s ease;
+    white-space: nowrap;
+}
+
+.design-mode-btn:hover {
+    background: #e6f3ff;
+    border-color: #89c4ff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+.design-finish-btn {
+    background: #5b9bd5;
+    border-color: #5b9bd5;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.design-finish-btn:hover {
+    background: #4480ba;
+    border-color: #4480ba;
+}
+
 /* === Consent Modal === */
 .consent-modal {
     position: fixed;

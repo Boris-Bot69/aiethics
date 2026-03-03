@@ -12,21 +12,6 @@
     const statusMsg  = document.getElementById("statusMessage");
     const mixButton  = document.getElementById("mixButton");
 
-    // === NEW: fullscreen loading overlay (created once) ===
-    const overlay = (() => {
-        const el = document.createElement("div");
-        el.className = "loading-overlay";
-        el.innerHTML = `
-      <div class="spinner-lg" style="
-        width:42px;height:42px;border-radius:50%;
-        border:4px solid rgba(0,0,0,0.15);border-left-color:#0065BD;
-        animation: spin 0.8s linear infinite;"></div>`;
-        document.body.appendChild(el);
-        return el;
-    })();
-    const overlayOn  = () => overlay.classList.add("is-active");
-    const overlayOff = () => overlay.classList.remove("is-active");
-
     const submitSection = form.querySelector(".submit-section");
 
     // Create a download button once we have a result
@@ -78,7 +63,7 @@
 
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        statusMsg.textContent = "";
+        statusMsg.innerHTML = "";
         if (!originalInput.files[0] || !textureInput.files[0]) {
             statusMsg.textContent = "Please select both images.";
             return;
@@ -88,7 +73,7 @@
         mixButton.disabled = true;
         spinner.classList.remove("hidden");
         buttonText.textContent = "Combining…";
-        overlayOn(); // <=== show overlay
+        statusMsg.innerHTML = '<span class="status-typing"><span></span><span></span><span></span></span>';
 
         try {
             const [structureDataUrl, textureDataUrl] = await Promise.all([
@@ -138,16 +123,13 @@
             dlBtn.download = "texture-fusion.png";
             dlBtn.style.display = "inline-flex";
 
-            statusMsg.textContent = "✅ Done!";
+            statusMsg.innerHTML = "✅ Done!";
         } catch (err) {
-            // Keep messages friendly; no raw error details.
-            statusMsg.textContent = "Please wait for a moment and try again.";
-            // (Overlay remains visible only during retries; it's turned off in finally)
+            statusMsg.textContent = "Something went wrong. Please try again.";
         } finally {
             mixButton.disabled = false;
             spinner.classList.add("hidden");
             buttonText.textContent = "Combine with AI";
-            overlayOff(); // <=== hide overlay
         }
     });
 })();

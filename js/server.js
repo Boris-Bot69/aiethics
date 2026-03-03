@@ -567,28 +567,28 @@ app.post("/mix-texture", async (req, res) => {
 
 
         const instruction =
-            `IMAGE EDITING TASK — Texture Transfer
+            `You are a creative image-fusion AI. You receive two images and must merge them into a single, unified artwork.
 
-Look at these two images:
-- Image 1 (STRUCTURE): This is the object. Keep its EXACT shape, silhouette, 3D form, perspective, lighting, and shadows.
-- Image 2 (TEXTURE/MATERIAL): This is a surface material or texture pattern.
+Image 1 — ARTWORK: A hand-made drawing or painting by a student. Its shapes, lines, composition, and colors are the visual backbone of the result — keep them clearly recognisable.
 
-YOUR JOB: Strongly apply the texture from Image 2 onto the surfaces of the object in Image 1.
+Image 2 — TEXTURE / MATERIAL: A close-up photo of a physical surface or material (fabric, wood, paper, cotton, leaves, toothpicks, etc.).
 
-CRITICAL RULES:
-- Do NOT change the object's shape, size, or position
-- Do NOT create a new object — edit the EXISTING one
-- Do NOT break, shatter, or disassemble the object
-- The texture should WRAP around the object's 3D contours like a skin or paint
-- Preserve the original lighting and shadows from Image 1
-- The background should remain unchanged
-- Think of it like re-skinning a 3D model with a new material
-${prompt?.trim() ? `\nAdditional instruction: ${prompt.trim()}` : ""}
+YOUR TASK: Fuse Image 2's texture organically into Image 1 so the result feels like the artwork was originally created on that material, or as if the material has grown into the artwork.
 
-Output exactly one image.`;
+HOW TO DO IT:
+- Layer the texture across the entire canvas so the material grain, colour, and pattern breathe through the artwork
+- Preserve the key shapes, outlines, and overall composition from Image 1 — they must stay readable
+- Let the texture's lighting and tonal mood subtly influence the colours of the artwork
+- Blend edges and surfaces so there is no visible "cut-and-paste" seam
+- Treat it like screen-printing the artwork onto the material surface, or pressing the material into wet paint
+- Neither image should completely overpower the other — aim for a 50/50 creative fusion
+- Do NOT add new objects, text, watermarks, or unrelated elements
+${prompt?.trim() ? `\nExtra direction: ${prompt.trim()}` : ""}
+
+Output exactly one square image that looks like a finished, cohesive piece of art.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash-image",
+            model: "gemini-3-pro-image-preview",
             contents: [
                 {
                     inlineData: {
@@ -705,7 +705,7 @@ ${userHint ? `\nARTIST DIRECTION (apply only to the new border area): ${userHint
 Output exactly one image at the same dimensions as the input.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash-image",
+            model: "gemini-3-pro-image-preview",
             contents: [
                 // The padded version to outpaint (blurry border = area to fill)
                 {
