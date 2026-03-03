@@ -127,19 +127,21 @@
                         <form id="imageMixerForm" class="mixer-form">
                             <div class="image-inputs-grid">
                                 <div class="image-input-container">
-                                    <label for="originalImage">1. Your Artwork (Structure)</label>
+                                    <label>1. Your Artwork (Structure)</label>
                                     <div id="originalPreview" class="file-preview">
                                         <span>Preview</span>
                                     </div>
                                     <input type="file" id="originalImage" name="originalImage" accept="image/*" class="file-input" required onchange="previewFile('originalImage', 'originalPreview')">
+                                    <button type="button" class="upload-file-btn" onclick="document.getElementById('originalImage').click()">Upload image</button>
                                 </div>
 
                                 <div class="image-input-container">
-                                    <label for="textureImage">2. Texture Image (Material)</label>
+                                    <label>2. Texture Image (Material)</label>
                                     <div id="texturePreview" class="file-preview">
                                         <span>Preview</span>
                                     </div>
                                     <input type="file" id="textureImage" name="textureImage" accept="image/*" class="file-input" required onchange="previewFile('textureImage', 'texturePreview')">
+                                    <button type="button" class="upload-file-btn" onclick="document.getElementById('textureImage').click()">Upload texture</button>
                                 </div>
                             </div>
 

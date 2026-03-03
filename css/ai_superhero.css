@@ -427,7 +427,9 @@ h1 {
 
 .suggest-inline-btn,
 .reset-inline-btn,
-.accept-suggestion-btn {
+.accept-suggestion-btn,
+.retry-suggestion-btn,
+.finish-comic-btn {
     background: var(--accent-color);
     color: #fff;
     border: none;
@@ -443,32 +445,46 @@ h1 {
 /* Hover / Active effects */
 .suggest-inline-btn:hover,
 .reset-inline-btn:hover,
-.accept-suggestion-btn:hover {
+.accept-suggestion-btn:hover,
+.retry-suggestion-btn:hover,
+.finish-comic-btn:hover {
     opacity: 0.85;
     transform: translateY(-1px);
 }
 
 .suggest-inline-btn:active,
 .reset-inline-btn:active,
-.accept-suggestion-btn:active {
+.accept-suggestion-btn:active,
+.retry-suggestion-btn:active,
+.finish-comic-btn:active {
     transform: translateY(0);
 }
 
 /* Disabled state */
 .suggest-inline-btn:disabled,
 .reset-inline-btn:disabled,
-.accept-suggestion-btn:disabled {
+.accept-suggestion-btn:disabled,
+.retry-suggestion-btn:disabled,
+.finish-comic-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
 
-/* Optional color variations for clarity */
+/* Color variations for clarity */
 .reset-inline-btn {
-    background: #555;          /* dark grey tone */
+    background: #555;
 }
 
 .accept-suggestion-btn {
-    background: #2ecc71;       /* green for accept */
+    background: #2ecc71;
+}
+
+.retry-suggestion-btn {
+    background: #888;
+}
+
+.finish-comic-btn {
+    background: #e67e22;       /* orange — signals "wrap it up" */
 }
 
 

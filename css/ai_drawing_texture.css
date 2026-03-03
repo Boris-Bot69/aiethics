@@ -407,7 +407,27 @@ h1 {
     height: 100%;
 }
 
-.file-input { font-size: 0.9rem; }
+.file-input { display: none; }
+
+.upload-file-btn {
+    display: block;
+    width: 100%;
+    padding: 0.55rem 1rem;
+    background: #fff;
+    border: 1.5px solid #bbb;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #333;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.upload-file-btn:hover {
+    background: #f0f0f0;
+    border-color: #888;
+}
 
 .submit-section {
     display: flex;
@@ -1270,11 +1290,11 @@ body.no-scroll {
         margin-bottom: 1.5rem;
     }
 
-    /* Larger and more vertical image area */
+    /* Side-by-side image inputs */
     .image-inputs-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
     }
 
     .image-input-container {
@@ -1344,10 +1364,9 @@ body.no-scroll {
     }
 
     .image-inputs-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-        align-items: center;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
     }
 
     .file-preview {

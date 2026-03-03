@@ -836,12 +836,6 @@ app.post("/generate-panel", async (req, res) => {
             });
         }
         const story = sessions.get(sessionId);
-        if (story.ended) {
-            return res.json({
-                message:
-                    "The story has already reached an ending! You can start a new hero if you wish.",
-            });
-        }
 
         console.log(`[${sessionId}] New panel prompt:`, prompt);
 
@@ -907,12 +901,8 @@ If the story logically reaches a conclusion, end it naturally with an emotional 
         const base64 = part.inlineData.data;
         story.panels.push({ prompt, image: base64 });
 
-        // Decide if story ends
-        if (story.panels.length >= 5) story.ended = true;
-
         res.json({
             image: `data:${mime};base64,${base64}`,
-            ended: story.ended,
         });
     } catch (err) {
         console.error("/generate-panel error:", err);
@@ -950,6 +940,66 @@ Suggest one creative next event that fits naturally. Keep it positive and concis
         res.json({ suggestion });
     } catch (err) {
         console.error("/suggest-panel-prompt error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/* ============================================================
+   Finish story — generate one final concluding panel
+============================================================ */
+app.post("/finish-story", async (req, res) => {
+    try {
+        const { sessionId, imageBase64 } = req.body;
+        if (!sessionId) return res.status(400).json({ error: "Missing sessionId" });
+
+        const story = sessions.get(sessionId) || { panels: [], context: "" };
+
+        const closingPrompt = `
+You are generating the FINAL comic panel of a superhero story.
+The story must end clearly and satisfyingly in this single panel.
+
+Story so far:
+${story.context || "A superhero begins their journey."}
+
+Draw one final panel showing the hero's triumph, resolution, or moral lesson.
+The scene should feel conclusive — a clear ending, not a cliffhanger.
+No speech bubbles. Keep the same art style and hero identity as all previous panels.
+`;
+
+        const contents = [];
+        if (imageBase64) {
+            contents.push({
+                inlineData: {
+                    data: imageBase64.split(",")[1],
+                    mimeType: imageBase64.includes("png") ? "image/png" : "image/jpeg",
+                },
+            });
+        }
+        contents.push({ text: closingPrompt });
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash-image",
+            contents,
+            config: { responseModalities: ["TEXT", "IMAGE"], temperature: 0.7 },
+        });
+
+        const candidate = response?.candidates?.[0];
+        const parts = candidate?.content?.parts || [];
+        const part = parts.find((p) => p.inlineData?.data);
+
+        if (!part) {
+            const textMsg = parts.map((p) => p.text).filter(Boolean).join(" ").slice(0, 300);
+            return res.status(500).json({ error: textMsg || "Could not generate the final panel." });
+        }
+
+        const mime = part.inlineData.mimeType || "image/png";
+        const base64 = part.inlineData.data;
+        story.panels.push({ prompt: "Final panel", image: base64 });
+        story.ended = true;
+
+        res.json({ image: `data:${mime};base64,${base64}` });
+    } catch (err) {
+        console.error("/finish-story error:", err);
         res.status(500).json({ error: err.message });
     }
 });
