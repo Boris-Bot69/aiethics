@@ -451,6 +451,15 @@ h1 {
     background-color: #d2e8ff;
 }
 
+/* Greyed-out status / report messages (e.g. "Image uploaded as A8") */
+.status-message {
+    text-align: center;
+    font-size: 0.8rem;
+    font-style: italic;
+    color: #aaa;
+    margin: 2px 0 10px;
+}
+
 /* Your-turn instruction shown after each AI expansion */
 .draw-instruction {
     margin-top: 0.75rem;

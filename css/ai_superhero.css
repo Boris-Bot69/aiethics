@@ -429,7 +429,9 @@ h1 {
 .reset-inline-btn,
 .accept-suggestion-btn,
 .retry-suggestion-btn,
-.finish-comic-btn {
+.finish-comic-btn,
+.add-panel-btn,
+.edit-suggestion-btn {
     background: var(--accent-color);
     color: #fff;
     border: none;
@@ -447,7 +449,9 @@ h1 {
 .reset-inline-btn:hover,
 .accept-suggestion-btn:hover,
 .retry-suggestion-btn:hover,
-.finish-comic-btn:hover {
+.finish-comic-btn:hover,
+.add-panel-btn:hover,
+.edit-suggestion-btn:hover {
     opacity: 0.85;
     transform: translateY(-1px);
 }
@@ -465,7 +469,9 @@ h1 {
 .reset-inline-btn:disabled,
 .accept-suggestion-btn:disabled,
 .retry-suggestion-btn:disabled,
-.finish-comic-btn:disabled {
+.finish-comic-btn:disabled,
+.add-panel-btn:disabled,
+.edit-suggestion-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
@@ -485,6 +491,14 @@ h1 {
 
 .finish-comic-btn {
     background: #e67e22;       /* orange — signals "wrap it up" */
+}
+
+.add-panel-btn {
+    background: var(--accent-color);   /* coral — primary "keep going" action */
+}
+
+.edit-suggestion-btn {
+    background: #3498db;               /* blue — modify/customise */
 }
 
 

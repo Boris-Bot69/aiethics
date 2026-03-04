@@ -281,6 +281,8 @@ async function sendToAI(imageBase64, prompt) {
             );
             container.appendChild(dlBtn);
 
+            addImageToHistory(data.image, prompt, `Edit ${stage}`);
+
             // Guided responses
             if (stage === 1) {
                 appendMessage(
@@ -297,12 +299,13 @@ async function sendToAI(imageBase64, prompt) {
                 disableEditor("Please upload your collage image for Step 2...");
             } else if (stage === 2) {
                 appendMessage(
-                    "Both edits completed!  You now have four artworks — your original, AI-edited, collage, and final AI remix.",
+                    "Both edits completed! You now have four artworks — your original, AI-edited, collage, and final AI remix.",
                     "ai"
                 );
 
                 uploadedBase64 = null;
-                disableEditor("Activity complete! You can still explore by uploading new images.");
+                disableEditor("Activity complete!");
+                askToRestart();
             }
         } else {
             appendMessage("No image returned from AI.", "ai");
@@ -311,6 +314,89 @@ async function sendToAI(imageBase64, prompt) {
         hideTyping();
         appendMessage(`Error: ${err.message}`, "ai");
     }
+}
+
+// ===============================
+// Image History
+// ===============================
+function addImageToHistory(dataUrl, promptText, label) {
+    const historySection = document.getElementById("imageHistory");
+    const grid = document.getElementById("imageHistoryGrid");
+    if (!historySection || !grid) return;
+
+    historySection.style.display = "block";
+
+    const card = document.createElement("div");
+    card.className = "history-card";
+
+    const img = document.createElement("img");
+    img.src = dataUrl;
+    img.alt = label;
+    img.className = "history-thumb zoomable";
+
+    const lbl = document.createElement("div");
+    lbl.className = "history-label";
+    lbl.textContent = `${label}: ${promptText}`;
+
+    const dl = document.createElement("a");
+    dl.href = dataUrl;
+    dl.download = `${label.toLowerCase().replace(/\s+/g, "-")}.png`;
+    dl.className = "history-download";
+    dl.textContent = "Download";
+
+    card.appendChild(img);
+    card.appendChild(lbl);
+    card.appendChild(dl);
+    grid.appendChild(card);
+}
+
+// ===============================
+// Restart Logic
+// ===============================
+function askToRestart() {
+    const container = appendAIContainer();
+
+    const question = document.createElement("div");
+    question.textContent = "Do you want to start a new round?";
+    question.style.marginBottom = "8px";
+    container.appendChild(question);
+
+    const row = document.createElement("div");
+    row.style.display = "flex";
+    row.style.gap = "8px";
+
+    const yesBtn = document.createElement("button");
+    yesBtn.textContent = "Yes";
+    yesBtn.style.cssText = "cursor:pointer;border:none;padding:8px 12px;border-radius:8px;background:#e6ffe6;color:#2d7a2d;";
+
+    const noBtn = document.createElement("button");
+    noBtn.textContent = "No";
+    noBtn.style.cssText = "cursor:pointer;border:none;padding:8px 12px;border-radius:8px;background:#ffe6e6;color:#a33a3a;";
+
+    row.appendChild(yesBtn);
+    row.appendChild(noBtn);
+    container.appendChild(row);
+
+    yesBtn.addEventListener("click", () => {
+        yesBtn.disabled = true;
+        noBtn.disabled = true;
+        startNewRound();
+    });
+
+    noBtn.addEventListener("click", () => {
+        yesBtn.disabled = true;
+        noBtn.disabled = true;
+        appendMessage("Okay! Your images are saved in the history below.", "ai");
+    });
+}
+
+function startNewRound() {
+    stage = 1;
+    uploadedBase64 = null;
+    imageUpload.value = "";
+    enableEditor();
+    editor.setAttribute("data-placeholder", "Describe your edit...");
+    appendMessage("Let's start fresh! Upload your drawing and describe how you'd like the AI to edit it.", "ai");
 }
 
 // ===============================

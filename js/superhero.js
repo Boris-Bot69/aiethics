@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.onload = (ev) => {
             uploadedBase64 = ev.target.result;
             addUserMessage("Image uploaded.");
-            addBotMessage("Now describe your superhero's powers or mission to begin the story.");
+            addBotMessage("Now that we have an idea of how your hero looks — what does the first panel show? What is the beginning of the story?");
         };
         reader.readAsDataURL(file);
     });
@@ -162,22 +162,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ── Action buttons shown after every panel ──
     function showPanelActions(panelCount) {
+        const page       = Math.ceil(panelCount / 6);
+        const panelOnPage = ((panelCount - 1) % 6) + 1;
+        const pageLabel  = `Page ${page} · Panel ${panelOnPage}`;
+
         const row = document.createElement("div");
         row.className = "message ai-message";
 
         row.innerHTML = `
             <div class="avatar"></div>
             <div class="text">
-                <span style="font-size:0.9rem;color:#666">Panel ${panelCount} done — what's next?</span>
+                <span style="font-size:0.9rem;color:#666">${pageLabel} done — what's next?</span>
                 <div class="suggest-inline">
+                    <button class="add-panel-btn">Add a panel</button>
                     <button class="suggest-inline-btn">Suggest a prompt</button>
-                    <button class="finish-comic-btn">Finish comic</button>
+                    <button class="finish-comic-btn">End comic</button>
                     <button class="reset-inline-btn">New hero</button>
                 </div>
             </div>`;
 
         chatMessages.appendChild(row);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // Add a panel — user writes their own description
+        row.querySelector(".add-panel-btn").addEventListener("click", () => {
+            disableRowButtons(row);
+            addBotMessage("What happens in the next panel? Describe it below.");
+            chatEditor.focus();
+        });
 
         // Suggest a prompt
         row.querySelector(".suggest-inline-btn").addEventListener("click", async (e) => {
@@ -208,7 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // Finish comic
+        // End comic
         row.querySelector(".finish-comic-btn").addEventListener("click", async () => {
             disableRowButtons(row);
             await finishComic();
@@ -232,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ── Suggestion bubble with Try another + Use this + Finish ──
+    // ── Suggestion bubble with Use this + Edit + Try another + End comic ──
     function showSuggestion(suggestion) {
         const msg = document.createElement("div");
         msg.className = "message ai-message";
@@ -241,9 +253,10 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="text">
                 Here's an idea: <em>${suggestion}</em>
                 <div class="suggest-inline">
-                    <button class="accept-suggestion-btn">Use this prompt</button>
+                    <button class="accept-suggestion-btn">Use this</button>
+                    <button class="edit-suggestion-btn">Edit</button>
                     <button class="retry-suggestion-btn">Try another</button>
-                    <button class="finish-comic-btn">Finish comic</button>
+                    <button class="finish-comic-btn">End comic</button>
                 </div>
             </div>`;
         chatMessages.appendChild(msg);
@@ -254,6 +267,19 @@ document.addEventListener("DOMContentLoaded", () => {
             disableRowButtons(msg);
             addUserMessage(suggestion);
             await generatePanel(suggestion);
+        });
+
+        // Edit — load suggestion into editor for the user to modify
+        msg.querySelector(".edit-suggestion-btn").addEventListener("click", () => {
+            disableRowButtons(msg);
+            chatEditor.innerText = suggestion;
+            chatEditor.focus();
+            const range = document.createRange();
+            range.selectNodeContents(chatEditor);
+            range.collapse(false);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
         });
 
         // Try another suggestion
@@ -285,7 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // Finish comic
+        // End comic
         msg.querySelector(".finish-comic-btn").addEventListener("click", async () => {
             disableRowButtons(msg);
             await finishComic();

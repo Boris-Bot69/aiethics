@@ -1,9 +1,9 @@
 // expanded_frame_chatbot.js
 let chatPanel, chatMessages, imageUpload;
 
-let uploadedBase64 = null;   // current image (updated after every upload or AI expansion)
-let isBusy         = false;
-let isFirstUpload  = true;   // true until the very first image is uploaded
+let uploadedBase64     = null;   // current image (updated after every upload or AI expansion)
+let isBusy             = false;
+let pendingUploadStage = "A8";   // what size the next user upload represents
 
 const frameOrder = ["A8", "A7", "A6", "A5", "A4"];
 let stage = "A8";  // current stage of the uploaded image
@@ -47,14 +47,14 @@ window.addEventListener("DOMContentLoaded", () => {
 // RESTART
 // ===============================
 function restartAll() {
-    stage         = "A8";
-    uploadedBase64 = null;
-    isFirstUpload  = true;
-    isBusy         = false;
+    stage              = "A8";
+    uploadedBase64     = null;
+    pendingUploadStage = "A8";
+    isBusy             = false;
     if (imageUpload) imageUpload.value = "";
 
     chatMessages.innerHTML = "";
-    showUploadBar("📷 Upload Artwork");
+    showUploadBar("📷 Upload A8");
 
     addBotMessage("All clear! Upload a new <b>A8 artwork</b> to start again.");
 }
@@ -101,6 +101,14 @@ function addMessage(text, sender = "bot", node = null) {
 }
 
 function addBotMessage(html) { addMessage(html, "bot"); }
+
+function addStatusMessage(html) {
+    const div = document.createElement("div");
+    div.className = "status-message";
+    div.innerHTML = html;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 
 function addImageBubble(src, sender = "bot") {
     const wrap = document.createElement("div");
@@ -155,22 +163,21 @@ function handleImageUpload(e) {
     reader.onload = (ev) => {
         const base64 = ev.target.result;
         uploadedBase64 = base64;
-
-        if (isFirstUpload) {
-            stage         = "A8";
-            isFirstUpload = false;
-        }
-        // For subsequent uploads, stage stays as-is (user drew on the last AI expansion)
+        stage = pendingUploadStage;
 
         hideUploadBar();
-
-        // Show the uploaded image on the user side
         addImageBubble(base64, "user");
+        addStatusMessage(`Image uploaded as <b>${stage}</b>`);
 
-        // Prompt the expand button
         const nextStage = getNextStage();
-        if (nextStage) {
-            addBotMessage(`Got your <b>${stage}</b> artwork. Ready to expand?`);
+        if (!nextStage) {
+            // Final upload (A4) — activity complete
+            addBotMessage(
+                "🎉 <b>You've reached A4!</b> Your expanded artwork is complete.<br><br>" +
+                "Download and display the whole series!"
+            );
+        } else {
+            addBotMessage(`Now click the button below to expand to <b>${nextStage}</b> with AI.`);
             appendExpandButton(nextStage);
         }
     };
@@ -210,7 +217,7 @@ function getNextStage() {
 // EXPAND WITH AI
 // ===============================
 async function expandWithAI(nextStage) {
-    addBotMessage(`Expanding to <b>${nextStage}</b> — this may take up to 30 seconds…`);
+    addStatusMessage(`Expanding to <b>${nextStage}</b> — this may take up to 30 seconds…`);
     showTyping();
 
     try {
@@ -252,25 +259,20 @@ async function expandWithAI(nextStage) {
         });
         wrap.appendChild(dl);
 
-        const isFinished = !getNextStage();
+        // The human-expanded size is always one step down from the AI result
+        const drawUpTo = frameOrder[frameOrder.indexOf(stage) + 1];
+        pendingUploadStage = drawUpTo;
 
-        if (isFinished) {
-            addBotMessage(
-                "🎉 <b>You've reached A4!</b> Your expanded artwork is complete.<br><br>" +
-                "Download your final image above and display the whole series!"
-            );
-        } else {
-            // Tell the user to now draw and upload
-            const instr = document.createElement("div");
-            instr.className = "draw-instruction";
-            instr.innerHTML =
-                `<strong>Your turn now!</strong><br>` +
-                `Save or print the <b>${stage}</b> image above, then draw on it yourself ` +
-                `to extend the borders. When you're done, upload your drawing below to continue.`;
-            addMessage(null, "bot", instr);
+        const instr = document.createElement("div");
+        instr.className = "draw-instruction";
+        instr.innerHTML =
+            `<strong>Your turn!</strong><br>` +
+            `Save or print the <b>${stage}</b> image above. ` +
+            `Draw on it to extend the borders to <b>${drawUpTo}</b> size. ` +
+            `When you're done, upload your <b>${drawUpTo}</b> photo below.`;
+        addMessage(null, "bot", instr);
 
-            showUploadBar("📷 Upload my drawing");
-        }
+        showUploadBar(`📷 Upload ${drawUpTo}`);
 
     } catch (err) {
         console.error("[expandWithAI]", err);

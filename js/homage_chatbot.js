@@ -115,7 +115,6 @@ function handleUserInput() {
 
     appendMessage(text, "user");
     collectedPrompts.push(text);
-    editor.innerHTML = "";
     editor.focus();
 
     sendPrompt(text);
@@ -175,7 +174,8 @@ function appendGeneratedImage(base64, promptText, index) {
     img.src = `data:image/png;base64,${base64}`;
     img.alt = "Generated image";
     img.classList.add("zoomable");
-    img.style.maxWidth = "100%";
+    img.style.maxWidth = "220px";
+    img.style.width = "100%";
     img.style.borderRadius = "10px";
     img.style.marginTop = "8px";
 
@@ -217,6 +217,40 @@ function appendGeneratedImage(base64, promptText, index) {
         nextMsg.textContent = `Now describe your next artwork (${index + 1}/3).`;
         container.appendChild(nextMsg);
     }
+}
+
+// ===============================
+// Image History
+// ===============================
+function addImageToHistory(base64, promptText, index) {
+    const historySection = document.getElementById("imageHistory");
+    const grid = document.getElementById("imageHistoryGrid");
+    if (!historySection || !grid) return;
+
+    historySection.style.display = "block";
+
+    const card = document.createElement("div");
+    card.className = "history-card";
+
+    const img = document.createElement("img");
+    img.src = `data:image/png;base64,${base64}`;
+    img.alt = `Generated image ${index}`;
+    img.className = "history-thumb zoomable";
+
+    const label = document.createElement("div");
+    label.className = "history-label";
+    label.textContent = `#${index}: ${promptText}`;
+
+    const dl = document.createElement("a");
+    dl.href = `data:image/png;base64,${base64}`;
+    dl.download = `image-${index}.png`;
+    dl.className = "history-download";
+    dl.textContent = "Download";
+
+    card.appendChild(img);
+    card.appendChild(label);
+    card.appendChild(dl);
+    grid.appendChild(card);
 }
 
 // ===============================
@@ -429,6 +463,7 @@ async function sendPrompt(prompt) {
         if (data?.image) {
             appendGeneratedImage(data.image, prompt, index);
             generated.push({ prompt, base64: data.image });
+            addImageToHistory(data.image, prompt, index);
 
             if (generated.length === 3) {
                 showSummary();
