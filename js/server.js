@@ -41,6 +41,7 @@ const __dirname = path.dirname(__filename);
 const PROJECT_ROOT = path.join(__dirname, "..");
 
 const app = express();
+app.set("trust proxy", 1); // Required for Render's load balancer (fixes express-rate-limit X-Forwarded-For error)
 const PORT = process.env.PORT || 3000;
 
 /* ============================================================
