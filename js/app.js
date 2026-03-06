@@ -278,11 +278,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (!response.ok) {
-                    const errorJson = await response.json();
+                    const errorJson = await response.json().catch(() => ({}));
                     throw new Error(errorJson.error || `Server error: ${response.status}`);
                 }
 
-                const result = await response.json();
+                const result = await response.json().catch(() => { throw new Error("non-json"); });
 
                 if (result.generatedImage) {
                     // 4. Display the result
@@ -298,8 +298,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (error) {
                 console.error('API Error:', error);
-                statusMessage.textContent = `Error: ${error.message}`;
-                statusMessage.style.color = '#ef4444';
+                statusMessage.textContent = 'Loading...';
+                statusMessage.style.color = '#f59e0b';
             } finally {
                 // 5. End Loading State
                 mixButton.disabled = false;
