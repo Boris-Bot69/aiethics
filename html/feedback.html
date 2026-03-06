@@ -244,6 +244,38 @@
             font-style: italic;
         }
 
+        .consent-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-top: 2rem;
+            padding: 1.25rem 1.5rem;
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        .consent-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            min-width: 18px;
+            margin-top: 2px;
+            accent-color: #78A564;
+            cursor: pointer;
+        }
+
+        .consent-group label {
+            font-size: 14px;
+            color: #444;
+            line-height: 1.5;
+            cursor: pointer;
+        }
+
+        .consent-group label a {
+            color: #78A564;
+            text-decoration: underline;
+        }
+
         .section-divider {
             height: 2px;
             background: linear-gradient(to right, transparent, #78A564, transparent);
@@ -453,6 +485,13 @@
                         </div>
                     </div>
 
+                    <div class="consent-group">
+                        <input type="checkbox" id="consentCheckbox" name="consent" required>
+                        <label for="consentCheckbox">
+                            I agree that the data I enter in this form (name, email, feedback text, and IP address) will be collected and stored for research purposes by the Co-Creating AI Ethics project at TUM. For more information, see our <a href="privacy.html">Privacy Policy</a>.
+                        </label>
+                    </div>
+
                     <button type="submit" class="submit-btn" id="submitBtn">Submit Feedback</button>
                 </form>
             </div>
@@ -616,6 +655,15 @@
                     feedback: feedbackTextarea ? feedbackTextarea.value.trim() : ''
                 });
             });
+
+            // Validate consent
+            if (!document.getElementById('consentCheckbox').checked) {
+                errorMessage.textContent = 'Please confirm your consent to data collection before submitting.';
+                errorMessage.classList.add('show');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Feedback';
+                return;
+            }
 
             // Validate that at least one activity or scenario is selected with feedback
             if (formData.activities.length === 0 && formData.scenarios.length === 0) {
