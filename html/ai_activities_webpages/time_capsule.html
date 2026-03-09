@@ -53,88 +53,44 @@
 
         <section class="main-content-area">
             <h1 class="custom-header">Time Capsule</h1>
-            <div class="aspect-ratio-box">
-            <img src="../../images/activities/activity7_banner.svg" alt="green pic activity">
-            <div class="mini-image-spacer"></div>
-            <p>In this activity, you will reflect on what AI is and how to communicate this to a future civilization in a time capsule. You will use AI and materials to craft a message that will explain what AI is and what ethical considerations are necessary to watch out for. By deciding what warning to send to the future, you will engage with ethics principles. We recommend doing this activity once you have tried out previous ones. You can do this alone, with a partner, or in a small group.
+            <p class="activity-description">
+                In this activity, you will reflect on what AI is and how to communicate this to a future civilization in a time capsule. You will use AI and materials to craft a message explaining what AI is and what ethical considerations are important. We recommend doing this once you have tried previous activities. You can do this alone, with a partner, or in a small group.
             </p>
-            <div class="image-spacer"></div>
 
-            <h2>Activity Instructions</h2>
-            <div class="mini-image-spacer"></div>
+            <h2>Activity Steps</h2>
 
+            <ol class="activity-steps-list">
+                <li><strong>Reflect</strong> Think about what AI is to you, what you have learned, and the most important ethical considerations about using AI.</li>
+                <li><strong>Design</strong> Craft a message for a future civilization explaining what AI is and the ethical considerations you find most important. Use materials, AI image tools, and AI text tools.</li>
+                <li><strong>Share</strong> Share your message with the group and give feedback to your peers on their explanations and ethical considerations.</li>
+                <li><strong>Iterate</strong> Refine your message using the feedback you received from your peers.</li>
+                <li><strong>Build your Time Capsule</strong> Store your message in a capsule you can open in 5, 10, or 20 years. Set a reminder so you do not forget.</li>
+            </ol>
 
+            <main class="chat-panel">
+                <div class="chat-messages"></div>
 
-            <div class="activity-container">
+                <div class="chat-input-bar">
+                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
 
+                    <button id="uploadBtn" class="upload-btn" type="button" aria-label="Upload image">
+                        +
+                    </button>
 
-                <aside class="instructions-panel">
+                    <div
+                            id="chatEditor"
+                            class="chat-editor"
+                            contenteditable="true"
+                            role="textbox"
+                            aria-multiline="true"
+                            aria-label="Send a message"
+                            data-placeholder="Write a message"
+                    ></div>
 
-                    <div class="instructions-content">
+                    <button class="send-btn" aria-label="Send message">&#9658;</button>
+                </div>
 
-                        <div class="step-content is-active" data-step="1">
-                            <h3>1. Reflect:</h3>
-                            <p>Think about what is AI to you, what you have learned about AI, and the most important ethical considerations about using AI.</p>
-                        </div>
-
-                        <div class="step-content" data-step="2">
-                            <h3>2. Design:</h3>
-                            <p>Craft a message that will explain a future civilization what AI is and the ethical considerations you consider the most important. Use materials, image-generative AI, and text-generative AI to convey your message. Don't limit yourself to text only, you can also illustrate your message in a comic style, or as with hieroglyphs.</p>
-                        </div>
-
-                        <div class="step-content" data-step="3">
-                            <h3>3. Share:</h3>
-                            <p>Share with the group the message you designed and how you came to it. Give feedback to your peers on their explanations and other ethical considerations.</p>
-                        </div>
-                        <div class="step-content" data-step="4">
-                            <h3>4. Iterate:</h3>
-                            <p>Iterate on your message by implementing the feedback from your peers.</p>
-                        </div>
-                        <div class="step-content" data-step="5">
-                            <h3>5. Time capsule:</h3>
-                            <p>Once you shared your message, build a capsule that you can store and open in 5, 10, or 20 years. Send yourself a reminder to open it then, or send your message digitally to open in the future.</p>
-                        </div>
-
-                    </div>
-
-                    <div class="step-counter">
-                        <div class="progress-bar-container">
-                            <div id="progressBarFill" class="progress-bar-fill"></div>
-                        </div>
-                        <div class="step-controls">
-                            <button id="prev-step-btn">&lt;</button>
-                            <span id="step-display">STEP 1 OF 5</span>
-                            <button id="next-step-btn">&gt;</button>
-                        </div>
-                    </div>
-                </aside>
-
-                <main class="chat-panel">
-                    <div class="chat-messages"></div>
-
-                    <div class="chat-input-bar">
-                        <input type="file" id="imageUpload" accept="image/*" style="display: none;">
-
-                        <button id="uploadBtn" class="upload-btn" type="button" aria-label="Upload image">
-                            +
-                        </button>
-
-                        <div
-                                id="chatEditor"
-                                class="chat-editor"
-                                contenteditable="true"
-                                role="textbox"
-                                aria-multiline="true"
-                                aria-label="Send a message"
-                                data-placeholder="Write a message"
-                        ></div>
-
-                        <button class="send-btn" aria-label="Send message">&#9658;</button>
-                    </div>
-
-                </main>
-
-            </div>
+            </main>
 
             <section class="post-activity-section">
 
@@ -160,17 +116,18 @@
                         <summary>Transparency and explainability</summary>
                         <div class="accordion-content">
                             <ul>
-                                <li><strong>Explainability:</strong>How did you explain what AI is to people in the future?</li>
+                                <li><strong>Explainability:</strong> How did you explain what AI is to people in the future?</li>
                             </ul>
                         </div>
+                    </details>
                     <details class="accordion-item" open>
                         <summary>Robustness and safety</summary>
                         <div class="accordion-content">
                             <ul>
-                                <li><strong>Safety:</strong>What was the most important warning in the capsule?</li>
-                                <li><strong>Speculating:</strong>Do you think people in the future will use AI more than us? How?</li>
+                                <li><strong>Safety:</strong> What was the most important warning in the capsule?</li>
+                                <li><strong>Speculating:</strong> Do you think people in the future will use AI more than us? How?</li>
                             </ul>
-                            </div>
+                        </div>
                     </details>
 
 

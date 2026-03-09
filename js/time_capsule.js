@@ -19,8 +19,27 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentDesignMode = null;
 
     let reflectOkLast = false;
+    let reflectDecisionRow = null;
     let designButtonsRow = null;
     let styleChipsRow = null;
+
+    // ----------------------------------------------------------
+    // Helper: show a sequence of bot messages one by one
+    // Each message gets a typing indicator before it appears.
+    // ----------------------------------------------------------
+
+    function showSequence(msgs, typingMs = 700, pauseMs = 400) {
+        const cycle = typingMs + pauseMs;
+        msgs.forEach((text, i) => {
+            setTimeout(() => {
+                const typing = showTyping();
+                setTimeout(() => {
+                    typing.remove();
+                    addMessage(text, true);
+                }, typingMs);
+            }, i * cycle);
+        });
+    }
 
     // ----------------------------------------------------------
     // Helper functions
@@ -132,6 +151,55 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ----------------------------------------------------------
+    // REFLECT DECISION BUTTONS
+    // Shown after Step 1 is accepted: edit or continue to Step 2
+    // ----------------------------------------------------------
+
+    function showReflectDecisionButtons() {
+        if (reflectDecisionRow) return;
+
+        const chatPanel = document.querySelector(".chat-panel");
+        const inputBar = document.querySelector(".chat-input-bar");
+
+        const row = document.createElement("div");
+        row.className = "suggestion-row design-mode-row";
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "suggestion-btn design-mode-btn";
+        editBtn.type = "button";
+        editBtn.textContent = "Edit my message";
+        editBtn.addEventListener("click", () => {
+            row.remove();
+            reflectDecisionRow = null;
+            reflectionText = "";
+            reflectOkLast = false;
+            const typing = showTyping();
+            setTimeout(() => {
+                typing.remove();
+                addMessage(
+                    "No problem! Write your updated message in the chat box below and press send when you are ready.",
+                    true
+                );
+            }, 400);
+        });
+
+        const continueBtn = document.createElement("button");
+        continueBtn.className = "suggestion-btn design-mode-btn design-finish-btn";
+        continueBtn.type = "button";
+        continueBtn.textContent = "Continue to Step 2";
+        continueBtn.addEventListener("click", () => {
+            row.remove();
+            reflectDecisionRow = null;
+            goToNextStep();
+        });
+
+        row.appendChild(editBtn);
+        row.appendChild(continueBtn);
+        chatPanel.insertBefore(row, inputBar);
+        reflectDecisionRow = row;
+    }
+
+    // ----------------------------------------------------------
     // DESIGN MODE BUTTONS (Step 2)
     // ----------------------------------------------------------
 
@@ -146,7 +214,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const modes = [
             { id: "change_text", label: "Change my text with AI" },
-            { id: "edit_image",  label: "Add a picture with AI" }
+            { id: "edit_image",  label: "Make a visual representation" }
         ];
 
         modes.forEach(mode => {
@@ -166,9 +234,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if (mode.id === "change_text") {
                         addMessage(
-                            "Sure! I can rewrite your text in a cool new style!\n\n" +
-                            "How do you want it to sound?\n" +
-                            "Click one of the style buttons that appear below — or write your own idea in the chat box and press send!",
+                            "Sure! I can rewrite your text in a new style.\n\n" +
+                            "How do you want it to sound? Click one of the style buttons below, or write your own idea in the chat box and press send!",
                             true
                         );
                         showStyleSuggestions();
@@ -176,9 +243,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if (mode.id === "edit_image") {
                         addMessage(
-                            "Let's add a picture to your Time Capsule!\n\n" +
-                            "Step 1: Click the + button on the left side to upload your picture.\n" +
-                            "I will tell you when I got it, and then ask you what to do with it!",
+                            "Let's create a visual for your time capsule!\n\n" +
+                            "You can upload any picture — a drawing, a photo, or anything you like. I will transform it into an AI version inspired by your message.\n\n" +
+                            "Click the + button on the left to upload your picture. I will let you know when I have it!",
                             true
                         );
                     }
@@ -188,11 +255,11 @@ document.addEventListener("DOMContentLoaded", () => {
             row.appendChild(btn);
         });
 
-        // Finish button
+        // Build Time Capsule button
         const finishBtn = document.createElement("button");
         finishBtn.className = "suggestion-btn design-mode-btn design-finish-btn";
         finishBtn.type = "button";
-        finishBtn.textContent = "I'm done! Build my Time Capsule!";
+        finishBtn.textContent = "Build Time Capsule";
         finishBtn.addEventListener("click", () => {
             currentStepIndex = steps.indexOf("capsule");
             designButtonsRow.remove();
@@ -213,18 +280,20 @@ document.addEventListener("DOMContentLoaded", () => {
     async function handleReflect(text) {
         if (!isMeaningfulText(text, 20, 3)) {
             reflectOkLast = false;
-            return "Hmm, can you say a little more? Try to write at least two short sentences — tell me what AI is and one thing people in the future should watch out for!";
+            return "Hmm, can you say a little more? Try to write at least two short sentences — what is AI, and what should people in the future watch out for?";
         }
 
         reflectionText = text;
         reflectOkLast = true;
-        return "Amazing! I saved your answer. What a great description!";
+        return (
+            "That is a great message! I have saved it.\n\n" +
+            "Would you like to edit it a bit more, or are you ready to move on to Step 2?"
+        );
     }
 
     async function handleDesign(text) {
         const mode = currentDesignMode;
 
-        // No mode selected yet
         if (!mode) {
             return "Please click one of the buttons above to choose what you want to do first!";
         }
@@ -232,7 +301,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // CHANGE TEXT mode
         if (mode === "change_text") {
             if (!reflectionText) {
-                return "Oops! I could not find your answer from Step 1. Please go back and write about AI first!";
+                return "I could not find your message from Step 1. Please go back and write your message first!";
             }
 
             const instructions = text.trim() || "";
@@ -255,7 +324,7 @@ Write as if the student is speaking directly to the future civilization.
 
             if (!res || res.error || !res.text) {
                 console.error("AI change text error:", res?.error);
-                return "Oops! Something went wrong. Please try again!";
+                return "Something went wrong. Please try again!";
             }
 
             const aiMessage = res.text.trim();
@@ -270,24 +339,23 @@ Write as if the student is speaking directly to the future civilization.
             currentDesignMode = null;
 
             return (
-                "Here is your new and improved text:\n\n" +
+                "Here is your rewritten text:\n\n" +
                 aiMessage +
-                "\n\nGreat job! This is saved in your Time Capsule.\n\n" +
-                "You can change it again or add a picture using the buttons below. When you are happy, click \"I'm done!\"."
+                "\n\nThis is saved in your Time Capsule.\n\n" +
+                "You can rewrite it again or make a visual using the buttons below. When you are happy, click Build Time Capsule."
             );
         }
 
-        // ADD PICTURE mode
+        // MAKE A VISUAL REPRESENTATION mode
         if (mode === "edit_image") {
             if (!lastSentImageBase64) {
-                return "I don't have your picture yet! Please click the + button on the left to upload your picture first. I will let you know when I got it!";
+                return "I do not have your picture yet. Please click the + button on the left to upload a picture first. I will let you know when I have it!";
             }
 
             if (!isMeaningfulText(text, 5, 1)) {
-                return "Please write a few words about what you want me to do with your picture. For example: \"Make it look futuristic!\" Then press send!";
+                return "Please write a few words about what you want me to do with your picture. For example: \"Make it look futuristic.\" Then press send!";
             }
 
-            // Save the original upload before clearing it
             const originalImageSrc = lastSentImageBase64;
             designOutputs.push({
                 type: "image",
@@ -297,7 +365,6 @@ Write as if the student is speaking directly to the future civilization.
             });
             lastSentImageBase64 = null;
 
-            // Send the actual uploaded image + the student's instruction to the server
             const res = await api("/edit-image-capsule", {
                 imageBase64: originalImageSrc,
                 prompt: text
@@ -305,7 +372,7 @@ Write as if the student is speaking directly to the future civilization.
 
             if (!res || res.error) {
                 console.error("AI edit image error:", res?.error);
-                return "Oops! I could not make the AI picture. Your original picture is still saved. Try again or use another option!";
+                return "I could not transform the picture. Your original is still saved. Please try again or choose another option!";
             }
 
             const imgSrc = res.image
@@ -313,7 +380,7 @@ Write as if the student is speaking directly to the future civilization.
                 : null;
 
             if (!imgSrc) {
-                return "Oops! I could not make the AI picture. Your original picture is still saved. Try again or use another option!";
+                return "I could not transform the picture. Your original is still saved. Please try again or choose another option!";
             }
 
             designOutputs.push({
@@ -324,8 +391,8 @@ Write as if the student is speaking directly to the future civilization.
             });
 
             currentDesignMode = null;
-            addMessage("Here is your AI-made picture:", true, imgSrc);
-            return "Wow, that looks amazing! Your picture is saved in your Time Capsule.\n\nYou can add more or click \"I'm done!\" when you are ready!";
+            addMessage("Here is your AI-generated visual:", true, imgSrc);
+            return "Your visual is saved in your Time Capsule.\n\nYou can add more or click Build Time Capsule when you are ready!";
         }
 
         return "Please click one of the buttons above to choose what you want to do!";
@@ -334,7 +401,7 @@ Write as if the student is speaking directly to the future civilization.
     async function handleByStep(stepId, text) {
         if (stepId === "reflect") return handleReflect(text);
         if (stepId === "design") return handleDesign(text);
-        if (stepId === "capsule") return "Scroll up to see your Time Capsule! You can also download it as a PDF below.";
+        if (stepId === "capsule") return "Scroll up to see your Time Capsule. You can also download it as a PDF below.";
     }
 
     // ----------------------------------------------------------
@@ -345,7 +412,7 @@ Write as if the student is speaking directly to the future civilization.
         let summary = "";
 
         summary += "My Time Capsule — Message to the Future\n\n";
-        summary += 'My answer about AI:\n"' + reflectionText + '"\n\n';
+        summary += 'My message:\n"' + reflectionText + '"\n\n';
 
         const textDesigns = designOutputs.filter(d => d.type === "text");
         if (textDesigns.length > 0) {
@@ -362,18 +429,18 @@ Write as if the student is speaking directly to the future civilization.
         if (images.length > 0) {
             const studentImages = images.filter(i => i.source === "student").length;
             const aiImages = images.filter(i => i.source === "ai").length;
-            summary += "My pictures:\n";
+            summary += "My visuals:\n";
             summary += "- My uploaded pictures: " + studentImages + "\n";
-            summary += "- AI-made pictures: " + aiImages + "\n\n";
+            summary += "- AI-generated visuals: " + aiImages + "\n\n";
         } else {
-            summary += "My pictures:\n(none)\n\n";
+            summary += "My visuals:\n(none)\n\n";
         }
 
         summary += "Ideas for saving your Time Capsule:\n";
         summary += "- Print this or download the PDF.\n";
         summary += "- Put it in an envelope and write a future year on it.\n";
         summary += "- Email it to your future self.\n";
-        summary += "- Set a reminder to open it in 5, 10, or 20 years!\n";
+        summary += "- Set a reminder to open it in 5, 10, or 20 years.\n";
 
         return summary;
     }
@@ -407,7 +474,7 @@ Write as if the student is speaking directly to the future civilization.
             const data = await res.json();
 
             if (!data.pdf_url) {
-                addMessage("Oops! The PDF could not be made. Please try again!", true);
+                addMessage("The PDF could not be created. Please try again!", true);
                 return;
             }
 
@@ -429,28 +496,11 @@ Write as if the student is speaking directly to the future civilization.
     // ----------------------------------------------------------
 
     function showStepIntro(stepId) {
-        if (stepId === "reflect") {
-            addMessage(
-                "Step 1: Tell Me About AI!\n\n" +
-                "Imagine people living 500 years in the future find the AI we have today.\n" +
-                "What would they need to know?\n\n" +
-                "In a few sentences, please tell me:\n" +
-                "- What is AI? Explain it like you are talking to someone who has never seen it!\n" +
-                "- What is one important thing people should watch out for?\n\n" +
-                "Type your answer in the chat box below and press send when you are ready!",
-                true
-            );
-            return;
-        }
-
         if (stepId === "design") {
             addMessage(
-                "Step 2: Make Your Capsule Look Amazing!\n\n" +
-                "Now let's make your message even better with AI!\n\n" +
-                "You have two choices — and you can do both:\n" +
-                "- Change your text — I can rewrite it in a fun or cool style!\n" +
-                "- Add a picture — upload one and I will make an AI version of it!\n\n" +
-                "Use the buttons below to choose. When you are done, click \"I'm done!\"",
+                "Step 2: Visualize your time capsule!\n\n" +
+                "Below are your options. Iterate as often as needed — you can pick more than one option.\n\n" +
+                "When you are done, click Build Time Capsule.",
                 true
             );
             showDesignModeButtons();
@@ -459,19 +509,18 @@ Write as if the student is speaking directly to the future civilization.
 
         if (stepId === "capsule") {
             addMessage(
-                "Step 3: Your Time Capsule is Ready!\n\n" +
-                "Amazing work! Here is everything you made:",
+                "Your Time Capsule is ready! Here is everything you put together:",
                 true
             );
 
             if (reflectionText) {
-                addMessage("Your answer about AI:\n\n\"" + reflectionText + "\"", true);
+                addMessage("Your message:\n\n\"" + reflectionText + "\"", true);
             }
 
             const modeLabels = {
                 change_text: "Your AI-improved text",
                 edit_image:  "Your uploaded picture",
-                ai_image:    "Your AI-made picture"
+                ai_image:    "Your AI-generated visual"
             };
 
             designOutputs.forEach(output => {
@@ -484,12 +533,11 @@ Write as if the student is speaking directly to the future civilization.
             });
 
             addMessage(
-                "You just built your own AI Time Capsule — great job!\n\n" +
-                "Here are some ideas for saving it:\n" +
+                "Well done! Here are some ideas for saving your Time Capsule:\n\n" +
                 "- Print it or download the PDF below.\n" +
-                "- Put it in an envelope and write a year on it, like 2035 or 2050!\n" +
+                "- Put it in an envelope and write a year on it, like 2035 or 2050.\n" +
                 "- Email it to yourself to open later.\n" +
-                "- Set a reminder to open it in 5, 10, or 20 years!",
+                "- Set a reminder to open it in 5, 10, or 20 years.",
                 true
             );
 
@@ -502,26 +550,32 @@ Write as if the student is speaking directly to the future civilization.
             currentStepIndex++;
             showStepIntro(steps[currentStepIndex]);
         } else {
-            addMessage("You finished the AI Time Capsule! Fantastic work!", true);
+            addMessage("You have finished the AI Time Capsule. Well done!", true);
         }
     }
 
     // ----------------------------------------------------------
-    // Initialization
+    // Initialization — sequential welcome messages
     // ----------------------------------------------------------
 
     function showWelcome() {
-        addMessage(
-            "Welcome to the AI Time Capsule!\n\n" +
-            "You are going to write a special message for the future — 500 years from now!\n\n" +
-            "Here is what we will do together:\n" +
-            "1. You tell me what AI is in your own words.\n" +
-            "2. We make your message look amazing with AI help!\n" +
-            "3. We save everything in your very own Time Capsule.\n\n" +
-            "Ready? Let's go!",
-            true
-        );
-        showStepIntro("reflect");
+        showSequence([
+            "Welcome to the AI Time Capsule!",
+
+            "Your task is to write a message to a future civilization — people who will live 500 years from now.",
+
+            "Imagine that people in the future find the AI that was developed today.\n" +
+            "What would they have to know about it and about its potential risks?\n\n" +
+            "Did you know that scientists who built nuclear waste storage sites faced the same challenge? " +
+            "They had to leave warnings for people thousands of years in the future — people who might speak a completely different language and live in a very different world. " +
+            "They had to think hard about how to communicate danger across time.\n\n" +
+            "Now it is your turn — but for AI!",
+
+            "Here are two questions to guide you:\n\n" +
+            "- What would you tell people in 500 years?\n" +
+            "- What message would you like to share about AI and its risks?\n\n" +
+            "Type your answer in the chat box below and press send when you are ready!"
+        ]);
     }
 
     showWelcome();
@@ -550,7 +604,7 @@ Write as if the student is speaking directly to the future civilization.
         addMessage(reply, true);
 
         if (stepId === "reflect" && reflectOkLast) {
-            goToNextStep();
+            setTimeout(showReflectDecisionButtons, 400);
         }
     });
 
@@ -571,24 +625,22 @@ Write as if the student is speaking directly to the future civilization.
     imageInput.addEventListener("change", (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        // Reset the input so the same file can be selected again later
         e.target.value = "";
 
         const reader = new FileReader();
         reader.onload = () => {
             uploadedImageBase64 = reader.result;
 
-            // Bot confirms receipt and gives clear next step
             const typing = showTyping();
             setTimeout(() => {
                 typing.remove();
                 addMessage(
-                    "I got your picture! Great choice!\n\n" +
-                    "Now write a few sentences in the chat box below to tell me what you want me to do with it.\n\n" +
-                    "Here are some ideas:\n" +
-                    "- \"Make it look like it is from the future!\"\n" +
-                    "- \"Add glowing robots and bright colors!\"\n" +
-                    "- \"Make it look magical and mysterious!\"\n\n" +
+                    "I have your picture!\n\n" +
+                    "Now write a few sentences in the chat box to tell me what you want me to do with it.\n\n" +
+                    "For example:\n" +
+                    "- \"Make it look like it is from the future.\"\n" +
+                    "- \"Add glowing lights and a futuristic city.\"\n" +
+                    "- \"Make it look mysterious and dramatic.\"\n\n" +
                     "Type your idea and press send when you are ready!",
                     true
                 );
