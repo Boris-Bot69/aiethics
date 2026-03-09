@@ -1292,7 +1292,7 @@ Student's instruction: "${prompt}"
 Output one transformed version of the student's image that follows the instruction above.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash-image",
+            model: "gemini-3-pro-image-preview",
             contents: [
                 {
                     inlineData: {
@@ -1302,10 +1302,22 @@ Output one transformed version of the student's image that follows the instructi
                 },
                 { text: instruction },
             ],
-            config: { responseModalities: ["TEXT", "IMAGE"] },
+            config: { responseModalities: ["IMAGE", "TEXT"] },
         });
 
-        const parts = response?.candidates?.[0]?.content?.parts || [];
+        const candidate = response?.candidates?.[0];
+        const blockReason = response?.promptFeedback?.blockReason || candidate?.finishReason;
+
+        if (!candidate || !candidate.content?.parts?.length) {
+            console.error("[/edit-image-capsule] Empty response. blockReason:", blockReason || "(none)",
+                "promptFeedback:", JSON.stringify(response?.promptFeedback || {}));
+            const userMsg = blockReason === "SAFETY"
+                ? "The image was blocked by safety filters. Please try a different picture or description."
+                : "The model could not generate an image. Please try a different description.";
+            return res.status(500).json({ error: userMsg });
+        }
+
+        const parts = candidate.content.parts;
         const imgPart = parts.find((p) => p.inlineData?.data);
 
         if (!imgPart) {
@@ -1320,7 +1332,7 @@ Output one transformed version of the student's image that follows the instructi
         res.json({ image: outBase64, mimeType: outMime });
 
     } catch (err) {
-        console.error("[/edit-image-capsule] Error:", err);
+        console.error("[/edit-image-capsule] Error:", err.message || err);
         res.status(500).json({ error: "Image editing failed." });
     }
 });
