@@ -26,7 +26,7 @@ window.addEventListener("DOMContentLoaded", () => {
     restartBar.className = "restart-bar";
     const restartBtn = document.createElement("button");
     restartBtn.className = "restart-btn";
-    restartBtn.textContent = "↺ Start over";
+    restartBtn.textContent = "Start over";
     restartBtn.addEventListener("click", restartAll);
     restartBar.appendChild(restartBtn);
     chatPanel.appendChild(restartBar);
@@ -36,7 +36,7 @@ window.addEventListener("DOMContentLoaded", () => {
         "Welcome to <b>Expanded Frames</b>!<br><br>" +
         "The loop works like this:<br>" +
         "<b>1.</b> Upload a photo of your artwork<br>" +
-        "<b>2.</b> AI expands it — download the result<br>" +
+        "<b>2.</b> AI expands it, download the result<br>" +
         "<b>3.</b> Draw on the printed/saved image yourself to extend the borders<br>" +
         "<b>4.</b> Upload your new drawing and repeat until you reach A4<br><br>" +
         "Start by uploading your <b>A8 artwork</b> below."
@@ -54,7 +54,7 @@ function restartAll() {
     if (imageUpload) imageUpload.value = "";
 
     chatMessages.innerHTML = "";
-    showUploadBar("📷 Upload A8");
+    showUploadBar("Upload A8");
 
     addBotMessage("All clear! Upload a new <b>A8 artwork</b> to start again.");
 }
@@ -88,19 +88,23 @@ function addMessage(text, sender = "bot", node = null) {
     content.classList.add("text");
 
     if (node) content.appendChild(node);
-    if (text) {
-        const p = document.createElement("p");
-        p.innerHTML = text;
-        content.appendChild(p);
-    }
-
     msg.appendChild(avatar);
     msg.appendChild(content);
     chatMessages.appendChild(msg);
     chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    if (text) {
+        const p = document.createElement("p");
+        content.appendChild(p);
+        if (sender === "bot") {
+            return typeWrite(p, text);
+        } else {
+            p.innerHTML = text;
+        }
+    }
 }
 
-function addBotMessage(html) { addMessage(html, "bot"); }
+function addBotMessage(html) { return addMessage(html, "bot"); }
 
 function addStatusMessage(html) {
     const div = document.createElement("div");
@@ -217,7 +221,7 @@ function getNextStage() {
 // EXPAND WITH AI
 // ===============================
 async function expandWithAI(nextStage) {
-    addStatusMessage(`Expanding to <b>${nextStage}</b> — this may take up to 30 seconds…`);
+    addStatusMessage(`Expanding to <b>${nextStage}</b>. This may take up to 30 seconds…`);
     showTyping();
 
     try {

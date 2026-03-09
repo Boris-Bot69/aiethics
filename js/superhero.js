@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
         addBotMessage(
             "Welcome to <em>AI Superhero Comic Builder</em>.<br>" +
             "Upload a photo of your hero and describe their powers to begin. " +
-            "You can create as many panels as you like — finish whenever you're ready!"
+            "You can create as many panels as you like. Finish whenever you're ready!"
         );
     }, 200);
 
@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.onload = (ev) => {
             uploadedBase64 = ev.target.result;
             addUserMessage("Image uploaded.");
-            addBotMessage("Now that we have an idea of how your hero looks — what does the first panel show? What is the beginning of the story?");
+            addBotMessage("Now that we have an idea of how your hero looks, what does the first panel show? What is the beginning of the story?");
         };
         reader.readAsDataURL(file);
     });
@@ -396,9 +396,15 @@ document.addEventListener("DOMContentLoaded", () => {
     function addBotMessage(html) {
         const msg = document.createElement("div");
         msg.className = "message ai-message";
-        msg.innerHTML = `<div class="avatar"></div><div class="text">${html}</div>`;
+        const avatar = document.createElement("div");
+        avatar.className = "avatar";
+        const textDiv = document.createElement("div");
+        textDiv.className = "text";
+        msg.appendChild(avatar);
+        msg.appendChild(textDiv);
         chatMessages.appendChild(msg);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+        return typeWrite(textDiv, html);
     }
 
     function addUserMessage(text) {

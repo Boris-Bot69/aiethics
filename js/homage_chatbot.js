@@ -49,19 +49,21 @@ window.addEventListener("DOMContentLoaded", () => {
         if (e.target === e.currentTarget) editor.focus();
     });
 
-    // --- Intro messages ---
-    appendMessage(
-        "Hello and welcome to 'Homage to a Local Artist'. In this activity, you describe artworks inspired by Tania Sívertsen’s style, and the AI will turn your descriptions into images.",
-        "ai"
-    );
-    appendMessage(
-        "You will create three artworks in total. After each prompt, I will generate one image for you, and you can download them all at the end as a ZIP file.",
-        "ai"
-    );
-    appendMessage(
-        "Let us begin. Please describe your first artwork (1/3) below.",
-        "ai"
-    );
+    // --- Intro messages (sequential — each waits for the previous to finish typing) ---
+    (async () => {
+        await appendMessage(
+            "Hello and welcome to ‘Homage to a Local Artist’. In this activity, you describe artworks inspired by Tania Sívertsen’s style, and the AI will turn your descriptions into images.",
+            "ai"
+        );
+        await appendMessage(
+            "You will create three artworks in total. After each prompt, I will generate one image for you, and you can download them all at the end as a ZIP file.",
+            "ai"
+        );
+        await appendMessage(
+            "Let us begin. Please describe your first artwork (1/3) below.",
+            "ai"
+        );
+    })();
 });
 
 // ===============================
@@ -137,13 +139,18 @@ function appendMessage(text, sender = "ai") {
 
     const textDiv = document.createElement("div");
     textDiv.classList.add("text");
-    textDiv.textContent = text;
 
     msg.appendChild(avatar);
     msg.appendChild(textDiv);
     chatMessages.appendChild(msg);
     chatMessages.scrollTop = chatMessages.scrollHeight;
-    return msg;
+
+    if (sender === "user") {
+        textDiv.textContent = text;
+        return msg;
+    } else {
+        return typeWrite(textDiv, text.replace(/\n/g, "<br>"));
+    }
 }
 
 function appendAIContainer() {

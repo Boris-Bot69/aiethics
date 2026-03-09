@@ -30,15 +30,26 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!text && !image) return;
         const msg = document.createElement("div");
         msg.className = `message ${isAI ? "ai-message" : "user-align"}`;
-        msg.innerHTML = `
-            <div class="avatar"></div>
-            <div class="text">
-                ${image ? `<img class="chat-image-preview zoomable" src="${image}" alt="Uploaded image">` : ""}
-                ${text ? text.replace(/\n/g, "<br>") : ""}
-            </div>
-        `;
+        const avatar = document.createElement("div");
+        avatar.className = "avatar";
+        const textDiv = document.createElement("div");
+        textDiv.className = "text";
+        if (image) {
+            const img = document.createElement("img");
+            img.className = "chat-image-preview zoomable";
+            img.alt = "Uploaded image";
+            img.src = image;
+            textDiv.appendChild(img);
+        }
+        msg.appendChild(avatar);
+        msg.appendChild(textDiv);
         chatMessages.appendChild(msg);
         scrollToBottom();
+        if (text && isAI) {
+            return typeWrite(textDiv, text.replace(/\n/g, "<br>"));
+        } else if (text) {
+            textDiv.innerHTML = text.replace(/\n/g, "<br>");
+        }
     }
 
     function showTyping() {
@@ -316,7 +327,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     addMessage(
         "Welcome to the Prototype & Pitch activity.\n" +
-        "Start by describing your AI product idea — what will it do, and how will it help your school reach a Sustainable Development Goal?",
+        "Start by describing your AI product idea. What will it do, and how will it help your school reach a Sustainable Development Goal?",
         true
     );
 });

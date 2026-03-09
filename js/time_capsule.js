@@ -28,17 +28,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // Each message gets a typing indicator before it appears.
     // ----------------------------------------------------------
 
-    function showSequence(msgs, typingMs = 700, pauseMs = 400) {
-        const cycle = typingMs + pauseMs;
-        msgs.forEach((text, i) => {
-            setTimeout(() => {
-                const typing = showTyping();
-                setTimeout(() => {
-                    typing.remove();
-                    addMessage(text, true);
-                }, typingMs);
-            }, i * cycle);
-        });
+    async function showSequence(msgs, typingMs = 700, pauseMs = 400) {
+        for (const text of msgs) {
+            const typing = showTyping();
+            await new Promise(r => setTimeout(r, typingMs));
+            typing.remove();
+            await addMessage(text, true);
+            await new Promise(r => setTimeout(r, pauseMs));
+        }
     }
 
     // ----------------------------------------------------------
@@ -51,15 +48,28 @@ document.addEventListener("DOMContentLoaded", () => {
         const msg = document.createElement("div");
         msg.className = `message ${isAI ? "ai-message" : "user-align"}`;
 
-        msg.innerHTML = `
-            <div class="avatar"></div>
-            <div class="text">
-                ${image ? `<img class="chat-image-preview zoomable" src="${image}" />` : ""}
-                ${text ? text.replace(/\n/g, "<br>") : ""}
-            </div>
-        `;
+        const avatar = document.createElement("div");
+        avatar.className = "avatar";
+        const textDiv = document.createElement("div");
+        textDiv.className = "text";
+
+        if (image) {
+            const img = document.createElement("img");
+            img.className = "chat-image-preview zoomable";
+            img.src = image;
+            textDiv.appendChild(img);
+        }
+
+        msg.appendChild(avatar);
+        msg.appendChild(textDiv);
         messages.appendChild(msg);
         messages.scrollTop = messages.scrollHeight;
+
+        if (text && isAI) {
+            return typeWrite(textDiv, text.replace(/\n/g, "<br>"));
+        } else if (text) {
+            textDiv.innerHTML = text.replace(/\n/g, "<br>");
+        }
     }
 
     function showTyping() {
@@ -244,7 +254,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (mode.id === "edit_image") {
                         addMessage(
                             "Let's create a visual for your time capsule!\n\n" +
-                            "You can upload any picture — a drawing, a photo, or anything you like. I will transform it into an AI version inspired by your message.\n\n" +
+                            "You can upload any picture: a drawing, a photo, or anything you like. I will transform it into an AI version inspired by your message.\n\n" +
                             "Click the + button on the left to upload your picture. I will let you know when I have it!",
                             true
                         );
@@ -280,7 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function handleReflect(text) {
         if (!isMeaningfulText(text, 20, 3)) {
             reflectOkLast = false;
-            return "Hmm, can you say a little more? Try to write at least two short sentences — what is AI, and what should people in the future watch out for?";
+            return "Hmm, can you say a little more? Try to write at least two short sentences. What is AI, and what should people in the future watch out for?";
         }
 
         reflectionText = text;
@@ -357,13 +367,6 @@ Write as if the student is speaking directly to the future civilization.
             }
 
             const originalImageSrc = lastSentImageBase64;
-            designOutputs.push({
-                type: "image",
-                mode: "edit_image",
-                source: "student",
-                src: originalImageSrc
-            });
-            lastSentImageBase64 = null;
 
             const res = await api("/edit-image-capsule", {
                 imageBase64: originalImageSrc,
@@ -372,7 +375,8 @@ Write as if the student is speaking directly to the future civilization.
 
             if (!res || res.error) {
                 console.error("AI edit image error:", res?.error);
-                return "I could not transform the picture. Your original is still saved. Please try again or choose another option!";
+                // Keep lastSentImageBase64 intact so the user can retry without re-uploading
+                return "Something went wrong with the transformation. Your picture is still saved. Please try writing a different description and press send!";
             }
 
             const imgSrc = res.image
@@ -380,9 +384,17 @@ Write as if the student is speaking directly to the future civilization.
                 : null;
 
             if (!imgSrc) {
-                return "I could not transform the picture. Your original is still saved. Please try again or choose another option!";
+                return "Something went wrong with the transformation. Your picture is still saved. Please try writing a different description and press send!";
             }
 
+            // Success: only now clear the image and save to outputs
+            lastSentImageBase64 = null;
+            designOutputs.push({
+                type: "image",
+                mode: "edit_image",
+                source: "student",
+                src: originalImageSrc
+            });
             designOutputs.push({
                 type: "image",
                 mode: "ai_image",
@@ -495,11 +507,11 @@ Write as if the student is speaking directly to the future civilization.
     // Step intros
     // ----------------------------------------------------------
 
-    function showStepIntro(stepId) {
+    async function showStepIntro(stepId) {
         if (stepId === "design") {
-            addMessage(
+            await addMessage(
                 "Step 2: Visualize your time capsule!\n\n" +
-                "Below are your options. Iterate as often as needed — you can pick more than one option.\n\n" +
+                "Below are your options. You can pick more than one, and go back and forth as often as you like.\n\n" +
                 "When you are done, click Build Time Capsule.",
                 true
             );
@@ -508,13 +520,13 @@ Write as if the student is speaking directly to the future civilization.
         }
 
         if (stepId === "capsule") {
-            addMessage(
+            await addMessage(
                 "Your Time Capsule is ready! Here is everything you put together:",
                 true
             );
 
             if (reflectionText) {
-                addMessage("Your message:\n\n\"" + reflectionText + "\"", true);
+                await addMessage("Your message:\n\n\"" + reflectionText + "\"", true);
             }
 
             const modeLabels = {
@@ -523,16 +535,16 @@ Write as if the student is speaking directly to the future civilization.
                 ai_image:    "Your AI-generated visual"
             };
 
-            designOutputs.forEach(output => {
+            for (const output of designOutputs) {
                 const label = modeLabels[output.mode] || "Your content";
                 if (output.type === "text") {
-                    addMessage(label + ":\n\n" + output.content, true);
+                    await addMessage(label + ":\n\n" + output.content, true);
                 } else if (output.type === "image") {
-                    addMessage(label + ":", true, output.src);
+                    await addMessage(label + ":", true, output.src);
                 }
-            });
+            }
 
-            addMessage(
+            await addMessage(
                 "Well done! Here are some ideas for saving your Time Capsule:\n\n" +
                 "- Print it or download the PDF below.\n" +
                 "- Put it in an envelope and write a year on it, like 2035 or 2050.\n" +
@@ -562,14 +574,14 @@ Write as if the student is speaking directly to the future civilization.
         showSequence([
             "Welcome to the AI Time Capsule!",
 
-            "Your task is to write a message to a future civilization — people who will live 500 years from now.",
+            "Your task is to write a message to a future civilization, people who will live 500 years from now.",
 
             "Imagine that people in the future find the AI that was developed today.\n" +
             "What would they have to know about it and about its potential risks?\n\n" +
             "Did you know that scientists who built nuclear waste storage sites faced the same challenge? " +
-            "They had to leave warnings for people thousands of years in the future — people who might speak a completely different language and live in a very different world. " +
+            "They had to leave warnings for people thousands of years in the future. These people might speak a completely different language and live in a very different world. " +
             "They had to think hard about how to communicate danger across time.\n\n" +
-            "Now it is your turn — but for AI!",
+            "Now it is your turn to do the same, but for AI!",
 
             "Here are two questions to guide you:\n\n" +
             "- What would you tell people in 500 years?\n" +

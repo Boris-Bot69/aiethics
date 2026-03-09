@@ -50,7 +50,7 @@ window.addEventListener("DOMContentLoaded", () => {
                 const text = el.textContent.trim();
                 if (
                     text.startsWith(" Image uploaded!") ||
-                    text.startsWith("Great — image uploaded!") ||
+                    text.startsWith("Image uploaded!") ||
                     text.includes("Now type a short prompt")
                 ) {
                     el.parentElement.remove(); // remove the message container
@@ -74,15 +74,17 @@ window.addEventListener("DOMContentLoaded", () => {
 
     setupEditorControls();
 
-    // Intro messages
-    appendMessage(
-        "Welcome to*Magazine Cut-Outs! This activity combines your drawings, collage layers, and AI edits to visualize how ideas evolve.",
-        "ai"
-    );
-    appendMessage(
-        "Step 1: Upload your black-and-white drawing, then describe how you'd like the AI to edit it (e.g., Add a small bird on the branch).",
-        "ai"
-    );
+    // Intro messages (sequential)
+    (async () => {
+        await appendMessage(
+            "Welcome to Magazine Cut-Outs! This activity combines your drawings, collage layers, and AI edits to visualize how ideas evolve.",
+            "ai"
+        );
+        await appendMessage(
+            "Step 1: Upload your black-and-white drawing, then describe how you'd like the AI to edit it (e.g., Add a small bird on the branch).",
+            "ai"
+        );
+    })();
 });
 
 // ===============================
@@ -171,12 +173,18 @@ function appendMessage(text, sender = "ai") {
     avatar.classList.add("avatar");
     const textDiv = document.createElement("div");
     textDiv.classList.add("text");
-    textDiv.textContent = text;
+
     msg.appendChild(avatar);
     msg.appendChild(textDiv);
     chatMessages.appendChild(msg);
     chatMessages.scrollTop = chatMessages.scrollHeight;
-    return msg;
+
+    if (sender === "user") {
+        textDiv.textContent = text;
+        return msg;
+    } else {
+        return typeWrite(textDiv, text.replace(/\n/g, "<br>"));
+    }
 }
 
 function appendAIContainer() {
@@ -206,7 +214,7 @@ function handleUserInput() {
     }
 
     if (hasImage && !text) {
-        appendMessage("Great — image uploaded! Now please describe how you'd like it edited (then press ▶).", "ai");
+        appendMessage("Image uploaded! Now please describe how you'd like it edited (then press ▶).", "ai");
         return;
     }
 
@@ -285,11 +293,11 @@ async function sendToAI(imageBase64, prompt) {
 
             // Guided responses
             if (stage === 1) {
-                appendMessage(
-                    " Great! Now take your printed drawing, layer it with magazine cutouts, and take a photo of your collage.",
+                await appendMessage(
+                    "Great! Now take your printed drawing, layer it with magazine cutouts, and take a photo of your collage.",
                     "ai"
                 );
-                appendMessage(
+                await appendMessage(
                     "When ready, upload your collage photo to begin Step 2. I’ll help you edit it again with AI.",
                     "ai"
                 );
@@ -299,7 +307,7 @@ async function sendToAI(imageBase64, prompt) {
                 disableEditor("Please upload your collage image for Step 2...");
             } else if (stage === 2) {
                 appendMessage(
-                    "Both edits completed! You now have four artworks — your original, AI-edited, collage, and final AI remix.",
+                    "Both edits are complete! You now have four artworks: your original, AI-edited, collage, and final AI remix.",
                     "ai"
                 );
 

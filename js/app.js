@@ -121,9 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 imgElement.classList.add('chat-image-preview');
                 textBubble.appendChild(imgElement);
             }
-            if (text) {
-                textBubble.appendChild(document.createTextNode(text));
-            } else if (placeholderText) {
+            if (placeholderText) {
                 textBubble.textContent = placeholderText;
             }
             if (className === 'user-message') {
@@ -135,6 +133,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 messageDiv.appendChild(textBubble);
             }
             chatMessages.appendChild(messageDiv);
+            if (text) {
+                if (className === 'ai-message') {
+                    return typeWrite(textBubble, text.replace(/\n/g, '<br>'));
+                } else {
+                    textBubble.appendChild(document.createTextNode(text));
+                }
+            }
         }
 
         function displayFinalSummary() {
