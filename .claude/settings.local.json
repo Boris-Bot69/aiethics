@@ -4,7 +4,8 @@
       "WebFetch(domain:www.npmjs.com)",
       "Bash(powershell -Command:*)",
       "Bash(node:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(git:*)"
     ]
   }
 }
