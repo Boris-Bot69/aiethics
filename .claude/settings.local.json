@@ -3,7 +3,8 @@
     "allow": [
       "WebFetch(domain:www.npmjs.com)",
       "Bash(powershell -Command:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(ls:*)"
     ]
   }
 }

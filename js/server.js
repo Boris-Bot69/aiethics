@@ -1258,6 +1258,73 @@ Aspect ratio: square or 16:9.
         res.status(500).json({ error: "Image generation failed." });
     }
 });
+
+/* ============================================
+   /edit-image-capsule — Time Capsule image editing
+   Accepts the student's uploaded image + their editing instruction
+   and returns a transformed version of that same image.
+=============================================== */
+app.post("/edit-image-capsule", async (req, res) => {
+    try {
+        const { imageBase64, prompt } = req.body;
+
+        if (!imageBase64 || !prompt) {
+            return res.status(400).json({ error: "Missing imageBase64 or prompt" });
+        }
+
+        console.log("[/edit-image-capsule] Editing uploaded image with instruction:", prompt);
+
+        const mimeType = imageBase64.includes("image/png") ? "image/png" : "image/jpeg";
+
+        const instruction = `You are a creative AI artist helping a student decorate their Time Capsule.
+
+The student has uploaded their own picture. Your job is to transform and enhance it based on their instruction below.
+
+IMPORTANT RULES:
+- Keep the main subject and composition of the student's original picture clearly recognisable
+- Apply the transformation the student asked for (futuristic, magical, colorful, etc.)
+- Do NOT add any text, words, letters, numbers, or labels to the image
+- Make the result look like a beautiful, artistic illustration
+- Keep the style fun and child-friendly
+
+Student's instruction: "${prompt}"
+
+Output one transformed version of the student's image that follows the instruction above.`;
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash-image",
+            contents: [
+                {
+                    inlineData: {
+                        data: toRaw(imageBase64),
+                        mimeType,
+                    },
+                },
+                { text: instruction },
+            ],
+            config: { responseModalities: ["TEXT", "IMAGE"] },
+        });
+
+        const parts = response?.candidates?.[0]?.content?.parts || [];
+        const imgPart = parts.find((p) => p.inlineData?.data);
+
+        if (!imgPart) {
+            const maybeText = parts.map((p) => p.text).filter(Boolean).join("\n").slice(0, 500);
+            console.log("[/edit-image-capsule] No image returned. Model text:", maybeText);
+            return res.status(500).json({ error: "No image returned from model", details: maybeText || undefined });
+        }
+
+        const outMime = imgPart.inlineData.mimeType || "image/png";
+        const outBase64 = imgPart.inlineData.data;
+        console.log("[/edit-image-capsule] Image edited successfully.");
+        res.json({ image: outBase64, mimeType: outMime });
+
+    } catch (err) {
+        console.error("[/edit-image-capsule] Error:", err);
+        res.status(500).json({ error: "Image editing failed." });
+    }
+});
+
 /* ============================================
    3. /feedback — Stakeholder analysis
 =============================================== */
