@@ -1,4 +1,3 @@
-// prototype_pitch_chatbot.js
 document.addEventListener("DOMContentLoaded", () => {
     console.log("Prototype & Pitch chatbot ready.");
 
@@ -8,19 +7,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const imageInput   = document.getElementById("imageUpload");
     const uploadBtn    = document.getElementById("uploadBtn");
 
-    // Conversation state
-    let ideaText         = "";       // current product idea (updates after refine)
-    let lastPitchText    = "";       // latest pitch draft
-    let lastFeedbackText = "";       // latest stakeholder feedback
-    let uploadedImageBase64 = null;  // image waiting to be sent
+
+    let ideaText         = "";
+    let lastPitchText    = "";
+    let lastFeedbackText = "";
+    let uploadedImageBase64 = null;
     let isBusy           = false;
 
-    // reference to the currently displayed action-button row
+
     let actionButtonsRow = null;
 
-    /* ================================
-       BASIC HELPERS
-    ================================= */
+    
+
+
 
     function scrollToBottom() {
         chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -73,9 +72,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (existing) existing.remove();
     }
 
-    /* ================================
-       API HELPERS
-    ================================= */
+    
+
+
 
     async function apiFetch(url, body) {
         try {
@@ -91,9 +90,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    /* ================================
-       ACTION BUTTONS
-    ================================= */
+    
+
+
 
     function removeActionButtons() {
         if (actionButtonsRow) {
@@ -129,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 isBusy = true;
                 await handleAction(action.id);
                 isBusy = false;
-                // show buttons again after each action (unless restarted)
+
                 if (ideaText) showActionButtons();
             });
 
@@ -141,9 +140,9 @@ document.addEventListener("DOMContentLoaded", () => {
         actionButtonsRow = row;
     }
 
-    /* ================================
-       ACTIONS
-    ================================= */
+    
+
+
 
     async function handleAction(actionId) {
         switch (actionId) {
@@ -188,7 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             case "feedback": {
-                // Use the latest pitch if available, otherwise the raw idea
+
                 const baseText = lastPitchText || ideaText;
                 showTyping();
                 const data = await apiFetch("/feedback", { text: baseText });
@@ -216,10 +215,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (data.error) {
                     addMessage("Something went wrong during refinement. Please try again.", true);
                 } else {
-                    // Update the stored idea so all future actions use the refined version
+
                     ideaText        = data.text;
-                    lastPitchText   = "";    // pitch is now stale, reset it
-                    lastFeedbackText = "";   // feedback is now stale, reset it
+                    lastPitchText   = "";
+                    lastFeedbackText = "";
                     addMessage(
                         "Here is your refined AI product idea:\n\n" + data.text +
                         "\n\nI've updated your idea. You can now write a new pitch, generate a new image, or keep refining.",
@@ -244,9 +243,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    /* ================================
-       SEND BUTTON — idea input phase
-    ================================= */
+    
+
+
 
     async function handleSend() {
         if (isBusy) return;
@@ -260,7 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
         chatEditor.textContent = "";
         uploadedImageBase64 = null;
 
-        // Phase 1: capture first idea
+
         if (!ideaText) {
             if (text.length < 20) {
                 addMessage("Please write a bit more so I can understand your AI product idea.", true);
@@ -275,11 +274,11 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Phase 2: user typed something while buttons are visible — extend/update idea
+
         if (text) {
             ideaText += "\n" + text;
-            lastPitchText    = "";   // pitch is stale now
-            lastFeedbackText = "";   // feedback is stale now
+            lastPitchText    = "";
+            lastFeedbackText = "";
             addMessage(
                 "I've updated your idea with what you added. Choose an action below to continue.",
                 true
@@ -297,9 +296,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    /* ================================
-       UPLOAD BUTTON
-    ================================= */
+    
+
+
 
     if (uploadBtn) {
         uploadBtn.addEventListener("click", (e) => {
@@ -317,13 +316,13 @@ document.addEventListener("DOMContentLoaded", () => {
             addMessage("Image ready. Press send to include it.", false);
         };
         reader.readAsDataURL(file);
-        // reset so same file can be picked again
+
         e.target.value = "";
     });
 
-    /* ================================
-       INITIAL MESSAGE
-    ================================= */
+    
+
+
 
     addMessage(
         "Welcome to the Prototype & Pitch activity.\n" +

@@ -14,12 +14,12 @@
 
     const submitSection = form.querySelector(".submit-section");
 
-    // Create a download button once we have a result
+
     const dlBtn = document.createElement("a");
     dlBtn.textContent = "Download result";
     dlBtn.className = "mix-button";
     dlBtn.style.textDecoration = "none";
-    dlBtn.style.display = "none"; // hidden until we have an image
+    dlBtn.style.display = "none";
     submitSection.appendChild(dlBtn);
 
     async function fileToDataURL(file) {
@@ -31,18 +31,18 @@
         });
     }
 
-    // === NEW: robust JSON parsing that never throws "Unexpected token" to the user ===
+
     async function safeJson(resp) {
         const ct = resp.headers.get("content-type") || "";
         if (!ct.includes("application/json")) {
-            // Response was likely HTML or empty; read text and throw a friendly error
+
             const _t = await resp.text().catch(() => "");
             throw new Error("Temporary non-JSON response");
         }
         return resp.json();
     }
 
-    // === NEW: retry wrapper with backoff (e.g., for cold starts / transient HTML) ===
+
     async function withRetry(fn, { retries = 3, initialDelay = 600 } = {}) {
         let err;
         let delay = initialDelay;
@@ -52,9 +52,9 @@
             } catch (e) {
                 err = e;
                 if (i < retries) {
-                    // keep the overlay on; optionally update statusMsg if you want
+
                     await new Promise(r => setTimeout(r, delay));
-                    delay *= 1.7; // backoff
+                    delay *= 1.7;
                 }
             }
         }
@@ -69,7 +69,7 @@
             return;
         }
 
-        // UI: loading
+
         mixButton.disabled = true;
         spinner.classList.remove("hidden");
         buttonText.textContent = "Combining…";
@@ -81,7 +81,7 @@
                 fileToDataURL(textureInput.files[0]),
             ]);
 
-            // === NEW: use retry + safeJson to avoid showing raw parse errors ===
+
             const data = await withRetry(async () => {
                 const resp = await fetch("/mix-texture", {
                     method: "POST",
@@ -95,30 +95,30 @@
                 });
 
                 if (!resp.ok) {
-                    // Try to extract JSON error; if not JSON, throw friendly message
+
                     let errMsg = "Request failed";
                     try {
                         const j = await safeJson(resp);
                         errMsg = j?.error || errMsg;
                     } catch {
-                        // swallow specific content; return generic message
+
                         errMsg = "Server is busy. Please try again.";
                     }
                     throw new Error(errMsg);
                 }
 
-                // Parse JSON safely (won't throw the 'Unexpected token' to user)
+
                 return safeJson(resp);
             }, { retries: 3, initialDelay: 700 });
 
-            // Show result
+
             placeholder.style.display = "none";
             mixedImgEl.style.display = "block";
             mixedImgEl.src = data.imageDataUrl;
             mixedImgEl.classList.add("zoomable");
             resultArea.classList.remove("hidden");
 
-            // Enable downloading
+
             dlBtn.href = data.imageDataUrl;
             dlBtn.download = "texture-fusion.png";
             dlBtn.style.display = "inline-flex";

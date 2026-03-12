@@ -1,15 +1,9 @@
-// ===============================
-// Magazine Cut-Outs Chatbot Script
-// ===============================
-
 let chatPanel, chatMessages, editor, sendBtn, imageUpload;
 let uploadedBase64 = null;
-let stage = 1; // 1st upload/edit → 2nd upload/edit
+let stage = 1;
 
 
-// ===============================
-// DOM READY
-// ===============================
+
 window.addEventListener("DOMContentLoaded", () => {
     console.log(" Magazine chatbot loaded");
 
@@ -31,7 +25,7 @@ window.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // ---- Image Upload Logic (inside DOM ready!) ----
+
     imageUpload.addEventListener("change", e => {
         const file = e.target.files[0];
         if (!file) {
@@ -44,7 +38,7 @@ window.addEventListener("DOMContentLoaded", () => {
             uploadedBase64 = ev.target.result;
             console.log("Image uploaded successfully, length:", uploadedBase64?.length);
 
-            // 🧹 Remove previous "upload" or "instruction" messages to avoid duplicates
+
             const existingMsgs = chatMessages.querySelectorAll(".ai-message .text");
             existingMsgs.forEach(el => {
                 const text = el.textContent.trim();
@@ -53,7 +47,7 @@ window.addEventListener("DOMContentLoaded", () => {
                     text.startsWith("Image uploaded!") ||
                     text.includes("Now type a short prompt")
                 ) {
-                    el.parentElement.remove(); // remove the message container
+                    el.parentElement.remove();
                 }
             });
 
@@ -74,7 +68,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     setupEditorControls();
 
-    // Intro messages (sequential)
+
     (async () => {
         await appendMessage(
             "Welcome to Magazine Cut-Outs! This activity combines your drawings, collage layers, and AI edits to visualize how ideas evolve.",
@@ -87,12 +81,10 @@ window.addEventListener("DOMContentLoaded", () => {
     })();
 });
 
-// ===============================
-// Typing Indicator Helpers
-// ===============================
+
 function showTyping() {
     if (!chatMessages) return;
-    // Avoid duplicates
+
     const existing = chatMessages.querySelector(".message.ai-message.typing");
     if (existing) return;
 
@@ -123,9 +115,7 @@ function hideTyping() {
 }
 
 
-// ===============================
-// Chat Input / Upload setup
-// ===============================
+
 function setupEditorControls() {
     editor.addEventListener("paste", e => {
         e.preventDefault();
@@ -158,9 +148,7 @@ function enableEditor() {
     editor.focus();
 }
 
-// ===============================
-// Chat Helpers
-// ===============================
+
 function appendMessage(text, sender = "ai") {
     const msg = document.createElement("div");
     msg.classList.add("message");
@@ -201,9 +189,7 @@ function appendAIContainer() {
     return container;
 }
 
-// ===============================
-// Handle Input (upload + text)
-// ===============================
+
 function handleUserInput() {
     const text = editor.innerText.trim();
     const hasImage = !!uploadedBase64;
@@ -231,9 +217,7 @@ function handleUserInput() {
     }
 }
 
-// ===============================
-// Preview Uploaded Image
-// ===============================
+
 function showImagePreview(base64) {
     const container = appendAIContainer();
     const img = document.createElement("img");
@@ -247,9 +231,7 @@ function showImagePreview(base64) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// ===============================
-// Backend Call + Guided Flow
-// ===============================
+
 async function sendToAI(imageBase64, prompt) {
     showTyping();
 
@@ -264,7 +246,7 @@ async function sendToAI(imageBase64, prompt) {
         hideTyping();
 
         if (data?.image) {
-            // Show AI-edited result
+
             const container = appendAIContainer();
             const img = document.createElement("img");
             img.src = data.image;
@@ -274,7 +256,7 @@ async function sendToAI(imageBase64, prompt) {
             img.style.borderRadius = "10px";
             container.appendChild(img);
 
-            // Download button
+
             const dlBtn = document.createElement("button");
             dlBtn.textContent = "Download edited image";
             dlBtn.style.marginTop = "8px";
@@ -291,7 +273,7 @@ async function sendToAI(imageBase64, prompt) {
 
             addImageToHistory(data.image, prompt, `Edit ${stage}`);
 
-            // Guided responses
+
             if (stage === 1) {
                 await appendMessage(
                     "Great! Now take your printed drawing, layer it with magazine cutouts, and take a photo of your collage.",
@@ -303,7 +285,7 @@ async function sendToAI(imageBase64, prompt) {
                 );
 
                 stage = 2;
-                uploadedBase64 = null; // reset for next upload
+                uploadedBase64 = null;
                 disableEditor("Please upload your collage image for Step 2...");
             } else if (stage === 2) {
                 appendMessage(
@@ -324,9 +306,7 @@ async function sendToAI(imageBase64, prompt) {
     }
 }
 
-// ===============================
-// Image History
-// ===============================
+
 function addImageToHistory(dataUrl, promptText, label) {
     const historySection = document.getElementById("imageHistory");
     const grid = document.getElementById("imageHistoryGrid");
@@ -358,9 +338,7 @@ function addImageToHistory(dataUrl, promptText, label) {
     grid.appendChild(card);
 }
 
-// ===============================
-// Restart Logic
-// ===============================
+
 function askToRestart() {
     const container = appendAIContainer();
 
@@ -407,9 +385,7 @@ function startNewRound() {
     appendMessage("Let's start fresh! Upload your drawing and describe how you'd like the AI to edit it.", "ai");
 }
 
-// ===============================
-// File Download Helper
-// ===============================
+
 function downloadSingle(filename, base64) {
     const a = document.createElement("a");
     a.href = base64.startsWith("data:") ? base64 : `data:image/png;base64,${base64}`;

@@ -1,8 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    //======================================================================
-    // 2. MOBILE MENU TOGGLE
-    //======================================================================
+
     const menuToggle = document.querySelector('.menu-toggle');
     const mobileNav = document.querySelector('.mobile-nav-menu');
     if (menuToggle && mobileNav) {
@@ -12,9 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    //======================================================================
-    // 3. STEP-BY-STEP INSTRUCTIONS PANEL
-    //======================================================================
+
     const instructionsPanel = document.querySelector('.instructions-panel');
     if (instructionsPanel) {
         const prevBtn = document.getElementById('prev-step-btn');
@@ -55,12 +51,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        updateStepView(); // Initialize view
+        updateStepView();
     }
 
-    //======================================================================
-// 5. AI CHAT PANEL FUNCTIONALITY (FINAL AUTOMATIC SAVE VERSION)
-//======================================================================
+
     const chatPanel = document.querySelector('.chat-panel');
     if (chatPanel) {
         const chatMessages = chatPanel.querySelector('.chat-messages');
@@ -68,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sendButton = chatPanel.querySelector('.send-btn');
         const imageUploadInput = document.getElementById('imageUpload');
 
-        // --- State Management ---
+
         let homageCount = 0;
         const MAX_HOMAGES = 3;
         let generatedHomages = [];
@@ -96,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const messageText = inputField.value.trim();
             if (messageText) {
                 appendMessage(messageText, 'user-message');
-                // For this workflow, the history is just the single prompt
+
                 promptHistory = [messageText];
                 getAIResponse(promptHistory);
 
@@ -193,14 +187,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const generatedImage = data.generatedImage;
 
                 if (generatedImage) {
-                    // Automatically count and save each result
+
                     homageCount++;
                     generatedHomages.push(generatedImage);
 
-                    // Display the generated image
+
                     appendMessage('', 'ai-message', generatedImage);
 
-                    // Check the state and guide the user
+
                     if (homageCount < MAX_HOMAGES) {
                         const followupText = `Homage ${homageCount} of ${MAX_HOMAGES} created. You can now start the next one by typing a new prompt.`;
                         appendMessage(followupText, 'ai-message');
@@ -217,17 +211,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    //======================================================================
-// 5. AI TEXTURE MIXER FUNCTIONALITY
-//======================================================================
+
     const mixerPanel = document.querySelector('.texture-mixer-panel');
     if (mixerPanel) {
-        // This function needs to be available globally for the onchange attribute in the HTML
+
         window.previewFile = function(inputId, previewId) {
             const input = document.getElementById(inputId);
             const preview = document.getElementById(previewId);
             const file = input.files[0];
-            preview.innerHTML = '<span>Preview</span>'; // Reset
+            preview.innerHTML = '<span>Preview</span>';
             if (file) {
                 const reader = new FileReader();
                 reader.onloadend = () => {
@@ -240,11 +232,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // --- Main API Interaction Logic ---
+
         document.getElementById('imageMixerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            // Get all DOM elements
+
             const originalFile = document.getElementById('originalImage').files[0];
             const textureFile = document.getElementById('textureImage').files[0];
             const statusMessage = document.getElementById('statusMessage');
@@ -261,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // 1. Start Loading State
+
             statusMessage.textContent = 'Sending images to your server...';
             statusMessage.style.color = '#f59e0b';
             mixButton.disabled = true;
@@ -271,15 +263,15 @@ document.addEventListener('DOMContentLoaded', () => {
             mixedImage.style.display = 'none';
 
             try {
-                // 2. Create FormData to send files to your backend
+
                 const formData = new FormData();
                 formData.append('originalImage', originalFile);
                 formData.append('textureImage', textureFile);
 
-                // 3. Call YOUR backend endpoint
+
                 const response = await fetch('/mix-images', {
                     method: 'POST',
-                    body: formData, // No headers needed, browser sets it for FormData
+                    body: formData,
                 });
 
                 if (!response.ok) {
@@ -290,7 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json().catch(() => { throw new Error("non-json"); });
 
                 if (result.generatedImage) {
-                    // 4. Display the result
+
                     mixedImage.src = result.generatedImage;
                     mixedImage.style.display = 'block';
                     resultPlaceholder.style.display = 'none';
@@ -306,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 statusMessage.textContent = 'Loading...';
                 statusMessage.style.color = '#f59e0b';
             } finally {
-                // 5. End Loading State
+
                 mixButton.disabled = false;
                 buttonText.textContent = 'Combine with AI';
                 loadingSpinner.classList.add('hidden');

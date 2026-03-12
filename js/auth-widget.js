@@ -1,4 +1,3 @@
-/* auth-widget.js — shared auth guard + session pill for all pages */
 (function () {
   "use strict";
 

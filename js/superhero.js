@@ -1,4 +1,3 @@
-// superhero.js
 document.addEventListener("DOMContentLoaded", () => {
     const chatPanel       = document.querySelector(".chat-panel");
     const chatMessages    = document.querySelector(".chat-messages");
@@ -23,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ? "https://aiethics-5ncx.onrender.com"
         : "http://localhost:3000";
 
-    // ── Welcome ──
+
     setTimeout(() => {
         addBotMessage(
             "Welcome to <em>AI Superhero Comic Builder</em>.<br>" +
@@ -32,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }, 200);
 
-    // ── Upload ──
+
     uploadBtn.addEventListener("click", (e) => {
         e.preventDefault();
         imageInput.click();
@@ -50,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
         reader.readAsDataURL(file);
     });
 
-    // ── Send on Enter ──
+
     chatEditor.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
@@ -66,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
         await generatePanel(prompt);
     });
 
-    // ── Typing indicator ──
+
     function showTyping() {
         if (chatMessages.querySelector(".message.typing")) return;
         const msg = document.createElement("div");
@@ -86,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
         chatMessages.querySelector(".message.typing")?.remove();
     }
 
-    // ── Generate a regular panel ──
+
     async function generatePanel(prompt) {
         if (isProcessing) return;
         if (!uploadedBase64) {
@@ -125,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // ── Finish comic: generate concluding panel then PDF ──
+
     async function finishComic() {
         if (isProcessing) return;
 
@@ -160,7 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // ── Action buttons shown after every panel ──
+
     function showPanelActions(panelCount) {
         const page       = Math.ceil(panelCount / 6);
         const panelOnPage = ((panelCount - 1) % 6) + 1;
@@ -184,14 +183,14 @@ document.addEventListener("DOMContentLoaded", () => {
         chatMessages.appendChild(row);
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
-        // Add a panel — user writes their own description
+
         row.querySelector(".add-panel-btn").addEventListener("click", () => {
             disableRowButtons(row);
             addBotMessage("What happens in the next panel? Describe it below.");
             chatEditor.focus();
         });
 
-        // Suggest a prompt
+
         row.querySelector(".suggest-inline-btn").addEventListener("click", async (e) => {
             const btn = e.target;
             disableRowButtons(row);
@@ -220,13 +219,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // End comic
+
         row.querySelector(".finish-comic-btn").addEventListener("click", async () => {
             disableRowButtons(row);
             await finishComic();
         });
 
-        // New hero
+
         row.querySelector(".reset-inline-btn").addEventListener("click", async () => {
             disableRowButtons(row);
             await fetch(`${API_BASE}/reset-story`, {
@@ -244,7 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ── Suggestion bubble with Use this + Edit + Try another + End comic ──
+
     function showSuggestion(suggestion) {
         const msg = document.createElement("div");
         msg.className = "message ai-message";
@@ -262,14 +261,14 @@ document.addEventListener("DOMContentLoaded", () => {
         chatMessages.appendChild(msg);
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
-        // Use this prompt
+
         msg.querySelector(".accept-suggestion-btn").addEventListener("click", async () => {
             disableRowButtons(msg);
             addUserMessage(suggestion);
             await generatePanel(suggestion);
         });
 
-        // Edit — load suggestion into editor for the user to modify
+
         msg.querySelector(".edit-suggestion-btn").addEventListener("click", () => {
             disableRowButtons(msg);
             chatEditor.innerText = suggestion;
@@ -282,7 +281,7 @@ document.addEventListener("DOMContentLoaded", () => {
             sel.addRange(range);
         });
 
-        // Try another suggestion
+
         msg.querySelector(".retry-suggestion-btn").addEventListener("click", async (e) => {
             const btn = e.target;
             disableRowButtons(msg);
@@ -311,14 +310,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // End comic
+
         msg.querySelector(".finish-comic-btn").addEventListener("click", async () => {
             disableRowButtons(msg);
             await finishComic();
         });
     }
 
-    // ── Helpers for button rows ──
+
     function disableRowButtons(row) {
         row.querySelectorAll("button").forEach(b => { b.disabled = true; b.style.opacity = "0.5"; });
     }
@@ -327,7 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
         row.querySelectorAll("button").forEach(b => { b.disabled = false; b.style.opacity = "1"; });
     }
 
-    // ── Gallery panel card ──
+
     function addPanelToGallery(imageDataUrl) {
         const wrapper = document.createElement("div");
         wrapper.className = "panel-card";
@@ -365,7 +364,7 @@ document.addEventListener("DOMContentLoaded", () => {
         downloadAllBtn.style.opacity = "1";
     }
 
-    // ── PDF generation ──
+
     async function generatePDF() {
         try {
             addBotMessage("Generating your comic PDF, please wait…");
@@ -392,7 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     downloadAllBtn.addEventListener("click", generatePDF);
 
-    // ── Chat helpers ──
+
     function addBotMessage(html) {
         const msg = document.createElement("div");
         msg.className = "message ai-message";

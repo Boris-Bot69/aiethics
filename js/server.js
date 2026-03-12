@@ -21,16 +21,16 @@ import {
 
 dotenv.config();
 
-// Initialize Supabase client
+
 const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_ANON_KEY
 );
 
-// Initialize users database
+
 ensureUsersDB().catch(console.error);
 
-// Admin secret for admin panel access
+
 const ADMIN_SECRET = process.env.ADMIN_SECRET || "admin123";
 const COOKIE_SECRET = process.env.COOKIE_SECRET || "your-secret-key-change-in-production";
 
@@ -41,12 +41,11 @@ const __dirname = path.dirname(__filename);
 const PROJECT_ROOT = path.join(__dirname, "..");
 
 const app = express();
-app.set("trust proxy", 1); // Required for Render's load balancer (fixes express-rate-limit X-Forwarded-For error)
+app.set("trust proxy", 1);
 const PORT = process.env.PORT || 3000;
 
-/* ============================================================
-   CORS (optional, but safe for localhost + render)
-============================================================ */
+
+
 const allowedOrigins = [
     "http://localhost:3000",
     "https://aiethics-5ncx.onrender.com",
@@ -54,7 +53,7 @@ const allowedOrigins = [
 
 const corsMiddleware = cors({
     origin(origin, callback) {
-        // allow same-origin calls (no Origin header) + allowed list
+
         if (!origin) return callback(null, true);
         if (allowedOrigins.includes(origin)) return callback(null, true);
         return callback(new Error("Not allowed by CORS"));
@@ -62,54 +61,48 @@ const corsMiddleware = cors({
     credentials: true,
 });
 
-// IMPORTANT for Express + path-to-regexp v6: don't use "*" string
+
 app.use(corsMiddleware);
 app.options(/.*/, corsMiddleware);
 
-/* ============================================================
-   Parsers
-============================================================ */
+
+
 app.use(cookieParser(COOKIE_SECRET));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-/* ============================================================
-   Rate Limiting
-============================================================ */
+
+
 const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // 5 attempts per window
+    windowMs: 15 * 60 * 1000,
+    max: 5,
     message: { error: "Too many login attempts. Please try again in 15 minutes." },
     standardHeaders: true,
     legacyHeaders: false,
 });
 
 const adminLoginLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 3, // 3 attempts per hour
+    windowMs: 60 * 60 * 1000,
+    max: 3,
     message: { error: "Too many admin login attempts. Please try again in 1 hour." },
     standardHeaders: true,
     legacyHeaders: false,
 });
 
-/* ============================================================
-   Public static assets (CSS/JS/Images)
-   These must be public, otherwise your pages look "unstyled".
-============================================================ */
+
+
 app.use("/css", express.static(path.join(PROJECT_ROOT, "css")));
 app.use("/js", express.static(path.join(PROJECT_ROOT, "js")));
 app.use("/images", express.static(path.join(PROJECT_ROOT, "images")));
 
-/* ============================================================
-   Health check
-============================================================ */
+
+
 app.get("/healthz", (_req, res) => res.status(200).send("ok"));
 
-/* ============================================================
-   Cookie login - Secure with bcrypt and time-limited access
-============================================================ */
+
+
 function isAuthed(req) {
-    // Check signed cookie for username
+
     return req.signedCookies?.site_auth != null;
 }
 
@@ -126,7 +119,7 @@ function requireLogin(req, res, next) {
     if (req.path === "/login" || req.path === "/logout" || req.path === "/me") return next();
     if (req.path === "/healthz") return next();
 
-    // Admin routes have their own auth
+
     if (req.path.startsWith("/admin")) return next();
 
     if (req.path.startsWith("/css/")) return next();
@@ -163,14 +156,14 @@ app.post("/login", loginLimiter, async (req, res) => {
         const result = await validateUser(username, password);
 
         if (result.valid) {
-            // Set signed cookie with username, auto-expire with user
+
             res.cookie("site_auth", result.username, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
                 signed: true,
                 sameSite: "lax",
                 path: "/",
-                maxAge: Math.min(result.remainingMs, 7 * 24 * 60 * 60 * 1000) // Cap at 7 days
+                maxAge: Math.min(result.remainingMs, 7 * 24 * 60 * 60 * 1000)
             });
             console.log(`Login successful for ${result.username} - expires ${result.expiresAt}`);
             return res.json({
@@ -194,9 +187,8 @@ app.post("/logout", (req, res) => {
     res.json({ ok: true });
 });
 
-/* ============================================================
-   Admin Authentication & API Routes
-============================================================ */
+
+
 app.post("/admin/login", adminLoginLimiter, (req, res) => {
     const { secret } = req.body || {};
 
@@ -207,7 +199,7 @@ app.post("/admin/login", adminLoginLimiter, (req, res) => {
             signed: true,
             sameSite: "lax",
             path: "/",
-            maxAge: 2 * 60 * 60 * 1000 // 2 hours
+            maxAge: 2 * 60 * 60 * 1000
         });
         console.log("Admin login successful");
         return res.json({ ok: true });
@@ -226,7 +218,7 @@ app.get("/admin/me", (req, res) => {
     res.json({ authed: isAdminAuthed(req) });
 });
 
-// List all users
+
 app.get("/admin/users", requireAdmin, async (req, res) => {
     try {
         const users = await listUsers();
@@ -237,7 +229,7 @@ app.get("/admin/users", requireAdmin, async (req, res) => {
     }
 });
 
-// Create a new user
+
 app.post("/admin/users", requireAdmin, async (req, res) => {
     const { username, password, days } = req.body || {};
 
@@ -259,7 +251,7 @@ app.post("/admin/users", requireAdmin, async (req, res) => {
     }
 });
 
-// Extend user access
+
 app.put("/admin/users/:username/extend", requireAdmin, async (req, res) => {
     const { username } = req.params;
     const { days } = req.body || {};
@@ -282,7 +274,7 @@ app.put("/admin/users/:username/extend", requireAdmin, async (req, res) => {
     }
 });
 
-// Delete a user
+
 app.delete("/admin/users/:username", requireAdmin, async (req, res) => {
     const { username } = req.params;
 
@@ -304,7 +296,7 @@ app.get("/", (_req, res) => res.sendFile(path.join(PROJECT_ROOT, "index.html")))
 app.get("/index.html", (_req, res) => res.sendFile(path.join(PROJECT_ROOT, "index.html")));
 app.get(["/admin.html", "/admin"], (_req, res) => res.sendFile(path.join(PROJECT_ROOT, "html", "admin.html")));
 
-// Serve feedback.html (with and without .html extension)
+
 app.get(["/feedback.html", "/feedback"], requireLogin, (_req, res) => {
     res.sendFile(path.join(PROJECT_ROOT, "html", "feedback.html"), (err) => {
         if (err) {
@@ -321,7 +313,7 @@ app.get("/me", async (req, res) => {
 
     console.log("/me check - isAuthed:", authed, "username:", username);
 
-    // If authed, re-validate to get expiration info
+
     let expiresAt = null;
     let daysRemaining = null;
 
@@ -348,9 +340,8 @@ app.get("/me", async (req, res) => {
 
 app.use("/html", requireLogin, express.static(path.join(PROJECT_ROOT, "html")));
 
-/* ============================================================
-   Feedback API - Store feedback in Supabase
-============================================================ */
+
+
 
 function escapeCSV(field) {
     if (field === null || field === undefined) return "";
@@ -365,7 +356,7 @@ app.post("/api/feedback", requireLogin, async (req, res) => {
     try {
         const { name, email, generalFeedback, activities, scenarios, timestamp } = req.body;
 
-        // Validate that at least one activity or scenario is provided
+
         if ((!activities || activities.length === 0) && (!scenarios || scenarios.length === 0)) {
             return res.status(400).json({ error: "Please select at least one activity or scenario" });
         }
@@ -396,7 +387,7 @@ app.post("/api/feedback", requireLogin, async (req, res) => {
     }
 });
 
-// Admin endpoint to download feedback as CSV
+
 app.get("/api/feedback", requireLogin, async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -440,22 +431,20 @@ const ROOT_HTML_PAGES = new Set([
 app.get("/:page", requireLogin, (req, res, next) => {
     const page = req.params.page;
 
-    if (!ROOT_HTML_PAGES.has(page)) return next(); // not one of your root html pages
+    if (!ROOT_HTML_PAGES.has(page)) return next();
 
     return res.sendFile(path.join(PROJECT_ROOT, "html", page));
 });
 
-/* ============================================================
-   Everything below is protected (APIs, page routes, etc.)
-============================================================ */
+
+
 app.use(requireLogin);
 
-/* ============================================================
-   Your existing routes (kept)
-============================================================ */
+
+
 const HTML_BASE = path.join(PROJECT_ROOT, "html", "ai_activities_webpages");
 
-/** Strip the data-URL prefix from a base64 string, if present. */
+
 function toRaw(dataUrl) {
     if (typeof dataUrl !== "string") return dataUrl;
     const idx = dataUrl.indexOf(",");
@@ -467,12 +456,12 @@ app.get("/magazine", (_req, res) => res.sendFile(path.join(HTML_BASE, "magazine_
 app.get("/expanded", (_req, res) => res.sendFile(path.join(HTML_BASE, "expanded_frames.html")));
 app.get("/texture", (_req, res) => res.sendFile(path.join(HTML_BASE, "drawing_texture.html")));
 
-// GenAI client
+
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
 
 const sessions = new Map();
 
-// --- API: generate one image per prompt ---
+
 app.post("/generate", async (req, res) => {
     try {
         const { prompt } = req.body;
@@ -501,7 +490,7 @@ app.post("/generate", async (req, res) => {
 });
 
 
-// --- API: magazine cut-outs image edit ---
+
 app.post("/edit-magazine", async (req, res) => {
     try {
         const { imageBase64, prompt } = req.body;
@@ -556,9 +545,7 @@ app.post("/edit-magazine", async (req, res) => {
     }
 });
 
-// ============================================================
-//  IMPROVED /mix-texture — Better prompt engineering for Gemini
-// ============================================================
+
 app.post("/mix-texture", async (req, res) => {
     try {
         const { structureBase64, textureBase64, prompt } = req.body;
@@ -628,17 +615,7 @@ Output exactly one square image that looks like a finished, cohesive piece of ar
 });
 
 
-// ============================================================
-//  /expand_canvas v4 — Fixes stripe artifacts + better blend
-// ============================================================
-//
-// CHANGES from v3:
-//   1. ELIMINATED manual pixel loop (cause of white stripes)
-//      → Now uses Sharp's built-in "dest-in" composite blend mode
-//      → This correctly applies the alpha mask without buffer issues
-//   2. Wider feather for less visible blend boundary
-//   3. Converts input to PNG first to avoid JPEG channel issues
-// ============================================================
+
 
 app.post("/expand_canvas", async (req, res) => {
     try {
@@ -648,21 +625,20 @@ app.post("/expand_canvas", async (req, res) => {
         const rawB64 = image.includes(",") ? image.split(",")[1] : image;
         const baseBuf = Buffer.from(rawB64, "base64");
 
-        // IMPORTANT: Convert to PNG first to avoid JPEG channel/encoding issues
+
         const pngBuf = await sharp(baseBuf).png().toBuffer();
         const meta = await sharp(pngBuf).metadata();
         const origW = meta.width;
         const origH = meta.height;
 
-        // 10% expansion per side — subtle step so the original reads as the star
+
         const margin = Math.round(origW * 0.10);
         const newW = origW + margin * 2;
         const newH = origH + margin * 2;
 
         console.log(`[expand] ${origW}×${origH} → ${newW}×${newH}  margin=${margin}  stage=${stage || "?"}`);
 
-        // ── STEP 1: Build padded input ──
-        // Replicate edges outward, then lightly blur only the outer region
+
         const replicateExtended = await sharp(pngBuf)
             .extend({
                 top: margin, bottom: margin,
@@ -678,13 +654,13 @@ app.post("/expand_canvas", async (req, res) => {
             .png()
             .toBuffer();
 
-        // Sharp original centered on blurred background
+
         const paddedImage = await sharp(blurredFull)
             .composite([{ input: pngBuf, top: margin, left: margin }])
             .png()
             .toBuffer();
 
-        // ── STEP 2: Send to Gemini ──
+
         const userHint = prompt?.trim() || "";
 
         const instruction = `OUTPAINTING TASK — edge-only extension
@@ -708,7 +684,7 @@ Output exactly one image at the same dimensions as the input.`;
         const response = await ai.models.generateContent({
             model: "gemini-3-pro-image-preview",
             contents: [
-                // The padded version to outpaint (blurry border = area to fill)
+
                 {
                     inlineData: {
                         data: paddedImage.toString("base64"),
@@ -723,7 +699,7 @@ Output exactly one image at the same dimensions as the input.`;
             },
         });
 
-        // ── Handle response ──
+
         const candidate = response?.candidates?.[0];
         const blockReason =
             response?.promptFeedback?.blockReason || candidate?.finishReason;
@@ -746,27 +722,25 @@ Output exactly one image at the same dimensions as the input.`;
 
         const geminiResultBuf = Buffer.from(imgPart.inlineData.data, "base64");
 
-        // ── STEP 3: POST-PROCESS — feathered blend (NO manual pixel loop) ──
 
-        // 3a. Resize Gemini output to match target canvas
+
+
         const gMeta = await sharp(geminiResultBuf).metadata();
         const geminiSized = (gMeta.width !== newW || gMeta.height !== newH)
             ? await sharp(geminiResultBuf).resize(newW, newH, { fit: "fill" }).png().toBuffer()
             : await sharp(geminiResultBuf).png().toBuffer();
 
-        // 3b. Build feathered alpha mask (origW × origH)
-        //     White center = keep original exactly, black edges = show Gemini content
-        //     Narrow feather (≤12px) so the original is preserved across ~95% of its area
+
         const feather = Math.max(4, Math.min(12, Math.round(margin * 0.15)));
         const safeW = Math.max(1, origW - feather * 2);
         const safeH = Math.max(1, origH - feather * 2);
 
-        // Inner fully-opaque region (white)
+
         const innerRect = await sharp({
             create: { width: safeW, height: safeH, channels: 3, background: { r: 255, g: 255, b: 255 } },
         }).png().toBuffer();
 
-        // Place white rect on black background, then blur to create gradient
+
         const featheredMaskRGB = await sharp({
             create: { width: origW, height: origH, channels: 3, background: { r: 0, g: 0, b: 0 } },
         })
@@ -775,26 +749,24 @@ Output exactly one image at the same dimensions as the input.`;
             .png()
             .toBuffer();
 
-        // Extract single channel as grayscale mask
+
         const featheredMask = await sharp(featheredMaskRGB)
             .extractChannel(0)
             .toColourspace("b-w")
             .png()
             .toBuffer();
 
-        // 3c. Apply mask to original using Sharp's "dest-in" blend
-        //     This keeps original pixels where mask is white, transparent where black
-        //     NO manual pixel loop needed — this avoids the stripe artifacts!
+
         const maskedOriginal = await sharp(pngBuf)
             .ensureAlpha()
             .composite([{
                 input: featheredMask,
-                blend: "dest-in",  // original visible where mask is bright
+                blend: "dest-in",
             }])
             .png()
             .toBuffer();
 
-        // 3d. Final composite: Gemini background + feathered original on top
+
         const finalImage = await sharp(geminiSized)
             .ensureAlpha()
             .composite([{
@@ -819,7 +791,7 @@ Output exactly one image at the same dimensions as the input.`;
 
 
 
-// AI SUPERHERO
+
 
 app.post("/generate-panel", async (req, res) => {
     try {
@@ -827,7 +799,7 @@ app.post("/generate-panel", async (req, res) => {
         if (!prompt) return res.status(400).json({ error: "Missing prompt" });
         if (!sessionId) return res.status(400).json({ error: "Missing sessionId" });
 
-        // Initialize or update session memory
+
         if (!sessions.has(sessionId)) {
             sessions.set(sessionId, {
                 panels: [],
@@ -840,7 +812,7 @@ app.post("/generate-panel", async (req, res) => {
 
         console.log(`[${sessionId}] New panel prompt:`, prompt);
 
-        // Build story memory
+
         story.context += `\nPanel ${story.panels.length + 1}: ${prompt}`;
 
         const combinedPrompt = `
@@ -872,7 +844,7 @@ If the story logically reaches a conclusion, end it naturally with an emotional 
             config: { responseModalities: ["TEXT", "IMAGE"], temperature: 0.8 },
         });
 
-        // Check for safety / block reasons before inspecting parts
+
         const candidate = response?.candidates?.[0];
         const blockReason = response?.promptFeedback?.blockReason
             || candidate?.finishReason;
@@ -911,9 +883,8 @@ If the story logically reaches a conclusion, end it naturally with an emotional 
     }
 });
 
-/* ============================================================
-   Suggest next-panel ideas (context-aware)
-============================================================ */
+
+
 app.post("/suggest-panel-prompt", async (req, res) => {
     try {
         const { sessionId } = req.body;
@@ -945,9 +916,8 @@ Suggest one creative next event that fits naturally. Keep it positive and concis
     }
 });
 
-/* ============================================================
-   Finish story — generate one final concluding panel
-============================================================ */
+
+
 app.post("/finish-story", async (req, res) => {
     try {
         const { sessionId, imageBase64 } = req.body;
@@ -1005,9 +975,8 @@ No speech bubbles. Keep the same art style and hero identity as all previous pan
     }
 });
 
-/* ============================================================
-   Reset story (start new hero)
-============================================================ */
+
+
 app.post("/reset-story", (req, res) => {
     const { sessionId } = req.body;
     sessions.delete(sessionId);
@@ -1036,15 +1005,15 @@ app.get("/generate-comic-pdf", async (req, res) => {
         const pdf = await PDFDocument.create();
         const font = await pdf.embedFont(StandardFonts.HelveticaBold);
 
-        // ---- page factory
+
         const makePage = () => {
-            const page = pdf.addPage([595, 842]);            // A4 portrait
+            const page = pdf.addPage([595, 842]);
             const pageWidth = page.getWidth();
             const pageHeight = page.getHeight();
             const margin = 28;
             const innerW = pageWidth - margin * 2;
 
-            // Title
+
             page.drawText("AI Superhero Comic", {
                 x: margin,
                 y: pageHeight - 36,
@@ -1053,20 +1022,20 @@ app.get("/generate-comic-pdf", async (req, res) => {
                 color: rgb(0.1, 0.1, 0.1),
             });
 
-            // y cursor starts below the title
+
             const startY = pageHeight - 36 - 16;
             return { page, pageWidth, pageHeight, margin, innerW, y: startY };
         };
 
         let ctx = makePage();
 
-        // layout constants
-        const colGap = 6;              // small gaps for tight packing
+
+        const colGap = 6;
         const rowGap = 8;
         const numCols = 2;
         const cellW = (ctx.innerW - colGap) / numCols;
 
-        // Pre-embed images once, keep native sizes
+
         const items = await Promise.all(
             story.panels.map(async (p) => {
                 const img = await pdf.embedPng(Buffer.from(p.image, "base64"));
@@ -1075,37 +1044,37 @@ app.get("/generate-comic-pdf", async (req, res) => {
             })
         );
 
-        // Helper: ensure space or add new page
+
         const ensureSpace = (needed) => {
             if (ctx.y - needed < ctx.margin) {
                 ctx = makePage();
             }
         };
 
-        // Draw rows in pairs; if odd, handle last single row centered
+
         const fullRows = Math.floor(items.length / 2);
         const hasSingleLast = items.length % 2 === 1;
 
         let index = 0;
 
-        // --- full 2-column rows ---
+
         for (let r = 0; r < fullRows; r++) {
             const left = items[index];
             const right = items[index + 1];
 
-            // compute scaled heights using fixed cell width
+
             const scaleL = cellW / left.width;
             const scaleR = cellW / right.width;
             const drawHL = left.height * scaleL;
             const drawHR = right.height * scaleR;
-            const rowH = Math.max(drawHL, drawHR); // row height is max of both
+            const rowH = Math.max(drawHL, drawHR);
 
             ensureSpace(rowH + rowGap);
 
-            // y position for this row (baseline at bottom of tallest)
+
             const y = ctx.y - rowH;
 
-            // center each image vertically within the row
+
             const xL = ctx.margin;
             const yL = y + (rowH - drawHL) / 2;
 
@@ -1115,11 +1084,11 @@ app.get("/generate-comic-pdf", async (req, res) => {
             ctx.page.drawImage(left.img,  { x: xL, y: yL, width: cellW, height: drawHL });
             ctx.page.drawImage(right.img, { x: xR, y: yR, width: cellW, height: drawHR });
 
-            ctx.y = y - rowGap; // advance cursor
+            ctx.y = y - rowGap;
             index += 2;
         }
 
-        // --- single last row (centered, full width) ---
+
         if (hasSingleLast) {
             const last = items[index];
             const scale = ctx.innerW / last.width;
@@ -1143,9 +1112,8 @@ app.get("/generate-comic-pdf", async (req, res) => {
     }
 });
 
-/* ============================================
-   1. /pitch — Text generieren
-=============================================== */
+
+
 app.post("/pitch", async (req, res) => {
     try {
         const { prompt } = req.body;
@@ -1212,16 +1180,15 @@ Do not explain technical details.
     }
 });
 
-/* ============================================
-   2. /image — Image generieren
-=============================================== */
+
+
 app.post("/image", async (req, res) => {
     try {
         const { prompt } = req.body;
 
         console.log("[/image] Received prompt:", prompt);
 
-        // 🔹 Enhanced prompt: automatically enforce “no text or labels”
+
         const enhancedPrompt = `
 Create a clean, modern concept-flow or visualization illustration based on:
 "${prompt}"
@@ -1259,11 +1226,8 @@ Aspect ratio: square or 16:9.
     }
 });
 
-/* ============================================
-   /edit-image-capsule — Time Capsule image editing
-   Accepts the student's uploaded image + their editing instruction
-   and returns a transformed version of that same image.
-=============================================== */
+
+
 app.post("/edit-image-capsule", async (req, res) => {
     try {
         const { imageBase64, prompt } = req.body;
@@ -1337,9 +1301,8 @@ Output one transformed version of the student's image that follows the instructi
     }
 });
 
-/* ============================================
-   3. /feedback — Stakeholder analysis
-=============================================== */
+
+
 app.post("/feedback", async (req, res) => {
     try {
         const { text } = req.body;
@@ -1372,9 +1335,8 @@ Return benefits, risks, harms, stakeholders, OECD principles. Keep it short in t
         res.status(500).json({ error: "Feedback generation failed." });
     }
 });
-/* ============================================
-   4. /refine — Idea refinement
-=============================================== */
+
+
 app.post("/refine", async (req, res) => {
     try {
         const { idea, feedback } = req.body;
@@ -1453,16 +1415,16 @@ app.post("/generate-capsule-pdf", async (req, res) => {
         const pdf = await PDFDocument.create();
         const baseFont = await pdf.embedFont(StandardFonts.Helvetica);
 
-        const pageWidth = 595;   // A4 portrait
+        const pageWidth = 595;
         const pageHeight = 842;
         const margin = 40;
 
-        /* ==================== PAGE 1 (TEXT) ==================== */
+
 
         const page1 = pdf.addPage([pageWidth, pageHeight]);
         let y = pageHeight - margin;
 
-        // Title
+
         page1.drawText("AI Time Capsule", {
             x: margin,
             y,
@@ -1471,7 +1433,7 @@ app.post("/generate-capsule-pdf", async (req, res) => {
         });
         y -= 50;
 
-        // Reflection
+
         page1.drawText("Reflection:", {
             x: margin,
             y,
@@ -1490,7 +1452,7 @@ app.post("/generate-capsule-pdf", async (req, res) => {
         });
         y -= 120;
 
-        // Designed text (first text design only, if exists)
+
         const textDesign = designs.find(d => d.type === "text");
 
         if (textDesign) {
@@ -1512,7 +1474,7 @@ app.post("/generate-capsule-pdf", async (req, res) => {
             });
         }
 
-        /* ==================== PAGES 2+ (IMAGES) ==================== */
+
 
         const images = designs.filter(d => d.type === "image" && d.src);
 
@@ -1590,7 +1552,7 @@ app.post("/generate-capsule-pdf", async (req, res) => {
             }
         }
 
-        /* ==================== SEND RESULT ==================== */
+
 
         const pdfBytes = await pdf.save();
         const base64Pdf = Buffer.from(pdfBytes).toString("base64");
@@ -1605,9 +1567,8 @@ app.post("/generate-capsule-pdf", async (req, res) => {
     }
 });
 
-/* ============================================================
-   START SERVER
-============================================================ */
+
+
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });

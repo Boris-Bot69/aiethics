@@ -23,8 +23,8 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     margin: 0;
-    padding-top: 105px; /* Space for fixed navbar */
-    overflow-x: hidden; /* Contains the sidebar "bleed" effect */
+    padding-top: 105px; 
+    overflow-x: hidden; 
 }
 
 body.learner-mode {
@@ -51,10 +51,6 @@ h1 {
     font-weight: 600;
     line-height: 1.25;
 }
-
-/* ============================================= */
-/* 2. LAYOUT & SITE-WIDE COMPONENTS              */
-/* ============================================= */
 
 .navbar {
     background-color: transparent;
@@ -105,7 +101,6 @@ h1 {
     transition: color 0.4s ease-out;
 }
 
-/* 2. Create the hidden slider element */
 .nav-link::before {
     content: '';
     position: absolute;
@@ -128,7 +123,6 @@ h1 {
     transform: translateX(0);
 }
 
-
 .nav-link:hover,
 .nav-link.active {
     color: #ffffff;
@@ -140,12 +134,11 @@ h1 {
     background-color: #FF6B6B;
     opacity: 0.8;
 }
-/* 4. Main Content Layout */
+
 .main-content {
     width: 100%;
     padding-top: 60px;
 }
-/* --- Main Layout & Sidebars --- */
 
 .breadcrumb {
     display: flex;
@@ -155,7 +148,6 @@ h1 {
     font-size: 1rem;
     padding: 3rem 0 0 10rem;
 }
-
 
 .breadcrumb-item a {
     color: black;
@@ -179,15 +171,12 @@ h1 {
     font-weight: 600;
 }
 
-
-
 .three-column-layout {
     display: grid;
     grid-template-columns: 1fr 5fr 1fr;
     align-items: start;
 }
 
-/* Sidebar Styles */
 .sidebar {
     position: sticky;
     top: 105px;
@@ -196,7 +185,6 @@ h1 {
     min-height: 0;
     overflow: visible;
 }
-
 
 .sidebar-left {
     margin-left: -12vw;
@@ -229,13 +217,9 @@ h1 {
     object-fit: cover;
 }
 
-
 .image-spacer { height: 4rem; }
 
 .mini-image-spacer { height: 1rem; }
-
-
-
 
 .custom-header {
     font-family: 'Inter', sans-serif;
@@ -247,7 +231,7 @@ h1 {
 
 .activity-container {
     display: grid;
-    /* Create two columns with a 1:2 ratio */
+    
     grid-template-columns: 1fr 2fr;
     width: 100%;
     max-width: 1400px;
@@ -258,9 +242,6 @@ h1 {
     overflow: hidden;
 }
 
-
-
-/* Panel styles (no longer children of .main-content) */
 .instructions-panel {
     padding: 2rem;
     display: flex;
@@ -270,25 +251,24 @@ h1 {
 }
 
 .instructions-content {
-    position: relative; /* Needed to position the steps correctly */
+    position: relative; 
     flex-grow: 1;
     overflow-y: auto;
     padding: 2rem;
 }
 
 .step-content {
-    position: absolute; /* Allows steps to stack on top of each other */
-    opacity: 0; /* Hidden by default */
+    position: absolute; 
+    opacity: 0; 
     transition: opacity 0.4s ease-in-out;
-    pointer-events: none; /* Prevents interacting with hidden steps */
+    pointer-events: none; 
 }
 
 .step-content.is-active {
-    opacity: 1; /* Makes the current step visible */
-    pointer-events: auto; /* Allows interacting with the active step */
+    opacity: 1; 
+    pointer-events: auto; 
 }
 
-/* Style for disabled buttons */
 .step-counter button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -311,30 +291,27 @@ h1 {
 
 .step-counter {
     display: flex;
-    flex-direction: column; /* Stacks the progress bar on top of the controls */
-    align-items: center;    /* Centers the items horizontally */
+    flex-direction: column; 
+    align-items: center;    
     padding: 1rem 0;
-    gap: 2rem; /* Space between the bar and the controls */
+    gap: 2rem; 
 }
 
-/* Container for the progress bar */
 .progress-bar-container {
     width: 100%;
     height: 0.375rem;
-    background-color: #ffe6e6; /* A lighter shade of the accent color */
+    background-color: #ffe6e6; 
     border-radius:  0.188rem;
 }
 
-/* The colored "fill" of the bar */
 .progress-bar-fill {
     height: 100%;
-    width: 0%; /* Will be updated by JavaScript */
+    width: 0%; 
     background-color: var(--accent-color);
     border-radius: 0.188rem;
     transition: width 0.4s ease-in-out;
 }
 
-/* Container for the buttons and text */
 .step-controls {
     display: flex;
     justify-content: space-between;
@@ -353,13 +330,12 @@ h1 {
 }
 
 .chat-input-bar {
-    flex-basis: 16%; /* Takes up 2/3 of the footer width */
+    flex-basis: 16%; 
     display: flex;
     padding: 1rem;
     background-color: var(--accent-color);
     align-items: center;
 }
-
 
 .message {
     display: flex;
@@ -382,7 +358,6 @@ h1 {
     line-height: 1.6;
 }
 
-
 .summary-bubble {
     display: flex;
     flex-direction: row;
@@ -398,10 +373,9 @@ h1 {
 }
 
 .summary-item img {
-    max-width: 150px; /* Adjust size as needed */
+    max-width: 150px; 
 }
 
-/* --- Message Input Bar --- */
 .chat-input-bar {
     display: flex;
     align-items: flex-end;
@@ -438,8 +412,6 @@ h1 {
 .chat-editor * { background: transparent !important; }
 .chat-editor br { line-height: 0; }
 
-
-
 .chat-input-bar button {
     background: none;
     border: none;
@@ -447,7 +419,6 @@ h1 {
     font-size: 1.5rem;
     cursor: pointer;
 }
-
 
 .message.user-align {
     justify-content: flex-end;
@@ -473,7 +444,6 @@ h1 {
     object-fit: contain;
 }
 
-/* Typing indicator */
 .typing-indicator {
     display: flex;
     align-items: center;
@@ -508,7 +478,6 @@ h1 {
     30% { transform: translateY(-5px); }
 }
 
-/* === Consent Modal === */
 .consent-modal {
     position: fixed;
     inset: 0;
@@ -579,12 +548,10 @@ h1 {
     transform: scale(1.05);
 }
 
-/* Fade animation */
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
 }
-
 
 .homage-strip {
     margin-top: 4rem;
@@ -598,17 +565,15 @@ h1 {
     border: 3px solid #78A564;
 }
 
-/* Jedes Panel: vertikale Anordnung, Nummer links, Bild + Text zentriert */
 .homage-panel {
     display: flex;
     flex-direction: column;
-    align-items: center;   /* Bild & Text zentriert */
+    align-items: center;   
     text-align: center;
 }
 
-/* Zahl sitzt einfach ganz oben links im Panel */
 .homage-number {
-    align-self: flex-start;   /* zieht die Zahl nach links */
+    align-self: flex-start;   
     margin-bottom: 0.5rem;
     font-size: 2.2rem;
     font-weight: 600;
@@ -627,7 +592,6 @@ h1 {
     color: #444;
 }
 
-/* Image History Gallery */
 .image-history {
     margin-top: 2rem;
     padding: 1.5rem;
@@ -722,7 +686,6 @@ h1 {
     color: #333;
 }
 
-/* Supported by logos */
 .logo-grid {
     display: flex;
     gap: 3rem;
@@ -752,7 +715,6 @@ h1 {
     color: #444;
 }
 
-/* Right side links/contact */
 .footer-sidebar {
     display: flex;
     gap: 4rem;
@@ -788,13 +750,9 @@ h1 {
     font-size: 1rem;
 }
 
-
-
-
-/* --- Post-Activity Section Layout --- */
 .post-activity-section {
     display: grid;
-    grid-template-columns: 1fr 2fr; /* 1:2 ratio for the columns */
+    grid-template-columns: 1fr 2fr; 
     gap: 3rem;
     padding: 3rem 0;
     max-width: 1400px;
@@ -803,7 +761,6 @@ h1 {
 
 }
 
-/* --- Left Column: Materials List --- */
 .materials-list h3 {
     font-size: 1.25rem;
     margin-bottom: 0.5rem;
@@ -842,13 +799,13 @@ h1 {
     margin-bottom: 1rem;
     background-color: #fff0e6;
     color: #d9534f;
-    opacity: 0.7; /* Make inactive buttons slightly faded */
+    opacity: 0.7; 
     border: 2px solid transparent;
 }
 
 .material-button.active-mode {
     opacity: 1;
-    border: 2px solid #333; /* Adds a border to highlight it */
+    border: 2px solid #333; 
     font-weight: 600;
 }
 
@@ -859,7 +816,6 @@ h1 {
     background-color: #fff0e6;
 }
 
-/* --- Right Column: Guiding Questions --- */
 .guiding-questions h3 {
     font-size: 1.25rem;
     margin-bottom: 0.5rem;
@@ -876,12 +832,12 @@ h1 {
 .accordion-item summary {
     font-weight: 600;
     cursor: pointer;
-    list-style: none; /* Removes the default disclosure triangle */
+    list-style: none; 
     position: relative;
     padding-left: 1.5rem;
 }
 .accordion-item summary::-webkit-details-marker {
-    display: none; /* Also for Safari */
+    display: none; 
 }
 .accordion-item summary::before {
     content: '►';
@@ -914,14 +870,10 @@ h1 {
     margin-right: 0.5rem;
 }
 
-
-
-/*Copied from ai activities*/
 * {
     box-sizing: border-box;
 }
 
-/* --- Slider --- */
 .slider-wrapper {
     position: relative;
     width: min(1200px, 92vw);
@@ -943,7 +895,6 @@ h1 {
     flex: 0 0 auto;
 }
 
-/* --- Card frame defined by Figma border --- */
 .card-frame {
     position: relative;
     width: 163px;
@@ -959,16 +910,14 @@ h1 {
     user-select: none;
 }
 
-/* --- Content inside the border --- */
 .card-content {
     position: absolute;
-    inset: 12px; /* perfectly safe for hand-drawn border */
+    inset: 12px; 
     display: flex;
     flex-direction: column;
     gap: 0.55rem;
 }
 
-/* --- Title --- */
 .card-content h4 {
     font-family: 'Inter', sans-serif;
     font-size: 0.82rem;
@@ -1005,7 +954,6 @@ h1 {
     display: block;
 }
 
-/* --- Description text --- */
 .card-content p {
     font-family: 'Inter', sans-serif;
     font-size: 0.72rem;
@@ -1019,20 +967,17 @@ h1 {
     overflow: hidden;
 }
 
-/* --- Link reset --- */
 .activity-card-link {
     text-decoration: none;
     color: inherit;
     display: block;
 }
 
-/* --- Subtle hover --- */
 .activity-card-link:hover .card-frame {
     transform: translateY(-2px);
     transition: transform 0.2s ease;
 }
 
-/* --- Arrows --- */
 .prev,
 .next {
     cursor: pointer;
@@ -1056,7 +1001,6 @@ h1 {
     opacity: 0.4;
     cursor: not-allowed;
 }
-
 
 .menu-toggle {
     background-color: transparent;
@@ -1125,151 +1069,133 @@ body.no-scroll {
     overflow: hidden;
 }
 
-
-
-/**AI scenarios*/
-
 .two-column-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
     align-items: center;
-    margin-top: 6rem; /* Adds space below your h1 title */
+    margin-top: 6rem; 
 
-    background-color: #F3F9F0; /* A very light gray background */
-    border: 1px solid #e0e0e0; /* A thin, light gray border */
+    background-color: #F3F9F0; 
+    border: 1px solid #e0e0e0; 
     padding: 4rem;
 }
 
 .text-content {
-    padding: 2rem; /* Adds space inside the box, pushing text away from the edges */
-    border-radius: 8px; /* Matches the rounded corners of your image */
+    padding: 2rem; 
+    border-radius: 8px; 
 
-    max-width: 80%;          /* Makes the box narrower than its column */
-    margin: 0 auto;          /* Centers the box itself within the column */
+    max-width: 80%;          
+    margin: 0 auto;          
     text-align: center;
 }
 
-/* You can keep your existing rule for the paragraphs inside */
 .text-content p {
     margin-top: 1rem;
     line-height: 1.7;
     color: #444;
 }
 
-/* It's also good to remove the margin from the first paragraph */
 .text-content p:first-child {
     margin-top: 0;
 }
 
-/* Styling for the image column */
-
 .image-content {
     display: flex;
-    justify-content: center; /* Horizontally centers the image */
-    align-items: center;     /* Vertically centers the image */
+    justify-content: center; 
+    align-items: center;     
 }
 
 .image-content img {
-    width: 50%; /* Makes the image fill its column */
-    height: auto; /* Maintains aspect ratio */
-    display: block; /* Removes extra space below the image */
-    border-radius: 8px; /* Optional: adds rounded corners */
+    width: 50%; 
+    height: auto; 
+    display: block; 
+    border-radius: 8px; 
 }
 
-/* ============================================= */
-/* TESTIMONIAL QUOTE                             */
-/* ============================================= */
-
 .testimonial-wrapper {
-    /* Provides some space around the component */
+    
     padding: 2rem 1rem;
 }
 
 .testimonial-quote {
-    /* Establishes a positioning context for the decorative elements */
+    
     position: relative;
 
-    /* Centers the quote block on the page */
+    
     max-width: 800px;
     margin: 4rem auto;
 
-    /* Creates vertical space for the lines and quotes */
+    
     padding: 3rem 0;
 }
 
-/* --- THE DECORATIVE LINES AND QUOTES --- */
 .testimonial-quote::before {
-    content: '“'; /* The opening quote mark */
+    content: '“'; 
     position: absolute;
     top: 0;
     left: 0;
 
-    /* Styling the quote mark */
+    
     font-size: 6rem;
     font-weight: 800;
     color: rgba(0, 0, 0, 0.1);
 
-    /* The top horizontal line */
+    
     border-top: 1px solid rgba(0, 0, 0, 0.15);
     width: 100%;
 
-    /* Vertically aligns the line with the quote mark */
+    
     padding-top: 1.5rem;
 }
 
 .testimonial-quote::after {
-    content: '”'; /* The closing quote mark */
+    content: '”'; 
     position: absolute;
     bottom: 0;
     right: 0;
 
-    /* Styling the quote mark */
+    
     font-size: 6rem;
     font-weight: 800;
     color: rgba(0, 0, 0, 0.1);
-    line-height: 0; /* Helps with precise positioning */
+    line-height: 0; 
 
-    /* The bottom horizontal line */
+    
     border-bottom: 1px solid rgba(0, 0, 0, 0.15);
     width: 100%;
 
-    /* Pushes the quote mark down into position */
+    
     padding-bottom: 2.5rem;
 }
 
-
-/* --- THE QUOTE CONTENT --- */
 .quote-text {
-    /* Center the text and add some breathing room */
+    
     text-align: center;
     padding: 0 2rem;
 
-    /* Text styling */
+    
     font-size: 1.25rem;
     line-height: 1.8;
     color: #333;
     font-style: italic;
 }
 
-/* --- THE ATTRIBUTION --- */
 .quote-attribution {
-    /* Positioned relative to the main blockquote container */
+    
     position: absolute;
-    top: 1.5rem;  /* Aligns with the top line */
+    top: 1.5rem;  
     right: 0;
 
-    /* Text styling */
+    
     font-size: 0.9rem;
     color: #555;
     font-style: normal;
 }
 
 .quote-attribution .attribution-title {
-    color: #888; /* Makes the title slightly lighter */
+    color: #888; 
 }
 
-
-/* Basic hover hint */
 .zoomable {
     cursor: zoom-in;
     transition: transform 0.3s ease;
@@ -1299,11 +1225,6 @@ body.no-scroll {
     transition: transform 0.3s ease;
 }
 
-
-
-
-
-/* --- RESPONSIVE STYLES FOR MOBILE --- */
 @media (max-width: 768px) {
     .testimonial-quote {
         margin: 2rem auto;
@@ -1315,17 +1236,17 @@ body.no-scroll {
         padding: 0 1rem;
     }
 
-    /* Move attribution below the quote on mobile */
+    
     .quote-attribution {
-        position: static; /* Removes absolute positioning */
+        position: static; 
         text-align: center;
         margin-top: 1.5rem;
     }
 
-    /* Simplify decorative elements on smaller screens */
+    
     .testimonial-quote::before,
     .testimonial-quote::after {
-        border: none; /* Removes the long lines */
+        border: none; 
         width: auto;
         padding: 0;
     }
@@ -1340,14 +1261,8 @@ body.no-scroll {
     }
 }
 
-
-
-/* ============================================= */
-/* RESPONSIVE LAYOUT (Mobile & Tablet)           */
-/* ============================================= */
-
 @media (max-width: 960px) {
-    /* --- General adjustments --- */
+    
     html { font-size: 15px; }
     body {
         padding-top: 4.5rem;
@@ -1358,7 +1273,7 @@ body.no-scroll {
     h2 { font-size: 1.4rem; }
     p, li { font-size: 0.95rem; line-height: 1.55; }
 
-    /* --- Navbar --- */
+    
     .navbar {
         background-image: none;
         background-color: #78A564;
@@ -1376,7 +1291,7 @@ body.no-scroll {
         display: flex;
     }
 
-    /* --- Breadcrumb --- */
+    
     .breadcrumb {
         padding: 0.75rem 1rem;
         font-size: 0.9rem;
@@ -1401,7 +1316,7 @@ body.no-scroll {
         flex-wrap: wrap;
     }
 
-    /* --- Layout columns --- */
+    
     .three-column-layout {
         display: flex;
         flex-direction: column;
@@ -1409,7 +1324,7 @@ body.no-scroll {
         padding: 0 1rem;
     }
 
-    /* --- Activity container --- */
+    
     .activity-container {
         display: flex;
         flex-direction: column;
@@ -1422,7 +1337,7 @@ body.no-scroll {
         overflow: visible;
     }
 
-    /* --- Instruction panel --- */
+    
     .instructions-panel {
         padding: 1rem;
         border: 1.5px dotted var(--accent-color);
@@ -1452,8 +1367,7 @@ body.no-scroll {
         object-fit: contain;
     }
 
-
-    /* --- Chat panel --- */
+    
     .chat-panel {
         border: 1.5px dotted var(--accent-color);
         border-radius: 8px;
@@ -1493,7 +1407,7 @@ body.no-scroll {
         font-size: 1.3rem;
     }
 
-    /* --- Post activity section --- */
+    
     .post-activity-section {
         grid-template-columns: 1fr;
         padding: 2rem 1rem;
@@ -1509,7 +1423,7 @@ body.no-scroll {
         font-size: 1rem;
     }
 
-    /* --- Slider (carousel) --- */
+    
     .slider-wrapper {
         width: 100%;
         margin: 1.5rem auto;
@@ -1519,14 +1433,13 @@ body.no-scroll {
         padding: 0 0.5rem;
     }
 
-    /* --- Testimonial and misc. --- */
+    
     .testimonial-quote {
         margin: 2rem 1rem;
         padding: 1.5rem 0;
     }
 }
 
-/* Optional tighter mobile (phones < 600px) */
 @media (max-width: 600px) {
     html { font-size: 14px; }
 

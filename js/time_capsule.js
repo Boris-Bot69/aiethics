@@ -1,4 +1,3 @@
-// time_capsule.js
 document.addEventListener("DOMContentLoaded", () => {
     console.log("Time Capsule Bot initialized");
 
@@ -23,10 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let designButtonsRow = null;
     let styleChipsRow = null;
 
-    // ----------------------------------------------------------
-    // Helper: show a sequence of bot messages one by one
-    // Each message gets a typing indicator before it appears.
-    // ----------------------------------------------------------
+
 
     async function showSequence(msgs, typingMs = 700, pauseMs = 400) {
         for (const text of msgs) {
@@ -38,9 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // ----------------------------------------------------------
-    // Helper functions
-    // ----------------------------------------------------------
+
 
     function addMessage(text, isAI = false, image = null) {
         if (!text && !image) return;
@@ -53,22 +47,33 @@ document.addEventListener("DOMContentLoaded", () => {
         const textDiv = document.createElement("div");
         textDiv.className = "text";
 
-        if (image) {
-            const img = document.createElement("img");
-            img.className = "chat-image-preview zoomable";
-            img.src = image;
-            textDiv.appendChild(img);
-        }
-
         msg.appendChild(avatar);
         msg.appendChild(textDiv);
         messages.appendChild(msg);
         messages.scrollTop = messages.scrollHeight;
 
         if (text && isAI) {
-            return typeWrite(textDiv, text.replace(/\n/g, "<br>"));
-        } else if (text) {
-            textDiv.innerHTML = text.replace(/\n/g, "<br>");
+            const promise = typeWrite(textDiv, text.replace(/\n/g, "<br>"));
+            if (image) {
+                return promise.then(() => {
+                    const img = document.createElement("img");
+                    img.className = "chat-image-preview zoomable";
+                    img.src = image;
+                    textDiv.appendChild(img);
+                    messages.scrollTop = messages.scrollHeight;
+                });
+            }
+            return promise;
+        } else {
+            if (text) {
+                textDiv.innerHTML = text.replace(/\n/g, "<br>");
+            }
+            if (image) {
+                const img = document.createElement("img");
+                img.className = "chat-image-preview zoomable";
+                img.src = image;
+                textDiv.appendChild(img);
+            }
         }
     }
 
@@ -116,9 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return t.length >= minChars && words.length >= minWords;
     }
 
-    // ----------------------------------------------------------
-    // Style suggestion chips (shown when editing text)
-    // ----------------------------------------------------------
+
 
     function showStyleSuggestions() {
         if (styleChipsRow) return;
@@ -160,10 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // ----------------------------------------------------------
-    // REFLECT DECISION BUTTONS
-    // Shown after Step 1 is accepted: edit or continue to Step 2
-    // ----------------------------------------------------------
+
 
     function showReflectDecisionButtons() {
         if (reflectDecisionRow) return;
@@ -209,9 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
         reflectDecisionRow = row;
     }
 
-    // ----------------------------------------------------------
-    // DESIGN MODE BUTTONS (Step 2)
-    // ----------------------------------------------------------
+
 
     function showDesignModeButtons() {
         if (designButtonsRow) return;
@@ -265,7 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
             row.appendChild(btn);
         });
 
-        // Build Time Capsule button
+
         const finishBtn = document.createElement("button");
         finishBtn.className = "suggestion-btn design-mode-btn design-finish-btn";
         finishBtn.type = "button";
@@ -283,9 +281,7 @@ document.addEventListener("DOMContentLoaded", () => {
         designButtonsRow = row;
     }
 
-    // ----------------------------------------------------------
-    // STEP LOGIC
-    // ----------------------------------------------------------
+
 
     async function handleReflect(text) {
         if (!isMeaningfulText(text, 20, 3)) {
@@ -308,7 +304,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return "Please click one of the buttons above to choose what you want to do first!";
         }
 
-        // CHANGE TEXT mode
+
         if (mode === "change_text") {
             if (!reflectionText) {
                 return "I could not find your message from Step 1. Please go back and write your message first!";
@@ -356,7 +352,7 @@ Write as if the student is speaking directly to the future civilization.
             );
         }
 
-        // MAKE A VISUAL REPRESENTATION mode
+
         if (mode === "edit_image") {
             if (!lastSentImageBase64) {
                 return "I do not have your picture yet. Please click the + button on the left to upload a picture first. I will let you know when I have it!";
@@ -375,7 +371,7 @@ Write as if the student is speaking directly to the future civilization.
 
             if (!res || res.error) {
                 console.error("AI edit image error:", res?.error);
-                // Keep lastSentImageBase64 intact so the user can retry without re-uploading
+
                 return "Something went wrong with the transformation. Your picture is still saved. Please try writing a different description and press send!";
             }
 
@@ -387,7 +383,7 @@ Write as if the student is speaking directly to the future civilization.
                 return "Something went wrong with the transformation. Your picture is still saved. Please try writing a different description and press send!";
             }
 
-            // Success: only now clear the image and save to outputs
+
             lastSentImageBase64 = null;
             designOutputs.push({
                 type: "image",
@@ -416,9 +412,7 @@ Write as if the student is speaking directly to the future civilization.
         if (stepId === "capsule") return "Scroll up to see your Time Capsule. You can also download it as a PDF below.";
     }
 
-    // ----------------------------------------------------------
-    // SUMMARY BUILDING
-    // ----------------------------------------------------------
+
 
     function buildCapsuleSummary() {
         let summary = "";
@@ -457,9 +451,7 @@ Write as if the student is speaking directly to the future civilization.
         return summary;
     }
 
-    // ----------------------------------------------------------
-    // PDF BUTTON
-    // ----------------------------------------------------------
+
 
     function showDownloadPdfButton() {
         const row = document.createElement("div");
@@ -503,9 +495,7 @@ Write as if the student is speaking directly to the future civilization.
         messages.scrollTop = messages.scrollHeight;
     }
 
-    // ----------------------------------------------------------
-    // Step intros
-    // ----------------------------------------------------------
+
 
     async function showStepIntro(stepId) {
         if (stepId === "design") {
@@ -566,9 +556,7 @@ Write as if the student is speaking directly to the future civilization.
         }
     }
 
-    // ----------------------------------------------------------
-    // Initialization — sequential welcome messages
-    // ----------------------------------------------------------
+
 
     function showWelcome() {
         showSequence([
@@ -592,9 +580,7 @@ Write as if the student is speaking directly to the future civilization.
 
     showWelcome();
 
-    // ----------------------------------------------------------
-    // Send message
-    // ----------------------------------------------------------
+
 
     sendBtn.addEventListener("click", async () => {
         const text = input.textContent.trim();

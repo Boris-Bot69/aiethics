@@ -42,10 +42,6 @@ h1 {
     line-height: 1.25;
 }
 
-/* ============================================= */
-/* 2. LAYOUT & SITE-WIDE COMPONENTS              */
-/* ============================================= */
-
 .navbar {
     background-color: transparent;
     background-image: url("/images/menu/navbar.svg");
@@ -95,7 +91,6 @@ h1 {
     transition: color 0.4s ease-out;
 }
 
-/* 2. Create the hidden slider element */
 .nav-link::before {
     content: '';
     position: absolute;
@@ -118,7 +113,6 @@ h1 {
     transform: translateX(0);
 }
 
-
 .nav-link:hover,
 .nav-link.active {
     color: #ffffff;
@@ -130,11 +124,10 @@ h1 {
     background-color: #FF6B6B;
     opacity: 0.8;
 }
-/* 4. Main Content Layout */
+
 .main-content {
     width: 100%;
 }
-/* --- Main Layout & Sidebars --- */
 
 .breadcrumb {
     display: flex;
@@ -144,7 +137,6 @@ h1 {
     font-size: 1rem;
     padding: 3rem 0 0 10rem;
 }
-
 
 .breadcrumb-item a {
     color: black;
@@ -168,15 +160,12 @@ h1 {
     font-weight: 600;
 }
 
-
-
 .three-column-layout {
     display: grid;
     grid-template-columns: 1fr 5fr 1fr;
     gap: 0;
 }
 
-/* Sidebar Styles */
 .sidebar {
     position: sticky;
     top: 105px;
@@ -185,7 +174,6 @@ h1 {
     min-height: 0;
     overflow: visible;
 }
-
 
 .sidebar-left {
     margin-left: -12vw;
@@ -208,11 +196,6 @@ h1 {
     padding: 2rem 1rem;
 }
 
-/* ============================================= */
-/* 3. PAGE-SPECIFIC STYLES (AI ACTIVITIES)       */
-/* ============================================= */
-
-/* --- Page Header --- */
 .custom-header {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
@@ -240,60 +223,47 @@ h1 {
     max-width: 87.5rem;
 }
 
-
 .custom-button {
 
     background-repeat: no-repeat;
     background-size: contain;
 }
 
-/* ============================================= */
-/* SPACER UTILITIES                              */
-/* ============================================= */
-
-/* No spacing (removes the gap completely) */
 .image-spacer0 {
     display: none;
 }
 
-/* 1. Smallest Gap (approx 16px) */
 .image-spacer1 {
     height: 1rem;
     width: 100%;
     display: block;
 }
 
-/* 2. Small Gap (approx 32px) */
 .image-spacer2 {
     height: 2rem;
     width: 100%;
     display: block;
 }
 
-/* 3. Medium Gap (approx 64px - YOUR CURRENT SIZE) */
 .image-spacer3 {
     height: 4rem;
     width: 100%;
     display: block;
 }
 
-/* 4. Large Gap (approx 96px) */
 .image-spacer4 {
     height: 6rem;
     width: 100%;
     display: block;
 }
 
-/* 5. Extra Large Gap (approx 128px) */
 .image-spacer5 {
     height: 8rem;
     width: 100%;
     display: block;
 }
 
-
-
-    /* This is the main grid container */
+    
 .cards-container {
     display: grid;
     grid-template-columns: repeat(2, minmax(280px, 1fr));
@@ -309,7 +279,6 @@ h1 {
     height: 100%;
 }
 
-/* Horizontal card */
 .activity-card {
     position: relative;
     display: flex;
@@ -337,7 +306,6 @@ h1 {
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
 }
 
-/* Thumbnail */
 .activity-img-wrapper {
     flex: 0 0 96px;
     max-width: 96px;
@@ -349,14 +317,12 @@ h1 {
     display: block;
 }
 
-/* Text area */
 .activity-content {
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
-/* Duration pill */
 .activity-duration {
     align-self: flex-start;
     display: inline-block;
@@ -389,8 +355,6 @@ h1 {
     line-height: 1.5;
     color: #5f5f5f;
 }
-
-
 
 .bottom-bar {
     min-height: 20rem;
@@ -445,7 +409,6 @@ h1 {
     margin: 0 auto;
 }
 
-
 .footer-sidebar {
     display: flex;
     gap: 4rem;
@@ -457,7 +420,6 @@ h1 {
     margin-bottom: 1.5rem;
     color: #333;
 }
-
 
 .footer-links {
     list-style: none;
@@ -479,7 +441,6 @@ h1 {
     text-decoration: underline;
 }
 
-
 .contact-item {
     display: flex;
     align-items: center;
@@ -489,12 +450,6 @@ h1 {
 .email-icon {
     font-size: 1rem;
 }
-
-
-
-
-
-
 
 @media (max-width: 992px) {
     .three-column-layout {
@@ -534,7 +489,6 @@ h1 {
     }
 }
 
-
 .hamburger-icon {
     display: block;
     position: relative;
@@ -558,7 +512,7 @@ h1 {
 }
 
 .menu-toggle {
-    display: none; /* This correctly hides the button on desktop */
+    display: none; 
     background-color: transparent;
     border: 1px solid #FFFFFF;
     border-radius: 4px;
@@ -609,8 +563,6 @@ body.no-scroll {
     overflow: hidden;
 }
 
-
-
 @media (max-width: 960px) {
     .navbar {
         background-image: none;
@@ -624,13 +576,12 @@ body.no-scroll {
         color: #ffffff;
     }
 
-
     .nav-links-right {
         display: none;
     }
 
     .menu-toggle {
-        display: flex; /* This makes the button visible */
+        display: flex; 
     }
 
     body {
@@ -660,9 +611,9 @@ body.no-scroll {
         display: none;
     }
 
-    /* Remove original styles that are no longer needed for mobile nav */
+    
     .nav-link {
-        font-size: initial; /* Reset font size change */
+        font-size: initial; 
     }
 
     .nav-divider {
@@ -670,9 +621,8 @@ body.no-scroll {
     }
 
     .breadcrumb {
-        padding: 1rem; /* Adjust padding for mobile */
+        padding: 1rem; 
     }
-
 
     .card {
         padding: 1.5rem;

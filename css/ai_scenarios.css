@@ -17,8 +17,8 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     margin: 0;
-    padding-top: 105px; /* Space for fixed navbar */
-    overflow-x: hidden; /* Contains the sidebar "bleed" effect */
+    padding-top: 105px; 
+    overflow-x: hidden; 
 }
 
 img, picture, video, canvas, svg {
@@ -41,10 +41,6 @@ h1 {
     font-weight: 600;
     line-height: 1.25;
 }
-
-/* ============================================= */
-/* 2. LAYOUT & SITE-WIDE COMPONENTS              */
-/* ============================================= */
 
 .navbar {
     background-color: transparent;
@@ -95,7 +91,6 @@ h1 {
     transition: color 0.4s ease-out;
 }
 
-/* 2. Create the hidden slider element */
 .nav-link::before {
     content: '';
     position: absolute;
@@ -118,7 +113,6 @@ h1 {
     transform: translateX(0);
 }
 
-
 .nav-link:hover,
 .nav-link.active {
     color: #ffffff;
@@ -130,11 +124,10 @@ h1 {
     background-color: #FF6B6B;
     opacity: 0.8;
 }
-/* 4. Main Content Layout */
+
 .main-content {
     width: 100%;
 }
-/* --- Main Layout & Sidebars --- */
 
 .breadcrumb {
     display: flex;
@@ -144,7 +137,6 @@ h1 {
     font-size: 1rem;
     padding: 3rem 0 0 10rem;
 }
-
 
 .breadcrumb-item a {
     color: black;
@@ -168,15 +160,12 @@ h1 {
     font-weight: 600;
 }
 
-
-
 .three-column-layout {
     display: grid;
     grid-template-columns: 1fr 5fr 1fr;
     gap: 0;
 }
 
-/* Sidebar Styles */
 .sidebar {
     position: sticky;
     top: 105px;
@@ -185,7 +174,6 @@ h1 {
     min-height: 0;
     overflow: hidden;
 }
-
 
 .sidebar-left {
     margin-left: -12vw;
@@ -207,7 +195,6 @@ h1 {
     padding: 2rem 1rem;
 }
 
-
 .two-column-layout {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -219,18 +206,13 @@ h1 {
     color: #444;
 }
 
-/* Styling for the image column */
 .image-content img {
-    width: 100%; /* Makes the image fill its column */
-    height: auto; /* Maintains aspect ratio */
-    display: block; /* Removes extra space below the image */
-    border-radius: 8px; /* Optional: adds rounded corners */
+    width: 100%; 
+    height: auto; 
+    display: block; 
+    border-radius: 8px; 
 }
-/* ============================================= */
-/* 3. PAGE-SPECIFIC STYLES (AI ACTIVITIES)       */
-/* ============================================= */
 
-/* --- Page Header --- */
 .custom-header {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
@@ -258,7 +240,6 @@ h1 {
     max-width: 87.5rem;
 }
 
-
 .custom-button {
 
     background-repeat: no-repeat;
@@ -267,12 +248,9 @@ h1 {
 
 .image-spacer1 { height: 4rem; }
 
-
-
-/* This is the main grid container */
 .cards-container {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Forces 2 Columns */
+    grid-template-columns: 1fr 1fr; 
     gap: 3rem;
     padding: 2rem 0;
     align-items: stretch;
@@ -292,7 +270,6 @@ h1 {
     text-align: center;
 }
 
-/* Uniform Header height to align images below */
 .activity-item h4 {
     font-weight: 600;
     font-size: 1rem;
@@ -301,14 +278,13 @@ h1 {
     letter-spacing: 0.05em;
     margin: 0 0 1rem 0;
 
-    /* Lock the height */
+    
     min-height: 4.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-/* Uniform Image Box */
 .activity-image-box {
     height: 250px;
     overflow: hidden;
@@ -319,11 +295,11 @@ h1 {
 .activity-image-box img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Crops images to fit perfectly */
+    object-fit: cover; 
 }
 
 .activity-info {
-    flex-grow: 1; /* Makes the text area expand evenly */
+    flex-grow: 1; 
 }
 
 .activity-info p {
@@ -331,7 +307,6 @@ h1 {
     line-height: 1.5;
     color: #828282;
 }
-
 
 .bottom-bar {
     min-height: 20rem;
@@ -387,7 +362,6 @@ h1 {
     margin: 0 auto;
 }
 
-
 .footer-sidebar {
     display: flex;
     gap: 4rem;
@@ -399,7 +373,6 @@ h1 {
     margin-bottom: 1.5rem;
     color: #333;
 }
-
 
 .footer-links {
     list-style: none;
@@ -421,7 +394,6 @@ h1 {
     text-decoration: underline;
 }
 
-
 .contact-item {
     display: flex;
     align-items: center;
@@ -431,12 +403,6 @@ h1 {
 .email-icon {
     font-size: 1rem;
 }
-
-
-
-
-
-
 
 .hamburger-icon {
     display: block;
@@ -461,7 +427,7 @@ h1 {
 }
 
 .menu-toggle {
-    display: none; /* This correctly hides the button on desktop */
+    display: none; 
     background-color: transparent;
     border: 1px solid #FFFFFF;
     border-radius: 4px;
@@ -512,8 +478,6 @@ body.no-scroll {
     overflow: hidden;
 }
 
-
-
 @media (max-width: 960px) {
     .navbar {
         background-image: none;
@@ -527,17 +491,16 @@ body.no-scroll {
         color: #ffffff;
     }
 
-
     .nav-links-right {
         display: none;
     }
 
     .menu-toggle {
-        display: flex; /* This makes the button visible */
+        display: flex; 
     }
 
     body {
-        padding-top: 4.5rem; /* Match the navbar height */
+        padding-top: 4.5rem; 
         background-image: none;
     }
 
@@ -582,9 +545,9 @@ body.no-scroll {
         display: none;
     }
 
-    /* Remove original styles that are no longer needed for mobile nav */
+    
     .nav-link {
-        font-size: initial; /* Reset font size change */
+        font-size: initial; 
     }
 
     .nav-divider {
@@ -592,9 +555,8 @@ body.no-scroll {
     }
 
     .breadcrumb {
-        padding: 1rem; /* Adjust padding for mobile */
+        padding: 1rem; 
     }
-
 
     .card {
         padding: 1.5rem;
@@ -602,10 +564,9 @@ body.no-scroll {
 
     .scenario-step,
     .scenario-step.step-reverse {
-        flex-direction: column; /* Stack image and text vertically */
+        flex-direction: column; 
         gap: 1.5rem;
         text-align: center;
     }
-
 
 }

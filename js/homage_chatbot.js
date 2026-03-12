@@ -1,20 +1,13 @@
-// ===============================
-// Homage Chatbot Script
-// ===============================
-
-// Global variables (initialized later)
 let chatPanel;
 let chatMessages;
 let editor;
 let sendBtn;
 
 let collectedPrompts = [];
-let generated = []; // [{ prompt, base64 }]
+let generated = [];
 let awaitingRestartChoice = false;
 
-// ===============================
-// DOM READY
-// ===============================
+
 window.addEventListener("DOMContentLoaded", () => {
     chatPanel = document.querySelector(".chat-panel");
     chatMessages = chatPanel?.querySelector(".chat-messages");
@@ -26,14 +19,14 @@ window.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // --- Paste plain text only ---
+
     editor.addEventListener("paste", e => {
         e.preventDefault();
         const text = (e.clipboardData || window.clipboardData).getData("text");
         document.execCommand("insertText", false, text);
     });
 
-    // --- Enter = send, Shift+Enter = newline ---
+
     editor.addEventListener("keydown", e => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
@@ -41,15 +34,15 @@ window.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // --- Send button ---
+
     sendBtn.addEventListener("click", handleUserInput);
 
-    // --- Focus editor when clicking red bar ---
+
     document.getElementById("chatBar")?.addEventListener("click", e => {
         if (e.target === e.currentTarget) editor.focus();
     });
 
-    // --- Intro messages (sequential — each waits for the previous to finish typing) ---
+
     (async () => {
         await appendMessage(
             "Hello and welcome to ‘Homage to a Local Artist’. In this activity, you describe artworks inspired by Tania Sívertsen’s style, and the AI will turn your descriptions into images.",
@@ -66,13 +59,11 @@ window.addEventListener("DOMContentLoaded", () => {
     })();
 });
 
-// ===============================
-// Typing Indicator Helpers
-// ===============================
+
 function showTyping() {
     if (!chatMessages) return;
 
-    // Avoid duplicates
+
     const existing = chatMessages.querySelector(".message.ai-message.typing");
     if (existing) return;
 
@@ -102,9 +93,7 @@ function hideTyping() {
     if (bubble) bubble.remove();
 }
 
-// ===============================
-// Input handling
-// ===============================
+
 function handleUserInput() {
     const text = editor.innerText.trim();
     if (!text) return;
@@ -122,9 +111,7 @@ function handleUserInput() {
     sendPrompt(text);
 }
 
-// ===============================
-// UI Helpers
-// ===============================
+
 function appendMessage(text, sender = "ai") {
     const msg = document.createElement("div");
     msg.classList.add("message");
@@ -171,9 +158,7 @@ function appendAIContainer() {
     return container;
 }
 
-// ===============================
-// Image Display
-// ===============================
+
 function appendGeneratedImage(base64, promptText, index) {
     const container = appendAIContainer();
 
@@ -210,14 +195,14 @@ function appendGeneratedImage(base64, promptText, index) {
     container.appendChild(caption);
     container.appendChild(dlBtn);
 
-    // Progress info
+
     const progress = document.createElement("div");
     progress.style.marginTop = "10px";
     progress.style.fontWeight = "600";
     progress.textContent = `Image ${index}/3 generated.`;
     container.appendChild(progress);
 
-    // Ask for next step
+
     if (index < 3) {
         const nextMsg = document.createElement("div");
         nextMsg.style.marginTop = "6px";
@@ -226,9 +211,7 @@ function appendGeneratedImage(base64, promptText, index) {
     }
 }
 
-// ===============================
-// Image History
-// ===============================
+
 function addImageToHistory(base64, promptText, index) {
     const historySection = document.getElementById("imageHistory");
     const grid = document.getElementById("imageHistoryGrid");
@@ -260,9 +243,7 @@ function addImageToHistory(base64, promptText, index) {
     grid.appendChild(card);
 }
 
-// ===============================
-// Downloads
-// ===============================
+
 function downloadSingle(filename, base64) {
     const a = document.createElement("a");
     a.href = `data:image/png;base64,${base64}`;
@@ -312,9 +293,7 @@ async function downloadAllZip(items) {
     }
 }
 
-// ===============================
-// Summary
-// ===============================
+
 function showSummary() {
     const container = appendAIContainer();
 
@@ -391,9 +370,7 @@ function showSummary() {
     askToRestart();
 }
 
-// ===============================
-// Restart Logic
-// ===============================
+
 function askToRestart() {
     const container = appendAIContainer();
 
@@ -450,9 +427,7 @@ function startNewRound() {
     appendMessage("Let us start fresh. Please describe your first artwork (1/3).", "ai");
 }
 
-// ===============================
-// Backend Call
-// ===============================
+
 async function sendPrompt(prompt) {
     const index = generated.length + 1;
 
@@ -483,4 +458,3 @@ async function sendPrompt(prompt) {
         appendMessage(`Error: ${err.message}`, "ai");
     }
 }
-
