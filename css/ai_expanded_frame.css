@@ -65,7 +65,7 @@ h1 {
     width: 100%;
     top: 0;
     left: 0;
-    z-index: 0;
+    z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1449,6 +1449,12 @@ body.no-scroll {
         margin: 2rem 1rem;
         padding: 1.5rem 0;
     }
+
+    .two-column-layout {
+        grid-template-columns: 1fr;
+        padding: 2rem 1rem;
+        margin-top: 3rem;
+    }
 }
 
 @media (max-width: 600px) {
@@ -1466,5 +1472,46 @@ body.no-scroll {
 
     .chat-input-bar {
         padding: 0.5rem 0.75rem;
+    }
+}
+
+@media (min-width: 2200px) {
+    .three-column-layout {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding: 0 5vw;
+    }
+
+    .main-content-area {
+        max-width: 1800px;
+        padding: 3rem 5vw;
+    }
+
+    .custom-header {
+        font-size: clamp(3rem, 2.5vw + 1rem, 5rem);
+        line-height: 1.25;
+    }
+
+    .custom-text {
+        font-size: clamp(1.1rem, 1vw, 1.4rem);
+        line-height: 1.9;
+        max-width: 1000px;
+    }
+
+    .activity-container {
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+
+    .two-column-layout {
+        max-width: 1600px;
+        margin: 3rem auto;
+        gap: 3rem;
+    }
+
+    .post-activity-section {
+        max-width: 1600px;
+        margin: 3rem auto;
     }
 }
