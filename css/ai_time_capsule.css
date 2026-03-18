@@ -369,7 +369,9 @@ body.no-scroll {
 
 .activity-container.chat-only {
     grid-template-columns: 1fr;
-    height: 60vh;
+    height: 70vh;
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
 }
 
 .materials-artwork {
