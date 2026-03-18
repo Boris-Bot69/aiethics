@@ -55,7 +55,7 @@ h1 {
     width: 100%;
     top: 0;
     left: 0;
-    z-index: 0;
+    z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -467,13 +467,13 @@ h1 {
 
 @media (max-width: 768px) {
     .navbar {
-        flex-wrap: wrap;
-        padding: 1rem;
-        height: 105px;
+        flex-wrap: nowrap;
+        padding: 0 1rem;
+        height: 4.5rem;
     }
 
     body {
-        padding-top: 150px;
+        padding-top: 4.5rem;
     }
 
     .nav-divider {
@@ -570,7 +570,7 @@ body.no-scroll {
         justify-content: space-between;
         padding: 0 1rem;
         flex-wrap: nowrap;
-        height: 105px;
+        height: 4.5rem;
     }
     .navbar .nav-link {
         color: #ffffff;
@@ -626,5 +626,65 @@ body.no-scroll {
 
     .card {
         padding: 1.5rem;
+    }
+
+    .bottom-bar {
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        height: auto;
+        background-size: contain;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .footer-sidebar {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+@media (min-width: 2200px) {
+    .three-column-layout {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding: 0 5vw;
+    }
+
+    .main-content-area {
+        max-width: 1800px;
+        padding: 3rem 5vw;
+    }
+
+    .custom-header {
+        font-size: clamp(3rem, 2.5vw + 1rem, 5rem);
+        line-height: 1.25;
+    }
+
+    .custom-text {
+        font-size: clamp(1.1rem, 1vw, 1.4rem);
+        line-height: 1.9;
+        max-width: 1000px;
+    }
+
+    .cards-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 3rem;
+        justify-items: center;
+    }
+
+    .card {
+        max-width: 40rem;
+        padding: 2rem;
+    }
+
+    .card p {
+        font-size: 1.05rem;
+        line-height: 1.8;
     }
 }

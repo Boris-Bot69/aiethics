@@ -65,7 +65,7 @@ h1 {
     width: 100%;
     top: 0;
     left: 0;
-    z-index: 0;
+    z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -227,6 +227,99 @@ h1 {
     font-size: 36px;
     line-height: 60px;
     color: black;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.page-header-icon {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.page-header-text {
+    flex: 1;
+}
+
+.page-description {
+    line-height: 1.7;
+    color: #444;
+    font-size: 0.95rem;
+}
+
+.instruction-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.instruction-card {
+    position: relative;
+    overflow: hidden;
+    padding: 1.5rem;
+    min-height: 180px;
+}
+
+.instruction-watermark {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 8rem;
+    font-weight: 800;
+    color: rgba(120, 165, 100, 0.12);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+}
+
+.instruction-card-title {
+    font-family: 'Inter', sans-serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #78A564;
+    margin-bottom: 0.75rem;
+    position: relative;
+    z-index: 1;
+}
+
+.instruction-card-text {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #444;
+    position: relative;
+    z-index: 1;
+}
+
+.activity-container.chat-only {
+    grid-template-columns: 1fr;
+    height: 60vh;
+}
+
+.materials-artwork {
+    display: block;
+    max-width: 200px;
+    border-radius: 6px;
+    margin-top: 0.5rem;
+}
+
+.accordion-green summary::before {
+    content: '►';
+    color: #78A564;
+}
+
+.accordion-red summary::before {
+    content: '►';
+    color: #F08080;
 }
 
 .activity-container {
@@ -1382,6 +1475,32 @@ body.no-scroll {
         margin: 2rem 1rem;
         padding: 1.5rem 0;
     }
+
+    .two-column-layout {
+        grid-template-columns: 1fr;
+        padding: 2rem 1rem;
+        margin-top: 3rem;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .page-header-icon {
+        width: 60px;
+        height: 60px;
+    }
+
+    .instruction-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .instruction-watermark {
+        font-size: 5rem;
+    }
 }
 
 @media (max-width: 600px) {
@@ -1399,5 +1518,46 @@ body.no-scroll {
 
     .chat-input-bar {
         padding: 0.5rem 0.75rem;
+    }
+}
+
+@media (min-width: 2200px) {
+    .three-column-layout {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding: 0 5vw;
+    }
+
+    .main-content-area {
+        max-width: 1800px;
+        padding: 3rem 5vw;
+    }
+
+    .custom-header {
+        font-size: clamp(3rem, 2.5vw + 1rem, 5rem);
+        line-height: 1.25;
+    }
+
+    .custom-text {
+        font-size: clamp(1.1rem, 1vw, 1.4rem);
+        line-height: 1.9;
+        max-width: 1000px;
+    }
+
+    .activity-container {
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+
+    .two-column-layout {
+        max-width: 1600px;
+        margin: 3rem auto;
+        gap: 3rem;
+    }
+
+    .post-activity-section {
+        max-width: 1600px;
+        margin: 3rem auto;
     }
 }
