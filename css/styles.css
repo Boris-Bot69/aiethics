@@ -140,7 +140,7 @@ p {
 
 .three-column-layout {
     display: grid;
-    grid-template-columns: 1fr 5fr 1fr;
+    grid-template-columns: 1fr min(72vw, 1400px) 1fr;
     gap: 0;
 }
 
@@ -154,17 +154,20 @@ p {
 }
 
 .sidebar-left {
-    margin-left: -12vw;
-    width: calc(100% + 12vw);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
 }
 
 .sidebar-right {
-    margin-right: 12vw;
-    width: calc(100% + 12vw);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 .sidebar-image {
     width: 100%;
+    max-width: 350px;
     height: auto;
     max-height: 1200px;
     object-fit: contain;
@@ -807,17 +810,27 @@ body.no-scroll {
     :root { --sidebar-w: clamp(100px, 12vw, 280px); }
 
     .three-column-layout {
-        display: flex;
-        justify-content: center;
+        display: grid;
+        grid-template-columns: 1fr min(72vw, 1400px) 1fr;
         width: 100%;
-        padding: 0 5vw;
+        padding: 0;
+    }
+
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .sidebar-image {
+        max-width: 400px;
     }
 
     body {
         background-image: url('../images/main_page/scissor.svg');
         background-repeat: no-repeat;
-        background-position: center 14rem; 
-        background-size: clamp(900px, 60vw, 1400px); 
+        background-position: center 14rem;
+        background-size: clamp(900px, 60vw, 1400px);
         opacity: 1;
     }
 
