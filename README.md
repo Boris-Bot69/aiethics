@@ -1,130 +1,100 @@
-# Co-Creating AI Ethics – Interaktive Lernplattform
+# Co-Creating AI Ethics – Interactive Learning Platform
 
-**Entwickelt von:** Boris Liu
-**Auftraggeber:** Technical University of Munich (TUM) – Institute for Ethics in Artificial Intelligence (IEAI)
-**Förderprojekt:** „Co-designing a Risk-Assessment Dashboard for AI Ethics Literacy in EdTech"
-**Lizenz:** Creative Commons Attribution 4.0 International (CC BY 4.0)
-**Live-Website:** https://aiethics-5ncx.onrender.com
-
----
-
-## Was ist dieses Projekt?
-
-„Co-Creating AI Ethics" ist eine vollständige, interaktive **Bildungswebsite**, die jungen Menschen (Schülerinnen und Schüler im Alter von ca. 12–15 Jahren) beibringt, wie man Künstliche Intelligenz (KI) **ethisch und verantwortungsvoll** nutzt. Das Projekt entstand im Auftrag des Instituts für Ethik in der Künstlichen Intelligenz an der Technischen Universität München (TUM-IEAI).
-
-Die Website verbindet **kreative Kunstprojekte** (z. B. Zeichnen, Basteln, Collagen) mit modernen **KI-Werkzeugen** und regt Schülerinnen und Schüler an, kritisch über den Einsatz von KI nachzudenken – etwa: Wem gehört ein KI-generiertes Bild? Ist es fair, wenn ein Algorithmus entscheidet, was ich lerne? Was passiert mit meinen Daten?
-
-Der didaktische Ansatz folgt den **OECD-Prinzipien für verantwortungsvolle KI** und ist für den Einsatz im Unterricht konzipiert.
+**Client:** Technical University of Munich (TUM) – Institute for Ethics in Artificial Intelligence (IEAI)
+**Research Project:** "Co-designing a Risk-Assessment Dashboard for AI Ethics Literacy in EdTech"
+**License:** Creative Commons Attribution 4.0 International (CC BY 4.0)
+**Live Website:** https://aiethics-5ncx.onrender.com
 
 ---
 
-## Was wurde entwickelt?
+## What is this project?
 
-Boris Liu hat diese Plattform **von Grund auf eigenständig konzipiert, gestaltet und technisch umgesetzt**. Im Einzelnen umfasst das Projekt:
+"Co-Creating AI Ethics" is a complete, interactive **educational website** that teaches young people (students aged approximately 12–15) how to use Artificial Intelligence (AI) **ethically and responsibly**. The project was commissioned by the Institute for Ethics in Artificial Intelligence at the Technical University of Munich (TUM-IEAI).
 
-### 1. Komplette Website mit mehreren Bereichen
+The website combines **creative art projects** (e.g., drawing, crafting, collaging) with modern **AI tools** and encourages students to think critically about AI — for example: Who owns an AI-generated image? Is it fair when an algorithm decides what I learn? What happens to my data?
 
-Die Website besteht aus folgenden Hauptbereichen:
-
-- **Startseite** – Übersicht und Einführung in das Thema KI-Ethik
-- **9 interaktive Lernaktivitäten** – Anleitungen für kreative Unterrichtsprojekte
-- **10 Ethik-Szenarien** – Reale Fallbeispiele aus dem Schulalltag mit Diskussionsmaterial
-- **Forschungsbereich** – Verlinkung zu wissenschaftlichen Publikationen des TUM-IEAI
-- **Feedback-Bereich** – Formular zur Rückmeldung für Lehrkräfte und Schüler
-- **Datenschutz & Impressum** – Rechtlich konforme Seiten
-- **Admin-Bereich** – Verwaltungsoberfläche für Nutzerzugänge und Feedback-Auswertung
+The pedagogical approach follows the **OECD Principles for Responsible AI** and is designed for classroom use.
 
 ---
 
-### 2. Die 9 Lernaktivitäten (je ca. 45 Minuten)
+## Features
 
-Jede Aktivität kombiniert physisches Gestalten mit dem Einsatz von KI-Bildgenerierung und enthält:
-- Schritt-für-Schritt-Anleitungen
-- Lehrerhandbuch und Schülerarbeitsblatt (als PDF zum Download)
-- Gesprächsimpulse zu ethischen Fragen
+### 1. Complete Multi-Section Website
 
-| # | Aktivität | Thema |
-|---|-----------|-------|
-| 1 | **Hommage an lokale Künstler** | KI-Bilderzeugung, Urheberrecht, Kreativität |
-| 2 | **Magazin-Collagen** | Iterative Gestaltung mit KI und realen Materialien |
-| 3 | **Zeichnungen mit Texturen** | Kombination von Handzeichnung und KI |
-| 4 | **Expanded Frames** | KI-Kunst mit physischen Bilderrahmen |
-| 5 | **KI-Superheld** | Storytelling und Comicgestaltung mit KI |
-| 6 | **Prototyp-Pitch für KI-Produkte** | KI für nachhaltige Entwicklungsziele (SDGs) |
-| 7 | **Zeitkapsel** | KI, Gesellschaft und Zukunftsvisionen |
-| 8 | **KI-Karriere-Figuren trainieren** | Training eigener KI-Modelle mit Google Teachable Machine |
-| 9 | **Knetmasse-Storyboards** | Physisches Modellieren kombiniert mit KI-Bildgenerierung |
+- **Homepage** – Overview and introduction to AI ethics
+- **9 interactive learning activities** – Guided creative classroom projects
+- **10 ethics scenarios** – Real-world case studies from educational settings with discussion materials
+- **Research section** – Links to academic publications by TUM-IEAI
+- **Feedback section** – Submission form for teachers and students
+- **Privacy policy & legal notice** – Legally compliant pages
+- **Admin panel** – Management interface for user access and feedback review
 
 ---
 
-### 3. Die 10 Ethik-Szenarien
+### 2. The 9 Learning Activities (approx. 45 minutes each)
 
-Die Szenarien zeigen kritische oder potenziell problematische Einsätze von KI im Bildungsbereich. Sie beinhalten Comic-artige Illustrationen, Hintergrundinformationen und strukturierte Diskussionsimpulse. Themen sind u. a.:
+Each activity combines physical creation with AI image generation and includes step-by-step instructions, a teacher handbook, a student worksheet (downloadable as PDF), and discussion prompts on ethical questions.
 
-- KI-Bildgenerierung und Urheberschaft
-- Deepfakes im Unterricht
-- Algorithmen in sozialen Medien
-- KI-generiertes Feedback von Lehrkräften
-- Gesichtserkennung zur Wohlbefindensüberwachung
-- Personalisiertes Lernen durch KI-Tutorsysteme
-- KI-gestützte Klassenraumüberwachung
+| # | Activity | Topic |
+|---|----------|-------|
+| 1 | **Homage to Local Artists** | AI image generation, copyright, creativity |
+| 2 | **Magazine Collages** | Iterative design with AI and physical materials |
+| 3 | **Drawings with Textures** | Combining hand drawing with AI |
+| 4 | **Expanded Frames** | AI art with physical picture frames |
+| 5 | **AI Superhero** | Storytelling and comic design with AI |
+| 6 | **Prototype Pitch for AI Products** | AI for Sustainable Development Goals (SDGs) |
+| 7 | **Time Capsule** | AI, society, and future visions |
+| 8 | **Training AI Career Figures** | Training custom AI models with Google Teachable Machine |
+| 9 | **Clay Storyboards** | Physical modelling combined with AI image generation |
 
 ---
 
-### 4. Technische Umsetzung (nicht-technische Zusammenfassung)
+### 3. The 10 Ethics Scenarios
 
-Boris Liu hat die gesamte technische Infrastruktur der Plattform selbstständig entwickelt:
+Comic-style illustrated case studies highlighting critical or potentially problematic uses of AI in education, each with background information and structured discussion prompts. Topics include:
 
-**Was das bedeutet in einfachen Worten:**
+- AI image generation and authorship
+- Deepfakes in the classroom
+- Algorithms in social media
+- AI-generated teacher feedback
+- Facial recognition for wellbeing monitoring
+- Personalised learning through AI tutoring systems
+- AI-assisted classroom surveillance
 
-- Er hat die **komplette Website** gebaut – alle Seiten, das Design und die Bedienung.
-- Er hat **KI-Schnittstellen eingebunden** – die Website kann selbst Bilder mit KI generieren (über Google Imagen 4.0), direkt im Browser.
-- Er hat ein **Benutzer-Anmeldesystem** entwickelt – Lehrkräfte können sich mit einem Passwort anmelden; Zugänge sind zeitlich begrenzt und gesichert.
-- Er hat eine **Datenbank** (Supabase/PostgreSQL) eingerichtet, in der Feedback der Nutzerinnen und Nutzer gespeichert wird.
-- Er hat **interaktive Chatbots** für einzelne Aktivitäten eingebunden, die Schülerinnen und Schüler durch die Übungen begleiten.
-- Er hat ein **Admin-Panel** gebaut, über das Zugänge und Rückmeldungen verwaltet werden können.
-- Er hat die Website auf einem **Cloud-Server** (Render) deployed, sodass sie weltweit erreichbar ist.
-- Er hat **PDF-Generierung** eingebaut, sodass Lernmaterialien direkt heruntergeladen werden können.
-- Die Website ist vollständig **responsiv** – sie funktioniert sowohl auf Computern als auch auf Tablets und Smartphones.
+---
 
-**Eingesetzte Technologien (vereinfacht erklärt):**
+## Tech Stack
 
-| Bereich | Eingesetzt |
-|---------|-----------|
-| Webseiten-Programmierung | HTML, CSS, JavaScript |
-| Server-Programmierung | Node.js / Express.js |
-| KI-Bildgenerierung | Google Imagen 4.0, FAL AI |
-| Datenbank | Supabase (PostgreSQL) |
-| PDF-Erstellung | pdf-lib |
-| Bildverarbeitung | Sharp |
+| Area | Technologies |
+|------|-------------|
+| Frontend | HTML, CSS, JavaScript |
+| Backend | Node.js / Express.js |
+| AI Image Generation | Google Imagen 4.0, FAL AI |
+| Database | Supabase (PostgreSQL) |
+| PDF Generation | pdf-lib |
+| Image Processing | Sharp |
 | Hosting | Render (Cloud) |
-| Lizenz | Creative Commons CC BY 4.0 |
+| License | Creative Commons CC BY 4.0 |
 
 ---
 
-## Wissenschaftlicher Kontext
+## Academic Context
 
-Die Plattform entstand im Rahmen eines aktiven Forschungsprojekts an der TUM. Die zugehörigen wissenschaftlichen Publikationen wurden bei internationalen Konferenzen veröffentlicht:
+This platform was developed as part of an active research project at TUM. Associated academic publications have been presented at international conferences:
 
-- **Humburg et al. (2025)** – Präsentation auf der ICLS 2025
-- **Keune et al. (2024)** – Präsentation auf der ICLS 2024 zu KI-Ethik-Szenarien
-- **Keune & Hurtado (2025)** – IEAI Research Brief: „Art Making with AI"
-
----
-
-## Kontakt & Institution
-
-**Institut:** Institute for Ethics in Artificial Intelligence (IEAI)
-Technische Universität München
-Marsstraße 20–22, 80335 München
-**Kontakt:** s.hurtado@tum.de
+- **Humburg et al. (2025)** – Presented at ICLS 2025
+- **Keune et al. (2024)** – Presented at ICLS 2024 on AI ethics scenarios
+- **Keune & Hurtado (2025)** – IEAI Research Brief: "Art Making with AI"
 
 ---
 
-## Zusammenfassung für das Arbeitszeugnis
+## Contact & Institution
 
-Boris Liu hat im Rahmen dieses Projekts eine umfangreiche, vollständig funktionsfähige Bildungsplattform für die Technische Universität München entwickelt. Er übernahm dabei sowohl die **konzeptionelle Gestaltung** (Aufbau der Inhaltsstruktur, Nutzerführung, didaktisches Design) als auch die **gesamte technische Umsetzung** (Programmierung der Website, Einbindung von KI-Diensten, Entwicklung eines Anmeldesystems, Datenbankanbindung, Cloud-Deployment).
+**Institute:** Institute for Ethics in Artificial Intelligence (IEAI)
+Technical University of Munich
+Marsstraße 20–22, 80335 Munich, Germany
+**Contact:** s.hurtado@tum.de
 
-Die fertige Plattform umfasst **über 25 einzelne Unterseiten**, **9 vollständige Lernaktivitäten**, **10 Ethik-Szenarien**, ein **Feedback-System**, ein **Benutzerverwaltungssystem** und eine direkte **KI-Bildgenerierungsfunktion** – alles eigenständig entwickelt und live im Internet verfügbar.
+---
 
-Das Projekt zeigt Boris Lius Fähigkeit, komplexe digitale Produkte selbstständig und kompetent von der Idee bis zur fertigen Umsetzung zu realisieren.
+*Licensed under [Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/)*
