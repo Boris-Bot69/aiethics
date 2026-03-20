@@ -812,16 +812,59 @@ app.post("/generate-panel", async (req, res) => {
 
         console.log(`[${sessionId}] New panel prompt:`, prompt);
 
+        // Rewrite the prompt to remove any copyrighted/trademarked references —
+        // both names AND signature abilities — before sending to the image model.
+        let safePrompt = prompt;
+        try {
+            const sanitizeRes = await ai.models.generateContent({
+                model: "gemini-2.5-flash",
+                contents: [{
+                    text: `You are a copyright-clearance rewriter for an educational comic generator.
 
-        story.context += `\nPanel ${story.panels.length + 1}: ${prompt}`;
+Rewrite the description below so it contains NO references — direct or indirect — to any trademarked or copyrighted franchise characters (e.g. Spider-Man, Batman, Superman, Iron Man, Thor, Wonder Woman, Captain America, Hulk, Wolverine, Deadpool, Black Panther, Venom, etc.).
+
+Rules:
+1. Replace the character's NAME with a generic phrase like "the hero".
+2. Replace SIGNATURE ABILITIES tied to that character with generic originals:
+   - "spins webs / shoots webs / web-slinging" → "shoots energy threads" or "launches grappling lines"
+   - "shoots laser eyes" (Superman) → "fires energy beams"
+   - "has a shield" (Captain America) → "carries a disc weapon"
+   - "has claws" (Wolverine) → "has bladed gauntlets"
+   Keep the same effect but use non-franchise language.
+3. Keep the scene, action, setting, costume description, and all other story details exactly the same.
+4. Return ONLY the rewritten description. No explanation. No preamble.
+
+Original: ${prompt}`,
+                }],
+                config: { temperature: 0.1 },
+            });
+            safePrompt = sanitizeRes?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || prompt;
+        } catch (sanitizeErr) {
+            console.warn("[sanitize] Could not rewrite prompt, using original:", sanitizeErr.message);
+        }
+
+        story.context += `\nPanel ${story.panels.length + 1}: ${safePrompt}`;
+
+        // Also sanitize the full accumulated context before passing to the image model
+        const safeContext = story.context
+            .replace(/spider[-\s]?man/gi, "the web hero")
+            .replace(/batman/gi, "the dark knight hero")
+            .replace(/superman/gi, "the flying hero")
+            .replace(/iron\s?man/gi, "the armored hero")
+            .replace(/captain\s?america/gi, "the shield hero")
+            .replace(/hulk/gi, "the green giant hero")
+            .replace(/wolverine/gi, "the claw hero")
+            .replace(/thor/gi, "the hammer hero")
+            .replace(/wonder\s?woman/gi, "the warrior hero");
 
         const combinedPrompt = `
 You are generating the next comic panel in an ongoing story.
 Maintain the same main hero identity, costume, and abilities from previous panels.
 Show smooth continuity between scenes.
+Use only fully original character and ability designs — do not reference any trademarked franchise.
 
 Story so far:
-${story.context}
+${safeContext}
 
 Generate ONE new comic panel in consistent style, without speech bubbles.
 If the story logically reaches a conclusion, end it naturally with an emotional or moral closure.
@@ -839,9 +882,9 @@ If the story logically reaches a conclusion, end it naturally with an emotional 
         contents.push({ text: combinedPrompt });
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash-image",
+            model: "gemini-3-pro-image-preview",
             contents,
-            config: { responseModalities: ["TEXT", "IMAGE"], temperature: 0.8 },
+            config: { responseModalities: ["IMAGE", "TEXT"], temperature: 0.8 },
         });
 
 
@@ -853,8 +896,8 @@ If the story logically reaches a conclusion, end it naturally with an emotional 
             console.error("/generate-panel: empty response.",
                 "blockReason:", blockReason || "(none)",
                 "promptFeedback:", JSON.stringify(response?.promptFeedback || {}));
-            const userMsg = blockReason === "SAFETY"
-                ? "The prompt was blocked by safety filters. Please avoid copyrighted characters or sensitive content and try again."
+            const userMsg = (blockReason === "SAFETY" || blockReason === "PROHIBITED_CONTENT")
+                ? "The image could not be generated. Try describing your hero's appearance and powers directly (e.g. 'a hero in a red and blue suit who shoots energy threads') instead of referencing a character by name."
                 : "The model could not generate an image for this prompt. Try rephrasing your description with more original details.";
             return res.status(500).json({ error: userMsg });
         }
@@ -949,9 +992,9 @@ No speech bubbles. Keep the same art style and hero identity as all previous pan
         contents.push({ text: closingPrompt });
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash-image",
+            model: "gemini-3-pro-image-preview",
             contents,
-            config: { responseModalities: ["TEXT", "IMAGE"], temperature: 0.7 },
+            config: { responseModalities: ["IMAGE", "TEXT"], temperature: 0.7 },
         });
 
         const candidate = response?.candidates?.[0];
