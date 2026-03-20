@@ -18,15 +18,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
     imageUpload?.addEventListener("change", handleImageUpload);
 
-
-    const restartBar = document.createElement("div");
-    restartBar.className = "restart-bar";
-    const restartBtn = document.createElement("button");
-    restartBtn.className = "restart-btn";
-    restartBtn.textContent = "Start over";
-    restartBtn.addEventListener("click", restartAll);
-    restartBar.appendChild(restartBtn);
-    chatPanel.appendChild(restartBar);
+    document.getElementById("restartBtn")
+        ?.addEventListener("click", restartAll);
 
 
     addBotMessage(
@@ -56,15 +49,16 @@ function restartAll() {
 
 
 function showUploadBar(label) {
-    const bar = document.querySelector(".chat-input-bar");
     const btn = document.getElementById("uploadBtn");
-    if (bar) bar.style.display = "";
-    if (btn && label) btn.textContent = label;
+    if (btn) {
+        btn.style.display = "";
+        if (label) btn.textContent = label;
+    }
 }
 
 function hideUploadBar() {
-    const bar = document.querySelector(".chat-input-bar");
-    if (bar) bar.style.display = "none";
+    const btn = document.getElementById("uploadBtn");
+    if (btn) btn.style.display = "none";
 }
 
 

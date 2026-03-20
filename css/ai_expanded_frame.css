@@ -444,30 +444,6 @@ h1 {
     color: #5a4000;
 }
 
-.restart-bar {
-    padding: 0.5rem 1rem;
-    background: #f8f8f8;
-    border-top: 1px solid #e0e0e0;
-    border-radius: 0 0 8px 8px;
-    display: flex;
-    justify-content: flex-end;
-}
-
-.restart-btn {
-    background: none;
-    border: 1px solid #bbb;
-    border-radius: 20px;
-    padding: 4px 14px;
-    font-size: 0.82rem;
-    color: #666;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-}
-
-.restart-btn:hover {
-    background: #e8e8e8;
-    color: #333;
-}
 
 .summary-bubble {
     display: flex;
@@ -490,6 +466,7 @@ h1 {
 .chat-input-bar {
     display: flex;
     align-items: flex-end;
+    flex-basis: auto;
     gap: .5rem;
     width: 100%;
     background: var(--accent-color);
@@ -497,6 +474,35 @@ h1 {
     border: none;
     border-top: 3px solid var(--accent-color);
     border-radius: 0 0 8px 8px;
+}
+
+.action-bar {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.875rem 1.25rem;
+    border-top: 1px solid var(--border-color);
+    background: #f7f7f7;
+    border-radius: 0 0 12px 12px;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    border-radius: 24px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 2px solid var(--accent-color);
+    background: #fff;
+    color: var(--accent-color);
+    transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.action-btn:hover {
+    background: var(--accent-color);
+    color: #fff;
+    transform: translateY(-1px);
 }
 
 .chat-editor {

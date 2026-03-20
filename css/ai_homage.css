@@ -474,6 +474,7 @@ h1 {
 .chat-input-bar {
     display: flex;
     align-items: flex-end;
+    flex-basis: auto;
     gap: .5rem;
     width: 100%;
     background: var(--accent-color);

@@ -68,21 +68,27 @@ document.addEventListener('DOMContentLoaded', () => {
         let generatedHomages = [];
         let promptHistory = [];
 
-        imageUploadInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                appendMessage('', 'user-message', e.target.result);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            };
-            reader.readAsDataURL(file);
-        });
+        if (sendButton && imageUploadInput) {
+            imageUploadInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    appendMessage('', 'user-message', e.target.result);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
 
-        sendButton.addEventListener('click', sendMessage);
-        inputField.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') sendMessage();
-        });
+        if (sendButton) {
+            sendButton.addEventListener('click', sendMessage);
+        }
+        if (inputField) {
+            inputField.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') sendMessage();
+            });
+        }
 
         function sendMessage() {
             if (homageCount >= MAX_HOMAGES) return;
